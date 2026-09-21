@@ -55,19 +55,50 @@ const fields = () => byClass(json(), 'f');
 const h3 = n => (byType(n || {}, 'h3')[0] || {}).type === 'h3' ? texts(byType(n, 'h3')[0]) : '';
 const cardName = n => texts(byType(n, 'h3')[0] || byType(n, 'b')[0] || n);
 const fid = n => n.props?.['data-fid'];
+/* read the value a field actually holds — inputs carry it in props, pickers in their mirror,
+   multi-selects as chips, switches as their aria state */
+const valOf = f => {
+  if (!f) return '';
+  const chips = byClass(f, 'pk-chip');
+  if (chips.length) return chips.map(c => textsSpaced(c)).join(', ');
+  const sel = byType(f, 'select')[0], area = byType(f, 'textarea')[0], inp = byType(f, 'input')[0];
+  const raw = n => (n && n.props?.value != null && String(n.props.value) !== '' ? String(n.props.value) : '');
+  return raw(sel) || raw(area) || raw(inp)
+    || (byClass(f, 'sw-btn').some(b => byClass(b, 'on').length) ? 'on' : '')
+    || (byClass(f, 'pk-val')[0] ? textsSpaced(byClass(f, 'pk-val')[0]) : '');
+};
 const outstanding = () => +(texts(json()).match(/· (\d+) outstanding/)?.[1] ?? byClass(json(), 'errtxt').length);
 
 /* answer one field using whatever control it renders, and force the studio when asked */
-async function answer(f, studio, note, title) {
+async function answer(f, studio, note, title, keep) {
   const id = fid(f);
   /* a linked-lookup field is answered by picking the first row its dropdown shows */
   const lk = byClass(f, 'lk')[0];
   if (lk) {
+    /* a link the desk already resolved stays resolved — re-running the search would re-pick
+       whatever row happens to be first, which is not the member anyone chose */
+    if (byClass(f, 'done').length) return 'kept';
     const input = byType(lk, 'input').find(n => n.props?.onChange);
     await set(input, id === 'member_name' ? 'Rhea' : id === 'member_email' ? 'rhea' : 'class');
     const row = byClass(json(), 'lk-row')[0];
     if (row) { await click(row); return 'lookup'; }
     return null;
+  }
+  /* the one choice control on this form is the picker: open it and click the first option it
+     offers, the way a desk does — an option the guided report already chose is left alone */
+  const pk = byClass(f, 'pk')[0];
+  if (pk) {
+    if (keep && byClass(f, 'done').length) return 'kept';   /* the guided block asks us not to write over its answers */
+    const btn = byClass(pk, 'pk-btn')[0];
+    const opts = btn ? byClass(pk, 'pk-opt') : [];
+    if (btn && opts.length) {
+      await click(btn);
+      const free = opts.find(o => !byClass(o, 'on').length);
+      await click(free || opts[0]);
+      return 'picker';
+    }
+    const all = btn ? btnIn(pk, /^all$/i) : null;
+    if (btn && all) { await click(btn); await click(all); return 'picker-all'; }
   }
   const sel = byType(f, 'select')[0];
   const opts = sel ? byType(sel, 'option').map(o => o.props?.value).filter(v => v !== '' && v != null) : [];
@@ -351,20 +382,51 @@ t('the filed ticket carries the member reference for whoever picks it up',
   const cycSel = byType(gqs[1], 'select')[0];
   if (cycSel) { const o = byType(cycSel, 'option').map(x => x.props?.value).filter(Boolean); await set(cycSel, o[0]); }
   await set(byType(gqs[0], 'input')[0], 'Bike #3');
+  /* cite a part straight out of the vendor’s catalogue, as the reference repo lets a desk do */
+  const cited = byClass(json(), 'part')[0];
+  const citedName = cited ? textsSpaced(cited).replace(/\s+/g, ' ').trim().split(' ')[0] : '';
+  if (cited) await click(cited);
+  t('the vendor’s own parts catalogue marks the cited part chosen',
+    !!byClass(json(), 'part').find(n => byClass(n, 'on').length), `“${citedName}”`);
   await click(button(/Add to the ticket/));
-  t('the guided report does not steal the form away', outstanding() >= 0, `${outstanding()} outstanding after applying`);
+  /* the answers have to be readable on the form the desk is filling, not only in storage */
+  const fieldText = id => { const f = fields().find(x => fid(x) === id); return f ? `${valOf(f)} · ${textsSpaced(f).replace(/\s+/g, ' ')}` : ''; };
+  t('guided answers are written into the live form', /Bike #3/.test(fieldText('asset_id')),
+    fieldText('asset_id').slice(0, 72) || 'the bike number never reached the form');
+  t('the guided report also names the asset on the ticket', /PowerCycle bike/.test(fieldText('asset_type')),
+    fieldText('asset_type').slice(0, 72) || 'no asset named');
+  t('the guided report does not steal the form away', outstanding() >= 0, `${outstanding()} still outstanding after applying`);
   for (let round = 0; round < 8 && outstanding(); round++)
-    for (const f of fields()) await answer(f, 'Kwality House, Kemps Corner', 'Bike #3 grinding mid-class', 'Bike #3 grinding mid-class');
-  await click(button(/Review & create ticket/));
-  await click(button(/File & start SLA/));
-  const cyc = live().find(x => /Bike #3 grinding/.test(x.title));
+    for (const f of fields()) await answer(f, 'Kwality House, Kemps Corner', 'Bike #3 grinding mid-class', 'Bike #3 grinding mid-class', true);
+
+  /* a report the vendor marks as recurring must be triaged before a second clock is opened on it */
+  const rep = fields().find(f => fid(f) === 'is_repeat');
+  const repBtn = rep ? byClass(rep, 'pk-btn')[0] : null;
+  if (repBtn) {
+    await click(repBtn);
+    const yes = byClass(rep, 'pk-opt').find(o => /yes/i.test(textsSpaced(o)));
+    if (yes) await click(yes);
+  }
+  let triaged = /Is this the same fault\?/.test(head());
+  if (triaged) { await click(button(/file separately/)); await settle(); }
+  const rvBtn = button(/Review & create ticket/);
+  if (rvBtn) {
+    await click(rvBtn); await settle();
+    const fb = button(/File & start SLA/);
+    if (fb) await click(fb);
+    await settle();
+    if (/Is this the same fault\?/.test(head())) { triaged = true; await click(button(/file separately/)); await settle(); }
+  }
+  t('a probable repeat is triaged before a second clock opens on the same fault', triaged, 'merge-or-separate prompt');
+  const cyc = live().find(x => /Bike #3 grinding/i.test(x.title));
   const stored = JSON.stringify((cyc || {}).data || {});
-  t('guided answers are written into the live form', /Bike #3/.test(stored),
-    stored.match(/"asset_id":"[^"]+"/)?.[0] || 'not on the ticket');
-  t('the guided report also names the asset on the ticket', /PowerCycle bike/.test(stored),
-    stored.match(/"asset_type":"[^"]+"/)?.[0] || 'no asset named');
-  t('the guided answers land on real fields for this sub-category',
-    /Bike #3/.test(stored) && /grinding/i.test(stored), JSON.stringify(cyc?.data?.asset_id || '') + ' · ' + (stored.match(/"cycle_part":"[^"]+"/)?.[0] || 'no part'));
+  /* a part with no open field on this form is folded into the summary rather than dropped */
+  t('the part cited from the catalogue is carried onto the ticket, not dropped',
+    new RegExp(citedName, 'i').test(stored),
+    stored.match(/"[^"]+":"[^"]*SIC2[^"]*"/)?.[0] || `no ${citedName || 'part'} on the ticket`);
+  t('the guided report files as a ticket that carries the asset it named',
+    !!cyc && /Bike #3/.test(stored) && /PowerCycle bike/.test(stored),
+    cyc ? `${cyc.number} · ${cyc.title}` : 'not filed');
   /* leave the board exactly as the next scenario expects */
   await resetBoard();
 }

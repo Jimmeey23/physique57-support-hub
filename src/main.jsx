@@ -1113,30 +1113,42 @@ function App() {
       momenceStatus={momenceStatus} onTestMomence={testMomence} />}
     {cycleModal && <CycleTemplateModal onClose={() => setCycleModal(false)} data={data}
       onApply={patch => {
-        /* guided answers land on whichever fields this sub-category actually has */
+        /* Guided answers land on whichever fields this sub-category actually shows. A field the
+           conditions have not revealed yet still takes its answer — the studio the desk picks next
+           uncovers it — but an answer that would live only on a field that is not on the form is
+           folded into the summary too, so nothing the desk typed goes invisible on the ticket. */
         const have = new Set(fields.map(f => f.id));
+        const onForm = new Set(visible.map(f => f.id));
+        const labelOf = id => (fields.find(f => f.id === id) || {}).label || fieldLabels[id] || id;
         const pick = (...ids) => ids.find(i => have.has(i));
         const routes = {
           bike_number: ['bike_number', 'asset_id'],
           cycle_issue: ['cycle_issue', 'cycle_symptom', 'summary'],
-          cycle_part: ['cycle_part', 'asset_type'],
+          cycle_part: ['cycle_part', 'cycle_notes', 'summary'],
           cycle_recurrence: ['cycle_recurrence', 'is_repeat'],
           cycle_desk_action: ['cycle_desk_action', 'last_restart'],
           cycle_notes: ['cycle_notes', 'summary'],
         };
-        const applied = {};
+        const applied = {}; const fold = [];
         for (const [k, v] of Object.entries(patch)) {
+          if (v == null || !String(v).trim()) continue;
           const target = pick(...(routes[k] || [k]));
-          if (!target) continue;
-          applied[target] = target === 'is_repeat' ? (/recurring/i.test(v) ? 'Yes, same issue recurred' : 'No, first time')
-            : target === 'summary' && applied.summary ? applied.summary + ' · ' + v : v;
+          if (!target) { fold.push(`${fieldLabels[k] || k}: ${v}`); continue; }
+          const wrote = target === 'is_repeat'
+            ? (/recurring/i.test(v) ? 'Yes, same issue recurred' : 'No, first time') : v;
+          applied[target] = target === 'summary' && applied.summary ? `${applied.summary} · ${wrote}` : wrote;
+          if (!onForm.has(target) && target !== 'summary') fold.push(`${labelOf(target)}: ${v}`);
         }
         if (patch.bike_number && have.has('asset_id') && !applied.asset_id) applied.asset_id = patch.bike_number;
-        if (patch.bike_number && have.has('asset_type')) applied.asset_type = 'PowerCycle bike';
+        if (patch.bike_number && have.has('asset_type') && !applied.asset_type) applied.asset_type = 'PowerCycle bike';
+        if (fold.length && onForm.has('summary'))
+          applied.summary = [applied.summary, ...fold].filter(Boolean).join(' · ');
         setData(d => ({ ...d, ...applied }));
         setCycleModal(false);
         if (!sub) { setCat(null); }
-        toast('Guided answers added', `${Object.keys(patch).length} fields filled from the powerCycle intake questions${sub ? ' — they are on your form now' : '. Pick a sub-category to file.'}`, 'ok');
+        toast('Guided answers added', `${Object.keys(applied).length} fields filled from the powerCycle intake questions`
+          + (fold.length ? ` · ${fold.length} held in the summary until their field is on the form` : '')
+          + (sub ? ' — they are on your form now' : '. Pick a sub-category to file.'), 'ok');
       }} />}
     {palette && <CommandPalette items={paletteItems()} onClose={() => setPalette(false)} onRun={r => r.run && r.run()} />}
     {showHelp && <Modal title="Keyboard" icon={<span dangerouslySetInnerHTML={{ __html: svg.wand }} />} onClose={() => setShowHelp(false)}>

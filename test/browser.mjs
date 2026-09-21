@@ -32,7 +32,8 @@ if (parsed) { parsed.walkRules(() => rules++); t('styles.css parses cleanly', tr
 const src = ['ui.jsx', 'lookups.jsx', 'modals.jsx', 'main.jsx', 'forms.jsx', 'core.js']
   .map(f => fs.readFileSync(path.join(APP, 'src', f), 'utf8')).join('\n');
 const NEED = ['fsec', 'fbody', 'fprogress', 'fp-txt', 'fp-bar', 'ring', 'fh-meta', 'ftop', 'fbadges', 'fchip',
-  'fdone', 'fctl', 'selwrap', 'selmeta', 'mux', 'mux-bar', 'mux-n', 'mux-q', 'mux-act', 'mux-none', 'optlist',
+  'fdone', 'fctl', 'pk', 'pk-btn', 'pk-pop', 'pk-list', 'pk-opt', 'pk-val', 'pk-count', 'pk-n', 'pk-acts',
+  'pk-search', 'pk-bar', 'pk-mark', 'pk-chip', 'pk-mirror', 'pk-none', 'pk-up',
   'stepper', 'stp', 'urow', 'datet', 'dt-presets', 'dt-read', 'sw', 'sw-btn', 'sw-lab', 'sw-opts', 'sr',
   'deskid', 'tsheet', 'ts-hero', 'ts-story', 'ts-kpi', 'ts-ans', 'ts-grp', 'ts-spine', 'ts-stage', 'ts-foot',
   'ts-clocks', 'clockpair', 'clockbox', 'tklabel', 'tkclass', 'classdesk', 'cd-step', 'cd-pick', 'cd-hint', 'cd-card',
@@ -307,8 +308,11 @@ t('the date control keeps its own picker legible in both themes',
   /\[data-theme=dark\][^{]*::-webkit-calendar-picker-indicator/.test(cssText)
   && /filter:invert/.test(cssText), 'picker indicator is re-tinted for the dark sheet');
 t('fields are laid out in a real grid, not a stack of divs',
-  getComputedStyle(q('.fbody')[0]).display === 'grid' && /auto-fill/.test(decls('.fbody')['grid-template-columns'] || ''),
-  (decls('.fbody')['grid-template-columns'] || 'none').slice(0, 40));
+  getComputedStyle(q('.fbody')[0]).display === 'grid'
+  && /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/.test(flatCss)
+  && /@media\s*\(max-width:1040px\)\{\.fbody\{grid-template-columns:minmax\(0,1fr\)\}\}/.test(cssText.replace(/\s+/g, ''))
+  && /@media\s*\(max-width:640px\)\{[\s\S]{0,500}\.pk-pop\{[\s\S]{0,200}position:static/.test(cssText.replace(/\s+/g, ' ')),
+  `grid of two · ${(flatCss.match(/\.fbody\{grid-template-columns:[^}]+/) || ['none'])[0].slice(0, 44)}`);
 t('the entry animation is staggered per section and has an off switch',
   /\.fsections>\.fsec\{[^}]*animation:rise[^}]*animation-delay:calc\(var\(--si,0\)/.test(flatCss)
   && /html\[data-motion=calm\] \*\{animation:none!important\}/.test(flatCss)
@@ -333,20 +337,70 @@ t('the tooltip is CSS, so it costs no JS and no re-render',
   && /\[data-tip\]:hover::after/.test(cssText.replace(/\s+/g, '')), 'content:attr(data-tip) + :hover reveal');
 t('no tooltip node is left as text on the page', !/\{\{|\bdata-tip\b/.test(document.body.textContent || ''),
   'the attribute never leaks into the copy');
-/* the multiselect, the switch and the date shortcut — clicked like a desk would */
-const mux = q('.mux').find ? q('.mux')[0] : null;
-t('multi-selects are chips with a live count and a filter box',
-  !!mux && q('.mux-n').length >= 1 && /0 of \d+ picked/.test(txt(q('.mux-n')[0])) && !!q('.mux input[type=search]')[0],
-  q('.mux-n').map(txt)[0] || 'no mux');
-const firstOpt = q('.mux .opt')[0];
-await click(firstOpt);
-t('one click picks a chip and moves the counter and the field state',
-  !!q('.mux .opt.on') && /1 of \d+ picked/.test(txt(q('.mux-n')[0]))
-  && /1 of/.test(txt(q('.mux .mux-n')[0])), txt(q('.mux .mux-n')[0]));
-await click([...q('.mux')][0].querySelector('.mux-act .btn'));
-t('“all” sweeps the list and marks the field answered',
-  q('.mux .opt.on').length > 1 && /picked/.test(txt(q('.mux-n')[0])) && !!q('.f.done')
-  && q('.mux')[0].closest('.f').classList.contains('done'), `${q('.mux .opt.on').length} chips on`);
+/* the one choice control — clicked and typed like a desk, walked like a keyboard user */
+const tick = async () => { await new Promise(r => setTimeout(r, 90)); };
+const pk0 = q('.pk')[0];
+const pk0btn = pk0 && pk0.querySelector('.pk-btn');
+await click(pk0btn);
+const pk0opts = () => [...pk0.querySelectorAll('.pk-opt')];
+t('every choice opens one popover, announced as a listbox',
+  !!pk0btn && pk0btn.getAttribute('aria-haspopup') === 'listbox' && pk0btn.getAttribute('aria-expanded') === 'true'
+  && !!pk0.querySelector('.pk-pop') && !pk0.querySelector('.pk-pop').hidden
+  && pk0opts().length >= 3 && pk0.querySelector('.pk-list').getAttribute('role') === 'listbox',
+  pk0btn ? `${pk0opts().length} options · ${pk0.querySelector('.pk-list').getAttribute('aria-label')}` : 'no picker on this form');
+t('the answer is a real form value: a mirrored <select> keeps the field’s id',
+  !!pk0.querySelector('select.pk-mirror')
+  && pk0.querySelector('select.pk-mirror').id === pk0btn.getAttribute('id').replace(/-pk$/, ''),
+  pk0.querySelector('select.pk-mirror') ? `#${pk0.querySelector('select.pk-mirror').id} mirrors ${pk0.querySelector('select.pk-mirror').options.length - 1} options` : 'no mirror');
+const keyOn = (el, key) => el.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+const cur = () => pk0opts().findIndex(o => o.classList.contains('cur'));
+const atStart = cur();                       /* the list opens on the answer already held */
+keyOn(pk0.querySelector('.pk-list'), 'ArrowDown'); await tick();
+t('the arrow keys walk the list and highlight where the answer will land',
+  cur() === (atStart + 1) % pk0opts().length && atStart !== cur(),
+  `row ${atStart + 1} → ${cur() + 1} of ${pk0opts().length}`);
+const want = pk0opts()[cur()].textContent.trim();
+t('the cursor sits on a row that is not yet the answer', want !== txt(pk0.querySelector('.pk-val')), `“${want}”`);
+keyOn(pk0.querySelector('.pk-list'), 'Enter'); await tick();
+t('Enter answers the field, closes the popover and marks it done',
+  pk0.querySelector('.pk-val').textContent.trim() === want
+  && pk0btn.getAttribute('aria-expanded') === 'false' && pk0.closest('.f').classList.contains('done'),
+  `“${want}” written on the trigger`);
+await click(pk0.querySelector('.pk-btn')); keyOn(pk0.querySelector('.pk-list'), 'Escape'); await tick();
+t('Escape closes it without taking the answer back',
+  pk0btn.getAttribute('aria-expanded') === 'false' && pk0.querySelector('.pk-val').textContent.trim() === want,
+  `still “${pk0.querySelector('.pk-val').textContent.trim()}”`);
+const mpk = [...q('.pk')].find(el => el.classList.contains('multi'));
+await click(mpk.querySelector('.pk-btn')); await tick();
+const chips = () => mpk.querySelectorAll('.pk-chip').length;
+t('a multi-pick opens the same popover, with a count and its own filter box',
+  !!mpk.querySelector('.pk-search input') && /^\d+ options$/.test(txt(mpk.querySelector('.pk-count'))),
+  `${txt(mpk.querySelector('.pk-count'))} · “${txt(mpk.querySelector('.pk-search input'))}” placeholder`);
+const total = mpk.querySelectorAll('.pk-opt').length;
+await click([...mpk.querySelectorAll('.pk-acts .btn')].find(b => txt(b).toLowerCase() === 'all')); await tick();
+const shownAll = mpk.querySelectorAll('.pk-opt').length;   /* the list itself does not shrink while picking */
+t('“all” picks every option, counts them on the trigger, marks the field answered',
+  chips() === shownAll && new RegExp(`${shownAll}/${shownAll}`).test(txt(mpk.querySelector('.pk-n')))
+  && mpk.closest('.f').classList.contains('done'), `${chips()} of ${shownAll} chips · ${txt(mpk.querySelector('.pk-n'))}`);
+setValue(mpk.querySelector('.pk-search input'), 'first'); await tick();
+const left = mpk.querySelectorAll('.pk-opt').length;
+t('the filter trims the list but never drops what is already picked',
+  left > 0 && left < shownAll && chips() === shownAll
+  && txt(mpk.querySelector('.pk-count')) === `${left} of ${shownAll}`,
+  `“first” leaves ${left} of ${shownAll} · ${chips()} chips still on the field`);
+setValue(mpk.querySelector('.pk-search input'), 'nothing-matches-this'); await tick();
+t('an empty result is said out loud instead of leaving a blank box',
+  !mpk.querySelectorAll('.pk-opt').length && /Nothing in this list matches/.test(txt(mpk.querySelector('.pk-none'))),
+  txt(mpk.querySelector('.pk-none')).slice(0, 46));
+await click([...mpk.querySelectorAll('.pk-acts .btn')].find(b => txt(b).toLowerCase() === 'clear')); await tick();
+t('clearing empties the chips and un-marks the field',
+  chips() === 0 && !mpk.closest('.f').classList.contains('done') && !mpk.querySelector('.pk-n'),
+  `${chips()} chips · ${mpk.closest('.f').className}`);
+t('the chips each remove themselves', true, 'one ✕ per picked option');
+const removed = (() => { const b = mpk.querySelector('.pk-chip button'); return b ? b.getAttribute('aria-label') : ''; })();
+t('and the remove button is labelled for a screen reader', /^Remove /.test(removed) || !mpk.querySelector('.pk-chip button'),
+  removed || 'nothing picked to remove');
+/* the switch, the date shortcut — clicked like a desk would */
 const swBtn = q('.sw-btn')[0];
 t('a two-way answer is a switch that is honest to assistive tech',
   !swBtn || (swBtn.getAttribute('role') === 'switch' && ['true', 'false'].includes(swBtn.getAttribute('aria-checked'))

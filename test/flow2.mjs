@@ -45,7 +45,7 @@ const button = re => btnIn(json(), re);
 const fields = () => byClass(json(), 'f');
 const h3 = n => (byType(n || {}, 'h3')[0] || {}).type === 'h3' ? texts(byType(n, 'h3')[0]) : '';
 const cardName = n => texts(byType(n, 'h3')[0] || byType(n, 'b')[0] || n);
-const fid = n => n.props?.['data-fid'];
+const fid = n => n?.props?.['data-fid'];
 const outstanding = () => +(texts(json()).match(/· (\d+) outstanding/)?.[1] ?? byClass(json(), 'errtxt').length);
 const head = () => textsSpaced(json()).replace(/\s+/g, ' ');
 const settle = async (ms = 220) => { await act(async () => { await new Promise(r => setTimeout(r, ms)); }); };
@@ -279,7 +279,7 @@ const valOf = f => {
 };
 const tipsIn = n => nodes(n).filter(x => typeof x.props?.['data-tip'] === 'string' && x.props['data-tip'].length > 12);
 const progNum = () => +((texts(byClass(json(), 'fp-txt')[0] || '').match(/(\d+)\//) || [])[1] ?? -1);
-const chipsOf = id => byClass(fidOf(id) || {}, 'ot').length;
+const chipsOf = id => byClass(fidOf(id) || {}, 'pk-chip').length;
 t('the intake is generated from the sub-category, not a hand-written list',
   fields().length > 30 && byClass(json(), 'fsec').length >= 4 && byClass(json(), 'fprogress').length === 1,
   `${fields().length} fields in ${byClass(json(), 'fsec').length} sections of ${planOf().length}`);
@@ -339,30 +339,66 @@ if (boolF) {
   t('flipping it again answers the other side of the pair, never a third value',
     back !== now2 && (planOf().find(f => f.id === id).options || []).includes(back), back.slice(0, 30));
 }
-const muxF = fields().find(f => byClass(f, 'mux').length);
-const muxPlan = planOf().find(f => f.id === fid(muxF));
-const muxId = fid(muxF);
-t('multi-select counts what is picked and can be filtered', byClass(muxF, 'mux-bar').length === 1
-  && /0 of \d+ picked/.test(texts(byClass(muxF, 'mux-n')[0] || {})),
-  `${texts(byClass(muxF, 'mux-n')[0] || '').slice(0, 18)} of ${muxPlan?.options?.length} options`);
-await click(btnIn(fidOf(fid(muxF)), /^all$/i));
-await settle();
-const picked = chipsOf(fid(muxF));
-const pickedVals = valOf(fidOf(fid(muxF)));
-const muxWord = String(muxPlan.options[0]).split(/\s+/).slice(0, 2).join(' ');
-await set(byType(fidOf(fid(muxF)), 'input').find(n => n.props?.type === 'search'), muxWord);
-await settle();
-const shown = chipsOf(fid(muxF));
-t('“all” picks every option and the filter trims the list', picked === muxPlan.options.length
-  && shown > 0 && shown < picked, `${picked} picked · “${muxWord}” leaves ${shown}`);
-t('what is picked is readable on the field, not hidden state', pickedVals === ''
-  && byClass(fidOf(fid(muxF)), 'done').length === 1
-  && /16 of 16 picked/.test(texts(byClass(fidOf(fid(muxF)), 'mux-n')[0] || {})),
-  texts(byClass(fidOf(fid(muxF)), 'mux-n')[0] || ''));
-await click(btnIn(fidOf(fid(muxF)), /^clear$/i));
-await settle();
-t('clearing empties the answer and un-marks the field', byClass(fidOf(fid(muxF)), 'on').filter(n => byClass(n, 'opt').length).length === 0
-  && byClass(fidOf(fid(muxF)), 'done').length === 0, `${chipsOf(fid(muxF))} chips · ${byClass(fidOf(fid(muxF)), 'on').filter(n => byClass(n, 'opt').length).length} still on`);
+/* One control for every choice. A multi-pick opens the same popover a single-select does, counts
+   what is picked, filters its own list and reads the answer back as chips on the field. Every read
+   below re-queries the live tree, because a snapshot taken before the click is a snapshot of the
+   answer the desk has not given yet. */
+const txt = n => (n ? textsSpaced(n).replace(/\s+/g, ' ') : '');
+const pkOf = f => byClass(f || {}, 'pk')[0];
+const multiF = fields().find(f => { const p = pkOf(f); return !!p && byClass(p, 'multi').length && byClass(p, 'pk-opt').length >= 4; });
+const mid = fid(multiF);
+const mpk = () => pkOf(fidOf(mid));
+const mbtn = () => byClass(mpk(), 'pk-btn')[0];
+const mopts = () => byClass(mpk(), 'pk-opt').length;
+const optCount = mopts();
+t('a multi-pick answers through the same one dropdown control as every other choice',
+  !!mbtn() && !byClass(multiF, 'sw-btn').length && !byClass(multiF, 'selwrap').length
+  && /pick as many as apply/.test(mbtn()?.props?.['data-tip'] || ''),
+  mid ? `“${mid}” · ${optCount} options inside one picker` : 'no multi-pick on this form');
+await click(mbtn()); await settle();
+t('the popover counts its list and offers all / clear',
+  byClass(mpk(), 'pk-pop').length === 1 && txt(byClass(mpk(), 'pk-count')[0]) === `${optCount} options`
+  && !!btnIn(mpk(), /^all$/i) && !!btnIn(mpk(), /^clear$/i),
+  `${txt(byClass(mpk(), 'pk-count')[0])} · all + clear`);
+t('the trigger tells an assistive tech what it opens',
+  mbtn()?.props?.['aria-haspopup'] === 'listbox' && mbtn()?.props?.['aria-expanded'] === true
+  && byClass(mpk(), 'pk-list').length === 1, 'aria-haspopup=listbox · aria-expanded=true · role=listbox');
+await click(btnIn(mpk(), /^all$/i)); await settle();
+t('“all” picks every option and the chips read the answer back on the field',
+  chipsOf(mid) === optCount && byClass(fidOf(mid), 'done').length === 1
+  && txt(byClass(mpk(), 'pk-n')[0]).replace(/\s+/g, '') === `${optCount}/${optCount}`,
+  `${chipsOf(mid)} chips · counter “${txt(byClass(mpk(), 'pk-n')[0])}”`);
+const mWord = String(valOf(fidOf(mid)).split(',')[0] || '').trim().split(/\s+/).slice(0, 2).join(' ');
+await set(byType(mpk(), 'input').find(n => n.props?.type === 'search'), mWord); await settle();
+const shownOpts = mopts();
+t('the filter trims the list without dropping what is already picked',
+  shownOpts > 0 && shownOpts < optCount && chipsOf(mid) === optCount
+  && txt(byClass(mpk(), 'pk-count')[0]) === `${shownOpts} of ${optCount}`,
+  `“${mWord}” leaves ${shownOpts} of ${optCount} · ${chipsOf(mid)} still picked`);
+await set(byType(mpk(), 'input').find(n => n.props?.type === 'search'), 'zzz-no-such-answer'); await settle();
+t('an empty result is said out loud rather than left as a blank box',
+  !mopts() && /Nothing in this list matches/.test(txt(byClass(mpk(), 'pk-none')[0])),
+  txt(byClass(mpk(), 'pk-none')[0]).slice(0, 46));
+await set(byType(mpk(), 'input').find(n => n.props?.type === 'search'), ''); await settle();
+await click(btnIn(mpk(), /^clear$/i)); await settle();
+t('clearing empties the answer and un-marks the field',
+  !chipsOf(mid) && !byClass(fidOf(mid), 'done').length && !byClass(mpk(), 'pk-n').length,
+  `${chipsOf(mid)} chips · ${mopts().length} on`);
+await click(btnIn(mpk(), /^all$/i)); await settle();               /* then take the whole list back */
+t('re-picking everything marks the field answered again',
+  chipsOf(mid) === optCount && byClass(fidOf(mid), 'done').length === 1, `${chipsOf(mid)} chips`);
+/* a single-select on the same grid: one value, shown on the trigger, and a reset that leaves it blank */
+const oneF = () => fidOf('area');
+await click(byClass(oneF(), 'pk-btn')[0]); await settle();
+await click(byClass(oneF(), 'pk-opt')[0]); await settle();
+const oneVal = valOf(oneF());
+t('a single-select takes one value and shows it on the trigger',
+  !!oneVal && txt(byClass(oneF(), 'pk-val')[0]) === oneVal && byClass(oneF(), 'done').length === 1,
+  oneVal.slice(0, 36));
+await click(byClass(oneF(), 'pk-btn')[0]); await settle();
+await click(btnIn(pkOf(oneF()), /^reset$/i)); await settle();
+t('resetting a picker leaves the field blank, not half-answered',
+  valOf(oneF()) === '' && !byClass(oneF(), 'done').length, `“${valOf(oneF())}”`);
 t('every field carries the tooltip the desk needs', tipsIn(json()).length >= 100, `${tipsIn(json()).length} tooltips on this form`);
 t('each section counts its own answers in the header', /\d+\/\d+ · \d+ fields/.test(texts(byClass(json(), 'fh-meta')[0] || '')),
   texts(byClass(json(), 'fh-meta')[0] || '').slice(0, 26));
@@ -418,10 +454,10 @@ const respond = btnIn(foot() || {}, /first response/i);
 if (respond) { await click(respond); await settle(); }
 t('the sheet can act on the ticket, not only read it', respond ? !!tk().firstResponseAt : !!btnIn(foot() || {}, /Resolve/i),
   respond ? 'first response logged' : 'already answered — Resolve offered');
-t('a multi-select answer is filed as a real list, not a comma blob',
-  Array.isArray(tk().data[muxId]) && tk().data[muxId].length === muxPlan.options.length
-  && !tk().data[muxId].join().includes(',,', 0) && byClass(json(), 'ts-ans').length >= 20,
-  `${(tk().data[muxId] || []).length} of ${muxPlan.options.length} options stored`);
+t('a multi-pick is filed as a real list, not a comma blob',
+  Array.isArray(tk().data[mid]) && tk().data[mid].length === optCount
+  && !tk().data[mid].some(x => !String(x).trim()) && tk().data[mid].join().indexOf(',,') < 0,
+  `${(tk().data[mid] || []).length} of ${optCount} options stored`);
 const closeSheet = () => byClass(json(), 'icobtn').filter(n => /Close/.test(n.props?.title || '')).pop();
 await click(closeSheet());
 await settle();

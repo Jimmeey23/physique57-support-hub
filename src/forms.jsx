@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import svg, { I } from './icons.jsx';
 import { cx, Tip, Switch, Ring } from './ui.jsx';
+import Picker from './picker.jsx';
 import { LookupControl, decodeLookup } from './lookups.jsx';
 import { isVisible as visible, withDeps, filled as isFilled } from './conditions.js';
+import { VOCAB, GROUPS } from './vocab.js';
 export { isVisible as _isVisibleImpl } from './conditions.js';
 
 /* Sections give the long universal block a readable spine. */
@@ -24,6 +26,17 @@ export const sectionOf = f => SEC[f.id] || (f.id === 'title' || f.id === 'summar
 const filled = isFilled;
 /* A conditional field stays hidden until the field its condition names has an answer. */
 export function isVisible(f, data, index) { return visible(f, data, index); }
+/* The taxonomy carries some multi-pick fields without their list — the class desk owns those
+   vocabularies. Rather than render a dropdown with nothing in it, borrow the same controlled list,
+   so a field the desk can see is a field the desk can answer. */
+const LISTS = (() => {
+  const m = {};
+  for (const [id, v] of Object.entries(VOCAB || {})) if (v && v.options && v.options.length) m[id] = v.options;
+  for (const group of Object.values(GROUPS || {}))
+    for (const f of (group || [])) if (f && f.options && f.options.length && !m[f.id]) m[f.id] = f.options;
+  return m;
+})();
+
 export function buildFields(data0, subKey, D, studio) {
   const sub = subKey ? D.subFields[subKey] || [] : [];
   const all = [...D.universal.map(f => ({ ...f, _u: true })), ...sub];
@@ -37,6 +50,8 @@ export function buildFields(data0, subKey, D, studio) {
       return { ...f, options: opts };
     }
     if (f.id === 'studio') return { ...f, options: D.studios.map(s => s.name) };
+    if ((!f.options || !f.options.length) && (f.type === 'multiselect' || f.multi) && LISTS[f.id])
+      return { ...f, options: LISTS[f.id] };
     return f;
   });
 }
@@ -54,54 +69,16 @@ const timeVal = d => {
 
 function Options({ f, value, onChange, multi, studio }) {
   const list = f.options || [];
-  const [q, setQ] = useState('');
-  if (!multi) {
-    if (isBoolean(f)) {
-      return <Switch value={value} options={list} name={f.id} id={f.id}
-        onLabel={list[0]} offLabel={list[1]} onChange={onChange} />;
-    }
-    if (list.length <= 5 && (f.type === 'radio' || list.length <= 4)) {
-      return <div className="radios">{list.map(o => {
-        const on = value === o;
-        return <label key={o} className={cx('radio', on && 'on')} data-tip={'Answer: ' + o}>
-          <span className="box" />
-          <input type="radio" checked={on} onChange={() => onChange(o)} />
-          <span>{o}</span></label>;
-      })}</div>;
-    }
-    return <div className="selwrap">
-      <select id={f.id} value={value || ''} onChange={e => onChange(e.target.value)}>
-        <option value="">Select…</option>
-        {list.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
-      <span className="selmeta mono">{list.length}</span>
-    </div>;
+  /* A two-way answer is a decision, not a list: the desk flips a switch. Everything else — three
+     options or thirty — answers through the same dropdown, so the grid stays aligned. */
+  if (!multi && isBoolean(f)) {
+    return <Switch value={value} options={list} name={f.id} id={f.id}
+      onLabel={list[0]} offLabel={list[1]} onChange={onChange} />;
   }
-  const arr = Array.isArray(value) ? value : [];
-  const shown = q.trim() ? list.filter(o => o.toLowerCase().includes(q.trim().toLowerCase())) : list;
-  const toggle = o => onChange(arr.includes(o) ? arr.filter(x => x !== o) : [...arr, o]);
-  return <div className="mux">
-    <div className="mux-bar">
-      <span className={cx('mux-n mono', arr.length && 'on')}>{arr.length} of {list.length} picked</span>
-      {list.length > 7 && <span className="mux-q"><I s={svg.search} />
-        <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Filter options…"
-          aria-label={'Filter the options for ' + f.label} /></span>}
-      <span className="mux-act">
-        <button type="button" className="btn xs ghost" data-tip="Pick every option in this list"
-          onClick={() => onChange([...list])}>all</button>
-        <button type="button" className="btn xs ghost" data-tip="Clear this answer"
-          onClick={() => onChange([])} disabled={!arr.length}>clear</button>
-      </span>
-    </div>
-    <div className="optlist">{shown.map(o => {
-      const on = arr.includes(o);
-      return <button type="button" key={o} className={cx('opt', on && 'on')} data-tip={on ? 'Remove “' + o + '”' : 'Add “' + o + '”'}
-        onClick={() => toggle(o)}><span className="ot">{o}</span></button>;
-    })}</div>
-    {!shown.length && <span className="mux-none">Nothing matches “{q}” in this list of {list.length}.</span>}
-  </div>;
+  const ph = f.placeholder && f.placeholder !== '—' ? f.placeholder : '';
+  return <Picker f={f} value={value} onChange={onChange} list={list} multi={multi} studio={studio}
+    placeholder={ph || (multi ? 'Pick whichever apply' : 'Select…')} />;
 }
-
 function Field({ f, value, onChange, error, onFocus, studio, tickets, onOpenRecord, onFindTicket, auto }) {
   const big = f.type === 'textarea' || f.type === 'file' || (f.options && f.options.length > 14) || f.type === 'multiselect' || f.type === 'lookup';
   const wide = f.id === 'title' || f.id === 'summary' || f.id === 'requested_outcome' || f.type === 'textarea' || f.type === 'file';
