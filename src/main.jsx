@@ -25,6 +25,10 @@ import CONSTANTS from './constants.json';
 import { cache as themeCache, themeVars, glyphSvg } from './themes.js';
 import Picker from './picker.jsx';
 import * as X from './export.js';
+import { trainerReport } from './assessments.js';
+import { TrainerReport } from './report.jsx';
+import MomenceActions, { receiptText } from './actions.jsx';
+import { FormHost, FORMS } from './embed.jsx';
 import brandLight from './assets/brand-light-128.png';
 import brandDark from './assets/brand-dark-128.png';
 import './styles.css';
@@ -116,6 +120,8 @@ function App() {
      The panel starts shut, because the desk wants the picture first and the knobs second. */
   const [axF, setAxF] = usePersist('p57.hub.v1.ax', X.emptyFilter());
   const [axOpen, setAxOpen] = usePersist('p57.hub.v1.ax.open', false);
+  /* Which Fillout/Zite ids this device embeds, and what it may do with them. */
+  const [formIds, setFormIds] = usePersist('p57.hub.v1.forms', {});
   const axSetF = (k, v) => setAxF(f => ({ ...f, [k]: f[k] === v && k !== 'status' && k !== 'q' ? '' : v }));
   const axCsv = (name, rows, cols) => { download(name, X.toCsv(rows, cols), 'text/csv');
     toast('Written out', `${rows.length} rows in ${name} — built from the same numbers on screen.`, 'ok'); };
@@ -407,6 +413,13 @@ function App() {
     toast(`${t.number} routed to ${short(t.assignee)}`, `${t.priority.toUpperCase()} · first response by ${fmtAt(t.frDueAt)}`);
   };
   const patch = (id, fn) => setTickets(list => list.map(t => t.id === id ? fn(t) : t));
+  /* A drafted Momence action rides on the ticket: the payload, the endpoint that would take it, and
+     a pending marker. Nothing is posted from a browser, so the receipt is the record. */
+  const applyAction = (id, r) => {
+    patch(id, t => ({ ...t, actions: [r, ...(t.actions || [])],
+      timeline: [{ at: Date.now(), kind: 'action', text: `${r.summary} — drafted for ${r.targetName}` }, ...t.timeline] }));
+    toast('Drafted on the ticket', `${r.summary} · ${r.targetName} · status pending, ref ${r.momenceRef}`, 'ok');
+  };
   const markFR = id => {
     patch(id, t => ({ ...t, firstResponseAt: Date.now(), status: t.status === 'new' ? 'triaged' : t.status,
       timeline: [{ at: Date.now(), kind: 'response', text: `First response sent by ${short(t.assignee)} — FR clock stopped` }, ...t.timeline] }));
@@ -710,6 +723,7 @@ function App() {
                 <label className="checkrow" key={i}><input type="checkbox" readOnly checked={ok} />{txt}</label>)}
             </div>
           </div>}
+      <FormHost id="vendor-callout" overrides={formIds} tight title="Vendor &amp; AMC callout" />
     </aside>
   );
 
@@ -824,6 +838,7 @@ function App() {
         onPickSession={pickClassSession}
         autofill={() => { const f = firstClassSub(); setCaptured(c => ({ ...c, _subKey: f, class_disruption: 'None', class_experience_effect: 'None — ran as designed', class_attendance_match: 'Matches the roll', class_rebooking_intent: 'Not asked', reporter_type: 'Front desk / associate', occurred_relative: 'Just now' })); toast('Filled from Momence', 'The class answers are already on it — add what the room said, then build the ticket.', 'ok'); }}
         onFile={fileFromClassDesk} />
+      {classDeskId && <FormHost id="member-feedback" overrides={formIds} tight title="Send the class feedback form" />}
     </div>
   );
   const attendeeName = id => { const b = classBooking(id); return b ? (b.member ? `${b.member.firstName} ${b.member.lastName}` : String(b.guestName || 'Guest')) : `Attendee ${id}`; };
@@ -846,6 +861,15 @@ function App() {
           if (!sub) { toast('Feedback desk', `No feedback sub-category on this build — ${t.name}’s notes stay on the class desk.`, 'warn'); return; }
           openSub(cat, sub); setData(d => ({ ...d, trainer: t.name, trainer_under_review: 'Yes — coaching note attached' }));
           toast('Feedback started', `Filed against ${t.name} · it lands on the training desk.`, 'ok'); }} />
+      {trainerSel && (() => {
+        const rep = trainerReport(trainerSel, all, (trainerDir || []).find(d => d.name === trainerSel));
+        return <TrainerReport rep={rep} overrides={formIds} now={now}
+          onOpen={id => { setSheet(id); setView('queue'); }}
+          onRaise={name => { setView('triage'); setCat('Trainer Feedback'); setSub(null);
+            /* the one answer the report already knows — the form asks for the rest */
+            setData(d => ({ ...d, trainer_under_review: name }));
+            toast('Trainer filled in', `${name} is set on the form. Pick the sub-category and the behaviour you saw.`, 'ok'); }} />;
+      })()}
     </div>
   );
   const classLog = () => (
@@ -1494,7 +1518,9 @@ function App() {
       onResolve={() => setResolving(t)} onOpenRecord={rec => setRecord(rec)}
       onHandover={async () => { await copy(handover(t, LABELS)); setSheet(null);
         toast('Copied', 'The handover summary for ' + t.number + ' is on your clipboard.', 'ok'); }}
-      onExport={() => { download(`${t.number}.json`, JSON.stringify(t, null, 2)); setSheet(null); }} />; })()}
+      onExport={() => { download(`${t.number}.json`, JSON.stringify(t, null, 2)); setSheet(null); }}
+      extra={<MomenceActions t={t} now={now} onApply={r => applyAction(t.id, r)}
+        onCopy={r => { copy(receiptText(r)); toast('Receipt copied', 'The payload, the endpoint and the reference — ready to paste into the ops thread.', 'ok'); }} />} />; })()}
     {linkFromQueue && (
       <LinkTicketModal tickets={tickets.filter(x => x.id !== linkFromQueue.id)}
         data={{ _subName: linkFromQueue.subCategory }}
@@ -1513,6 +1539,7 @@ function App() {
       momenceStatus={momenceStatus} onTestMomence={testMomence}
       ai={{ key: aiKey, setKey: setAiKey, model: aiModel, setModel: setAiModel, auto: aiAuto, setAuto: setAiAuto,
         mask: maskKey(aiKey), ready: aiReady(aiKey),
+        forms: formIds, setForm: (id, patchForm) => setFormIds(f => ({ ...f, [id]: { ...(f[id] || {}), ...patchForm } })), formDefs: FORMS,
         test: async () => { const t = all[0] || draftTicket(); if (!t) return 'nothing to test against';
           const r = await narrateTicket(t, { key: aiKey, model: aiModel, maxTokens: 90 });
           return r.ok ? `${r.model} answered ${r.words} words in ${(r.ms / 1000).toFixed(1)}s` : (r.error || 'no answer'); } }} />}

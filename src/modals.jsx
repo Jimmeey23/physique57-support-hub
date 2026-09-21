@@ -365,6 +365,23 @@ export function SettingsModal({ onClose, prefs, setPrefs, onTestMomence, momence
             onChange={e => ai?.setAuto(e.target.checked)} /><span>Offer the write-up on every intake form</span></label>
           {aiTest && <p className="hint"><b>{aiTest}</b></p>}
           <p className="hint">A static build cannot keep a secret, so this is a personal key for the desk that uses it. A hosted deployment would move the same call behind a server route, exactly as the reference app does with <span className="mono">credentials(’chatgpt’)</span>.</p></div>
+        <div className="set-block span2"><h5>Fillout · the forms this hub embeds</h5>
+          <p className="hint">Two runtimes: a Fillout form, or a Zite app (a flow, not a form — its own embed script). The id is what comes after <span className="mono">/f/</span> in the share link. Leave it blank and the panel says so instead of loading an empty frame.</p>
+          <div className="forms-grid">{(ai?.formDefs || []).map(f => {
+            const cur = (ai?.forms || {})[f.id] || {};
+            const idv = cur.embedId ?? f.embedId;
+            const kindv = cur.kind || f.kind;
+            return <div className="form-row" key={f.id}>
+              <div className="fr-l"><b>{f.label}</b><em className="xxs mut">{f.note}</em></div>
+              <label><span className="xxs mut">form id</span>
+                <input value={idv || ''} placeholder="e.g. dSw2VkfdGqus" spellCheck="false"
+                  onChange={e => ai?.setForm(f.id, { embedId: e.target.value })} /></label>
+              <div className="seg"><button className={cx('seg', kindv === 'fillout-v1' && 'on')} onClick={() => ai?.setForm(f.id, { kind: 'fillout-v1' })}>fillout</button>
+                <button className={cx('seg', kindv === 'zite-v2' && 'on')} onClick={() => ai?.setForm(f.id, { kind: 'zite-v2' })}>zite</button></div>
+              <span className={cx('fr-dot', idv ? 'on' : '')}>{idv ? 'embeds' : 'link only'}</span>
+            </div>; })}
+          </div>
+        </div>
         <div className="set-block"><h5>Also on the roadmap</h5>
           <div className="intg-list">{[['Mailtrap', 'assignment email to the owner the moment a ticket is created'],
           ['Google Sheets', 'every ticket and status change appended as a row'],
@@ -696,7 +713,7 @@ export function CommandPalette({ items, onClose, onRun }) {
     answer grouped the way the form asked it, the roll if a class was involved, and the actions —
     all on one sheet so nobody re-opens three tabs to answer a member on the phone. */
 export function TicketSheet({ t, story, now, fields = [], all = [], onClose, onRespond, onEscalate,
-  onStatus, onResolve, onOpenRecord, onHandover, onExport }) {
+  onStatus, onResolve, onOpenRecord, onHandover, onExport, extra }) {
   const data = t.data || {};
   const visibleIds = new Set(fields.map(f => f.id));
   const groups = new Map();
@@ -806,6 +823,7 @@ export function TicketSheet({ t, story, now, fields = [], all = [], onClose, onR
             </section>)}
           </div>
           <aside className="ts-side">
+          {extra}
             <div className="sidecard">
               <h5>Lifecycle</h5>
               <div className="ts-spine">

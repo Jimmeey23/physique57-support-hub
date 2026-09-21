@@ -307,12 +307,15 @@ export function handover(t, labels) {
     `SLA ${t.slaLabel}`,
     `Raised ${fmtAt(t.createdAt)}` + (t.data.reporter_name ? ` by ${t.data.reporter_name}${t.data.reporter_type ? ` (${t.data.reporter_type})` : ''}` : ' — reporter not recorded'),
     `Summary: ${t.summary || '—'}`,
+    t.writeup ? `Write-up ${t.writeup}` : '',
     cls ? `Class ${cls.name || ''} · ${cls.studio || ''} · ${cls.startsAt ? fmtAt(new Date(cls.startsAt).getTime()) : ''}\n`
       + `  Roll ${cls.booked ?? 0} booked / ${cls.attended ?? 0} attended / ${cls.absent ?? 0} absent · ${cls.capacity ?? '—'} places`
       + `${cls.waitlist ? ` · ${cls.waitlist} on the waitlist` : ''}${cls.guests ? ` · ${cls.guests} guests` : ''}${cls.overbook ? ` · ${cls.overbook} over capacity` : ''}\n`
       + `  Host ${cls.hostSituation || cls.trainer || '—'} · source ${cls.source || 'demo'}`
       + (cls.attendees?.length ? `\n${cls.attendees.map(a => `  · ${a.name}${a.status ? ` — ${a.status}` : ''}${(a.actions || []).length ? ` (${a.actions.join(', ')})` : ''}${a.note ? `: ${String(a.note).slice(0, 110)}` : ''}`).join('\n')}` : '') : '',
     rows.length ? `Fields:\n${rows.join('\n')}` : '',
+    /* the resolutions drafted but not yet pushed to Momence — a promise the next shift must be able to see */
+    (t.actions || []).length ? `Momence drafts:\n${t.actions.map(x => `  ${x.summary} (${x.status} · ${x.momenceRef})`).join('\n')}` : '',
   ].filter(Boolean).join('\n');
 }
 

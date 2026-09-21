@@ -58,9 +58,13 @@ fs.writeFileSync(entry, [
   `import { ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing } from '${SRC}/modals.jsx';`,
   `import * as AI from '${SRC}/ai.js';`,
   `import * as AX from '${SRC}/export.js';`,
+  `import * as AS from '${SRC}/assessments.js';`,
+  `import { MomenceActions, actionList, receiptText, RECEIPT_STATES, CREDIT_REASONS } from '${SRC}/actions.jsx';`,
+  `import { TrainerReport } from '${SRC}/report.jsx';`,
+  `import { FilloutEmbed as FE, FormHost as FH, FORMS as EMBED_FORMS, formById, directLink, EMBED_SRC as EMBED_SRC2 } from '${SRC}/embed.jsx';`,
   `import { buildOrg, viewerOptions, resolutionRights, managerOf, upline, directReports, personCard, ownershipLine, cleanName, roleOf } from '${SRC}/org.js';`,
   `import { resolutionDraft, resolutionGaps, resolutionChecks, REQUIRED_RES } from '${SRC}/resolution.jsx';`,
-  `globalThis.__X = { App, CORE, FORMS, UI, COND, MOM, LK, AI, AX, ORG: { buildOrg, viewerOptions, resolutionRights, managerOf, upline, directReports, personCard, ownershipLine, cleanName, roleOf }, RESF: { resolutionDraft, resolutionGaps, resolutionChecks, REQUIRED_RES }, MODALS: { RecordModal, LookupControl, LookupModal, ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing, AttendeeRoster } };`,
+  `globalThis.__X = { App, CORE, FORMS, UI, COND, MOM, LK, AI, AX, AS, EMB: { FilloutEmbed: FE, FormHost: FH, FORMS: EMBED_FORMS, formById, directLink, EMBED_SRC: EMBED_SRC2 }, ACT: { MomenceActions, actionList, receiptText, RECEIPT_STATES, CREDIT_REASONS }, TRPT: { TrainerReport }, ORG: { buildOrg, viewerOptions, resolutionRights, managerOf, upline, directReports, personCard, ownershipLine, cleanName, roleOf }, RESF: { resolutionDraft, resolutionGaps, resolutionChecks, REQUIRED_RES }, MODALS: { RecordModal, LookupControl, LookupModal, ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing, AttendeeRoster } };`,
 ].join('\n'));
 await build({ entryPoints: [entry], bundle: true, format: 'esm', platform: 'node', outfile: path.join(TMP, 'bundle.mjs'),
   jsx: 'automatic', plugins: [nodeMap], external: ['react', 'react-dom', 'react/jsx-runtime'], logLevel: 'error',
@@ -83,7 +87,7 @@ document.execCommand = () => true;
 globalThis.URL.createObjectURL = () => 'blob:x'; globalThis.URL.revokeObjectURL = () => {};
 
 await import(path.join(TMP, 'bundle.mjs'));
-const { App, CORE: C, FORMS: F, UI, COND: K, MOM, LK, MODALS, AI, AX, ORG, RESF } = globalThis.__X;
+const { App, CORE: C, FORMS: F, UI, COND: K, MOM, LK, MODALS, AI, AX, ORG, RESF, AS, EMB, ACT, TRPT } = globalThis.__X;
 const textsSpaced = () => '';
 C.hydrateData();
 const D = DATA;
@@ -784,6 +788,190 @@ t('every name is stripped of its role and its joint-holder tail',
   t('the weekly note never writes “undefined studios” or a placeholder it could not fill',
     rep.split('\n').length >= 6 && /Physique 57/.test(rep) && /₹/.test(rep) && !/undefined|NaN|\[object/.test(rep) && /across \d+ studio/.test(rep)
     && /\d/.test(rep) && !/<[a-z]/.test(rep), `${rep.split('\n').length} lines · ${rep.length} chars`);
+}
+
+/* count a class or a raw fragment in rendered markup — used by the render checks below */
+const qCount = (h, cls) => (h.match(new RegExp((cls.includes('<') || cls.includes('=') ? '' : 'class="[^"]*') + cls + (cls.includes('<') || cls.includes('=') ? '' : '(?![\\w-])'), 'g')) || []).length;
+
+/* ---------- trainer reviews, embeds and the action centre ---------- */
+console.log('\n\x1b[1m▸ TRAINER REVIEWS · EMBEDS · THE ACTION CENTRE\x1b[0m');
+{
+  const rvTk = (n, over = {}) => ({
+    id: 'rv' + n, number: 'P57-2026-' + (900 + n), category: 'Trainer Feedback',
+    subCategory: 'Trainer Forgot Names', studio: 'Kwality House, Kemps Corner',
+    status: 'resolved', createdAt: new Date(Date.UTC(2026, 7, 1 + n)).toISOString(),
+    assignee: 'Anisha Shah (Master Trainer)', title: 'Coach lost the room',
+    data: { trainer_under_review: 'Anisha Shah', trainer_rating: '4', trainer_sentiment: 'Happy',
+      trainer_feedback_type: 'Cueing and hands-on', trainer_action_now: 'Spoke to the trainer after class',
+      trainer_review_cycle: 'Add to next 1:1', method_conformance: 'Partly', summary: 'Members left unsure of the last block',
+      improvements: 'Say the name before the cue', ...over.data },
+    ...(over.t || {}),
+  });
+  const pool = [rvTk(1), rvTk(2, { data: { trainer_rating: '2', trainer_sentiment: 'Annoyed' } }),
+    rvTk(3, { data: { trainer_rating: '5', trainer_sentiment: 'Very happy', trainer_feedback_type: 'Encouragement' } }),
+    rvTk(4, { data: { trainer_under_review: 'Pushyank Nahar' } }),
+    rvTk(5, { data: { trainer_rating: '', trainer_sentiment: '' } })];
+
+  t('a band is a threshold, not a mood', AS.bandOf(95).band === 'Exceptional' && AS.bandOf(90).band === 'Exceptional'
+    && AS.bandOf(89).band === 'Good' && AS.bandOf(60).band === 'Poor' && AS.bandOf(59).band === 'Needs help'
+    && AS.bandOf(null).band === 'Unscored', [95, 90, 89, 60, 59, null].map(v => AS.bandOf(v).band).join(' · '));
+  t('the stars decide, the mood adjusts them, and neither is invented when absent',
+    AS.scoreOf({ rating: 5, sentiment: 'Very happy' }) === 100 && AS.scoreOf({ rating: 4, sentiment: 'Happy' }) === 82
+    && AS.scoreOf({ rating: 5 }) === 100 && AS.scoreOf({ sentiment: 'Neutral' }) === 70
+    && AS.scoreOf({ rating: 1, sentiment: 'Angry' }) === 21 && AS.scoreOf({}) === null,
+    `5+happy ${AS.scoreOf({ rating: 5, sentiment: 'Very happy' })} · 4+happy ${AS.scoreOf({ rating: 4, sentiment: 'Happy' })} · 1+angry ${AS.scoreOf({ rating: 1, sentiment: 'Angry' })} · nothing ${AS.scoreOf({})}`);
+  t('a ticket that reports a class problem cannot read as good, whatever the stars said',
+    AS.scoreOf({ rating: 5, sentiment: 'Very happy', hasClassIssue: true }) === 69
+    && AS.scoreOf({ rating: 4, sentiment: 'Happy', hasClassIssue: true }) === 69
+    && AS.scoreOf({ rating: 2, sentiment: 'Annoyed', hasClassIssue: true }) === 44,
+    `5/5 happy with a class issue reads ${AS.scoreOf({ rating: 5, sentiment: 'Very happy', hasClassIssue: true })}`);
+  const allR = ['', '1', '2', '3', '4', '5'], allS = DATA.vocab['g:trainer:trainer_sentiment'];
+  const scores = []; for (const r of allR) for (const sv of allS) for (const ci of [false, true]) { const v = AS.scoreOf({ rating: AS.num(r), sentiment: sv, hasClassIssue: ci }); if (v != null) scores.push(v); }
+  t('no combination of the real vocabularies leaves the 0–100 band, and every mood the form offers is known',
+    scores.length === 96 && Math.min(...scores) >= 0 && Math.max(...scores) <= 100
+    && allS.every(sv => AS.SENTIMENT_SCORE[sv] != null) && allS.length === 8,
+    `${scores.length} scored pairs · ${Math.min(...scores)}–${Math.max(...scores)}`);
+
+  t('a review is any ticket naming a coach — not a category guess',
+    AS.isReviewTicket(pool[0]) && !AS.isReviewTicket({ data: { studio: 'Kwality House' }, category: 'Billing' })
+    && AS.isReviewTicket({ data: { trainer: 'Rohan Dahima' } }), 'trainer_under_review · trainer · category');
+  const anisha = AS.reviewsFrom(pool, 'Anisha Shah');
+  t('reviews are matched on the name, and newest first',
+    anisha.length === 4 && anisha.every(r => r.trainer === 'Anisha Shah')
+    && anisha[0].id === 'rv5' && anisha[3].id === 'rv1' && anisha.filter(r => r.score != null).length === 3,
+    `${anisha.length} for Anisha · ${anisha.filter(r => r.score != null).length} scored · first ${anisha[0].id}`);
+  const r1 = anisha.find(r => r.id === 'rv1');
+  t('a review carries who said it, where, what was done, and the answers behind it',
+    r1.rating === 4 && r1.sentiment === 'Happy' && r1.score === 82 && r1.band === 'Good'
+    && r1.evaluator === 'Front desk' && /Kwality/.test(r1.studio) && /Spoke to the trainer/.test(r1.action)
+    && r1.answers.length >= 6 && r1.sourceRef === 'P57-2026-901',
+    `${r1.rating}/5 · ${r1.score}/100 · ${r1.answers.length} answers kept`);
+  t('the unscored review is carried, not dropped, and says it is unscored',
+    anisha[0].score === null && anisha[0].unscored === true && anisha[0].band === 'Unscored',
+    anisha[0].band);
+
+  const rep = AS.trainerReport('Anisha Shah', pool, { name: 'Anisha Shah', role: 'Master Trainer', studios: ['Kwality House, Kemps Corner'] });
+  t('the report averages the scored reviews and counts the rest separately',
+    rep.scored.length === 3 && rep.unscored === 1
+    && rep.avgScore === Math.round(rep.scored.reduce((n, r) => n + r.score, 0) / rep.scored.length) && rep.avgScore === 75,
+    `${rep.avgScore} over ${rep.scored.length} · band ${rep.band}`);
+  t('needs are the honest filter, not a sort guess',
+    rep.needs.length >= 1 && rep.needs.every(r => (r.score != null && r.score < 70) || ['critical', 'high'].includes(r.priority) || r.status !== 'resolved'),
+    rep.needs.map(r => `${r.id} ${r.score}`).join(' · '));
+  const rub = rep.rubric;
+  t('the rubric counts the parts of the method that were actually mentioned',
+    rub.length === 2 && rub.every(r => r.n >= 1 && r.pct > 0 && r.pct <= 100 && r.weightage === 100)
+    && rub.reduce((n, r) => n + r.n, 0) === 3 && rub[0].pct <= rub[rub.length - 1].pct,
+    rub.map(r => `${r.category} ${r.score}/100 ×${r.n}`).join(' · '));
+  t('strengths are the blocks at 80 and over, levers everything under it',
+    rep.strengths.every(x => x.avg >= 80) && rep.levers.every(x => x.avg < 80)
+    && (rep.strengths.length + rep.levers.length) === 2 && rep.levers[0].label === 'Cueing and hands-on',
+    `${rep.strengths.map(x => x.label).join(', ')} / ${rep.levers.map(x => x.label).join(', ')}`);
+  t('the window is split at the ends so movement means something',
+    rep.trajectory.length === 3 && rep.delta === rep.trajectory[2].score - rep.trajectory[0].score && rep.delta === 18,
+    `${rep.trajectory.map(p => p.score).join(' → ')} · Δ ${rep.delta}`);
+  t('evaluators, studios and moods are counted from the same four reviews',
+    rep.evaluators.length === 1 && rep.evaluators[0].n === 4 && Object.keys(rep.sentiment).length === 4
+    && rep.studiosM.length === 1 && rep.studiosM[0].n === 4
+    && Object.values(rep.cycles).reduce((a, b) => a + b, 0) === 4 && Object.values(rep.actions).reduce((a, b) => a + b, 0) === 4,
+    `${rep.evaluators[0].n} reviews · ${Object.keys(rep.sentiment).length} moods · ${Object.keys(rep.cycles).length} cycle`);
+  const digest = AS.reviewDigest(rep);
+  t('the plain-text digest reads as a sentence and fills every number it quotes',
+    /Anisha Shah/.test(digest) && /3 scored reviews/.test(digest) && /average 75\/100 \(Average\)/.test(digest)
+    && /\+18 across the window/.test(digest) && /1 review carry a comment but no score/.test(digest)
+    && /Weakest block: Cueing and hands-on — 63\/100 across 2 scored of 3 that named it/.test(digest) && !/undefined|NaN|\[object/.test(digest) && digest.split('\n').length === 4,
+    digest.replace(/\n/g,' ⏎ '));
+  const empty = AS.trainerReport('Nobody Here', pool, null);
+  t('a name with nothing filed is reported as nothing, not as zero',
+    empty.reviews.length === 0 && empty.avgScore == null && empty.band === 'Unscored' && empty.needs.length === 0
+    && empty.trajectory.length === 0 && empty.delta === 0 && /0 scored reviews · nothing scored yet/.test(AS.reviewDigest(empty))
+    && /No block stands out as weak\./.test(AS.reviewDigest(empty)), AS.reviewDigest(empty).split('\n')[0]);
+  const live = C.seed(DATA, 40);
+  const anyName = (live.find(t2 => t2.data?.trainer_under_review)?.data.trainer_under_review
+    || live.find(t2 => t2.data?.trainer)?.data?.trainer || 'Anisha Shah');
+  const liveRep = AS.trainerReport(anyName, live, null);
+  t('run over the seeded board it stays arithmetic — no score it cannot show its working for',
+    liveRep.reviews.every(r => r.score == null || (r.score >= 0 && r.score <= 100))
+    && (liveRep.avgScore == null || (liveRep.avgScore >= 0 && liveRep.avgScore <= 100))
+    && !/undefined|NaN/.test(AS.reviewDigest(liveRep)), `${liveRep.reviews.length} reviews read for ${anyName}`);
+
+  /* ── the embeds ── */
+  t('both Fillout runtimes are known, and each id type is a different script',
+    Object.keys(EMB.EMBED_SRC).length === 2 && /embed\/v1\/$/.test(EMB.EMBED_SRC['fillout-v1'])
+    && /v2-zite\/$/.test(EMB.EMBED_SRC['zite-v2']) && EMB.EMBED_SRC['fillout-v1'] !== EMB.EMBED_SRC['zite-v2'],
+    Object.values(EMB.EMBED_SRC).join(' · '));
+  t('four forms, four ids, four reasons they exist',
+    EMB.FORMS.length === 4 && new Set(EMB.FORMS.map(f => f.id)).size === 4 && EMB.FORMS.every(f => /^[A-Za-z0-9]{10,}$/.test(f.embedId))
+    && EMB.FORMS.every(f => f.height >= 400 && f.note.length > 60), EMB.FORMS.map(f => f.id).join(' · '));
+  t('a device can replace an id or switch the runtime, per form',
+    EMB.formById('trainer-qa', { 'trainer-qa': { embedId: 'zzz', kind: 'zite-v2' } }).embedId === 'zzz'
+    && EMB.formById('trainer-qa').embedId === 'syTsvPww8nus' && EMB.formById('trainer-qa').kind === 'fillout-v1'
+    && EMB.formById('nope-on-purpose').id === 'member-feedback' && EMB.formById('trainer-qa', {}).note === EMB.FORMS[1].note,
+    'override · default · fallback to the first form');
+  t('the direct link matches the runtime, so a blocked frame still has a way in',
+    EMB.directLink('fillout-v1', 'abc').startsWith('https://fillout.com/f/')
+    && EMB.directLink('zite-v2', 'abc').startsWith('https://app.zite.com/flow/'), EMB.directLink('zite-v2', 'abc'));
+  const fxHtml = RNS2.renderToString(React.createElement(EMB.FormHost, { id: 'trainer-qa', overrides: { 'trainer-qa': { embedId: '' } } }));
+  t('an unconfigured form says so and shows the shape it would take',
+    /fhost/.test(fxHtml) && /unconfigured/.test(fxHtml) && /No id saved/.test(fxHtml) && !/data-fillout-id/.test(fxHtml)
+    && /Open in Fillout/.test(fxHtml) && /skeleton-line/.test(fxHtml), 'ghost state, no script for an empty id');
+  const feHtml = RNS2.renderToString(React.createElement(EMB.FilloutEmbed, { embedId: 'syTsvPww8nus', height: 500 }));
+  const zeHtml = RNS2.renderToString(React.createElement(EMB.FilloutEmbed, { embedId: 'srq1c6n7br', kind: 'zite-v2', height: 500 }));
+  t('the host element carries the id and the attribute the right script looks for',
+    /data-fillout-id="syTsvPww8nus"/.test(feHtml) && /skeleton-line/.test(feHtml) && !/data-zite-id/.test(feHtml)
+    && /data-zite-id="srq1c6n7br"/.test(zeHtml) && /zite-embed-type/.test(zeHtml), 'fillout attrs · zite attrs');
+
+  /* ── the action centre ── */
+  t('the four actions are the four the schema supports, each with its endpoint',
+    ACT.actionList(true, true).length === 4 && ACT.actionList(true, true).every(a => a.fields.length >= 2)
+    && ACT.actionList(true, true).every(a => /^(GET|POST|PUT|DELETE) /.test(a.endpoint) && a.endpoint.includes('/api/v2/host/')),
+    ACT.actionList(true, true).map(a => `${a.id} → ${a.endpoint.split(' ')[1].replace('/api/v2/host', '')}`).join(' · ').slice(0, 96));
+  t('the endpoints are the hub’s own table, not strings copied into a panel',
+    ACT.actionList(true, true).every(a => Object.values(MOM.ENDPOINTS).includes(a.endpoint)), 'verbatim from ENDPOINTS');
+  t('nothing can be applied without a member or a class — the panel says which',
+    ACT.actionList(false, false).every(a => !a.needs) && ACT.actionList(true, false).filter(a => a.needs).map(a => a.id).join() === 'credit,freeze,note'
+    && ACT.actionList(true, true).find(a => a.id === 'substitute').needs === true, 'credit,freeze,note need the member · substitute needs the class');
+  const realMember = MOM.listMomence('members', { pageSize: 1 }).items?.[0]?.id;
+  const tMember = { ...pool[0], number: 'P57-2026-777', linked: { member: { id: realMember } }, assignee: 'Anisha Shah', actions: [] };
+  const amHtml = RNS2.renderToString(React.createElement(ACT.MomenceActions, { t: tMember }));
+  t('the centre reads the member through the one detail call and shows what it found',
+    /mact-profile/.test(amHtml) && new RegExp(String(realMember)).test(amHtml) && /membership/.test(amHtml)
+    && qCount(amHtml, 'mxa') >= 4 && /read-only/.test(amHtml.toLowerCase()), `member #${realMember} read through detailMomence`);
+  const anHtml = RNS2.renderToString(React.createElement(ACT.MomenceActions, { t: { ...tMember, linked: null, data: {} } }));
+  t('with no member linked it refuses to invent one',
+    /no member on this ticket/.test(anHtml) && /will not credit an invented account/.test(anHtml)
+    && (anHtml.match(/disabled=""/g) || []).length >= 3 && !/mact-profile/.test(anHtml),
+    `${(anHtml.match(/disabled=""/g) || []).length} rows disabled`);
+  const rcp = { id: 'r1', action: 'credit', targetType: 'member', targetId: String(realMember), targetName: 'Rhea Shah',
+    summary: 'Give the class credits back — 2 classes', details: { count: 2 }, performedAt: new Date().toISOString(),
+    performedBy: 'Anisha Shah', status: 'pending', momenceRef: 'credit:P57-2026-777', ticket: 'P57-2026-777' };
+  const arHtml = RNS2.renderToString(React.createElement(ACT.MomenceActions, { t: { ...tMember, actions: [rcp] }, onCopy: () => {} }));
+  t('a drafted action is a receipt on the ticket: state, ref, who, when',
+    qCount(arHtml, 'mxr') === 1 && /pending/.test(arHtml) && /credit:P57-2026-777/.test(arHtml)
+    && /Rhea Shah/.test(arHtml) && ACT.RECEIPT_STATES.every(st => arHtml.includes(st)) && /Copy/.test(arHtml),
+    ACT.RECEIPT_STATES.join(' → '));
+  const rt = ACT.receiptText(rcp);
+  t('and the same receipt reads as a message to a member without a JSON brace in it',
+    /P57-2026-777/.test(rt) && /Status: pending/.test(rt) && !/\{|undefined|NaN/.test(rt) && rt.split('\n').length >= 5,
+    rt.replace(/\n/g, ' ⏎ ').slice(0, 88) + '…');
+  t('the handover carries the drafted actions too, so a promise survives the shift',
+    /Momence drafts/.test(C.handover({ ...tMember, actions: [rcp] })) && /credit:P57-2026-777/.test(C.handover({ ...tMember, actions: [rcp] })),
+    (C.handover({ ...tMember, actions: [rcp] }).match(/Momence drafts[\s\S]{0,60}/) || [''])[0].replace(/\n/g, ' ⏎ '));
+
+  /* ── the report on screen ── */
+  const trHtml = RNS2.renderToString(React.createElement(TRPT.TrainerReport,
+    { rep, now: Date.now(), overrides: {}, onOpen: () => {}, onRaise: () => {} }));
+  t('the trainer report renders its eight numbered sections with the numbers in them',
+    qCount(trHtml, 'tr-sect') === 8 && /Anisha Shah/.test(trHtml) && new RegExp(String(rep.avgScore)).test(trHtml)
+    && /tr-digest/.test(trHtml) && /75\/100|75/.test(trHtml) && !/undefined|\[object|>NaN</.test(trHtml),
+    `${qCount(trHtml, 'tr-sect')} sections · ${(trHtml.length / 1024).toFixed(1)} kB`);
+  t('and it ends where the desk picks up — the QA form embedded, tickets openable, a new note raisable',
+    /fhost/.test(trHtml) && /Open ticket/.test(trHtml) && /Log feedback about/.test(trHtml)
+    && /data-fillout-id="syTsvPww8nus"/.test(trHtml), 'section eight hands over to the Fillout assessment');
+  const trEmpty = RNS2.renderToString(React.createElement(TRPT.TrainerReport, { rep: empty, now: Date.now(), onRaise: () => {} }));
+  t('a coach with nothing filed still gets the numbered page, said as nothing, with the form to fix that',
+    qCount(trEmpty, 'tr-sect') === 7 && /Nothing|empty/.test(trEmpty) && !/undefined|NaN/.test(trEmpty)
+    && /fhost/.test(trEmpty) && /Nobody Here/.test(trEmpty), `${qCount(trEmpty, 'tr-sect')} sections · ${(trEmpty.length / 1024).toFixed(1)} kB of honest emptiness`);
 }
 const tot = `\x1b[1m${pass} passed, ${fail} failed\x1b[0m`;
 console.log(`\n${fail ? '\x1b[41m\x1b[37m FAIL \x1b[0m' : '\x1b[42m\x1b[30m OK \x1b[0m'}  ${tot}\n`);

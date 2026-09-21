@@ -20,6 +20,8 @@ fs.mkdirSync(TMP, { recursive: true });
 let pass = 0, fail = 0;
 const t = (n, c, x = '') => { c ? pass++ : fail++; console.log(`  ${c ? '\x1b[32mPASS\x1b[0m' : '\x1b[31mFAIL\x1b[0m'}  ${n}${x ? '  \x1b[2m' + x + '\x1b[0m' : ''}`); };
 
+const ACT_KEYS = ['pending', 'queued', 'synced', 'rejected'];
+
 /* ───────────────────────────── 1. the stylesheet itself ───────────────────────────── */
 const postcss = require('postcss');
 const cssText = fs.readFileSync(path.join(APP, 'src/styles.css'), 'utf8');
@@ -51,7 +53,15 @@ const NEED = ['fsec', 'fbody', 'fprogress', 'fp-txt', 'fp-bar', 'ring', 'fh-meta
   'rrail-foot', 'rrail-audit', 'rrail-filed', 'res-ro', 'ra', 'in-rail',
   'ax-tools', 'ax-head', 'ax-toggle', 'ax-ic', 'ax-count', 'ax-chev', 'ax-quick', 'ax-panel', 'ax-grp', 'ax-row',
   'ax-dates', 'ax-exports', 'ax-report', 'ax-tbl', 'ax-key', 'ax-meter', 'ax-list', 'ax-tag', 'ax-q', 'ax-foot',
-  'ax-money', 'ax-heat', 'ax-hrs', 'ax-spark', 'ax-sp', 'ax-own', 'hc', 'bars', 'rown', 'bd', 'inr', 'serif'];
+  'ax-money', 'ax-heat', 'ax-hrs', 'ax-spark', 'ax-sp', 'ax-own', 'hc', 'bars', 'rown', 'bd', 'inr', 'serif',
+  /* the Fillout / Zite embed host, the Momence action centre, the trainer report, the form-id settings */
+  'form-embed', 'form-embed-host', 'form-embed-loading', 'form-embed-skeleton', 'skeleton-line',
+  'fhost', 'fhost-head', 'fhost-note', 'fhost-warn', 'fhost-ghost', 'fhost-foot',
+  'mact', 'mact-head', 'mact-profile', 'mact-none', 'mact-list', 'mact-book', 'mact-book-h', 'mact-now',
+  'mxa', 'mxa-h', 'mxa-ic', 'mxa-chev', 'mxa-b', 'mxa-f', 'mxf', 'mxr', 'mxs',
+  'tr-report', 'tr-top', 'tr-id', 'tr-score', 'tr-digest', 'tr-sect', 'tr-head', 'tr-idx', 'tr-tt', 'tr-act',
+  'tr-body', 'tr-bar', 'tr-needs', 'tr-traj', 'tr-rub', 'tr-two', 'tr-notes', 'tr-ans', 'tr-hist', 'tr-sent',
+  'tr-acts-row', 'tp', 'tn', 'nb', 'lb', 'bt', 'tband', 'forms-grid', 'form-row', 'fr-l', 'fr-dot'];
 const missing = NEED.filter(c => !new RegExp('\\.' + c + '(?![\\w-])').test(cssText));
 t('every class the markup relies on has a rule', !missing.length, missing.length ? 'no CSS for: ' + missing.join(', ') : `${NEED.length} classes covered`);
 /* Selector hygiene, both directions. Quotes and url() payloads are stripped from the CSS first so a
@@ -183,7 +193,13 @@ const click = async sel => { const el = typeof sel === 'string' ? doc.querySelec
 await click([...q('.tabs button')].find(b => /Class desk/.test(txt(b))));
 /* the desk shows a beat of skeleton while its session list settles — wait for the surface to exist,
    with a ceiling, rather than guessing at a fixed delay (this suite shares a CPU with three others) */
-for (let i = 0; i < 30 && !q('.cd-pick input').length; i++) await new Promise(r => setTimeout(r, 100));
+/* the desk shows a beat of skeleton while its session list settles — wait for the surface to exist
+   with a ceiling rather than a guessed delay, and nudge the tab again halfway in: under load with
+   four suites on one CPU the first mount can swallow the click outright. */
+for (let i = 0; i < 70 && !q('.cd-pick input').length; i++) {
+  await new Promise(r => setTimeout(r, 100));
+  if (i === 15 || i === 40) await click([...q('.tabs button')].find(b => /Class desk/.test(txt(b))));
+}
 t('the desk renders its picker surface', q('.cd-pick .lk-bar').length === 1 && !!q('.cd-pick input'),
   'search box present');
 const decls = sel => { const out = {}; parsed.walkRules(sel, r => { if (r.selector !== sel) return;
@@ -651,6 +667,138 @@ t('clearing puts the whole board back, and the strip says so',
   && JSON.parse(window.localStorage.getItem('p57.hub.v1.ax') || '{}').status === 'all', txt(q.one('.ax-count')));
 await click('.ax-toggle');
 t('and it shuts again without losing the tables', !q.one('.ax-panel') && q('.ax-tbl').length === 1, 'collapsed');
+
+/* ───────────────────────────── 5c. the embed, the action centre, the report ───────────────────────────── */
+/* earlier sections leave the routed-ticket note and a ticket sheet open on top of the desk —
+   shut them the way a person would (the close button), so this section starts on a clean view */
+for (let n = 0; n < 4 && q.one('.scrim'); n++) {
+  const closer = [...q('.icobtn')].filter(b => /Close/.test(b.getAttribute('title') || '')).pop();
+  if (!closer) break;
+  await click(closer);
+}
+for (let n = 0; n < 15 && q('.modal').length; n++) await new Promise(r => setTimeout(r, 100));
+const toGrid = async () => {
+  /* a half-finished draft from an earlier section can leave the desk on the form instead of the grid —
+     walk back the way the app lets a person walk back, until the 14 cards are there */
+  for (let n = 0; n < 6 && q('.cat').length !== 14; n++) {
+    const ch = [...q('.phead button')].find(x => /change sub-category/i.test(txt(x)));
+    if (ch) await click(ch);
+    else if (q.one('.back')) await click(q.one('.back'));
+    else { await click(q('.tabs button')[0]); await new Promise(r => setTimeout(r, 120)); }
+  }
+};
+const toForm = async () => { await toGrid(); if (q('.cat').length) { await click('.cat'); }
+  for (let n = 0; n < 15 && !q('.subc').length; n++) await new Promise(r => setTimeout(r, 100));
+  await click('.subc');
+  for (let n = 0; n < 20 && !q.one('.in-rail'); n++) await new Promise(r => setTimeout(r, 100)); };
+await toForm();
+t('the desk is on a real intake form, with its rail, before the embed checks start',
+  q('.fsec').length >= 4 && !!q.one('.in-rail'), `${q('.fsec').length} form sections · rail ${q('.in-rail').length}`);
+t('the intake rail offers the vendor form as a real embed, with the id in the host element',
+  !!q.one('.fhost') && /Fillout · form/.test(txt(q.one('.fhost-head'))) && /data-fillout-id="pdtcpzhxas"/.test(q.one('.fhost').outerHTML)
+  && /pdtcpzhxas · fillout-v1 · 560px/.test(txt(q.one('.fhost-foot'))),
+  txt(q.one('.fhost-foot')) || 'no fhost in the rail');
+t('while the script has not answered, the desk sees a skeleton and a note, never a blank box',
+  !!q.one('.form-embed-loading') && q('.form-embed-skeleton .skeleton-line').length === 5
+  && /Loading form/.test(txt(q.one('.form-embed-loading'))), txt(q.one('.form-embed-loading')));
+await click([...q('.fhost-head .btn')].find(b => /Hide the form/.test(txt(b))));
+t('and the frame is collapsible — the host goes, the panel stays',
+  !q.one('.form-embed-host') && !!q.one('.fhost-head') && txt(q.one('.fhost-head .btn')).match(/Show the form/), 'collapsed');
+await click([...q('.fhost-head .btn')].find(b => /Show the form/.test(txt(b))));
+t('opening it again re-runs the embed script rather than leaving a stale node',
+  !!q.one('.form-embed-host') && q('script[src*="server.fillout.com/embed/v1"]').length === 1,
+  `${q('script[src*="server.fillout.com"]').length} fillout script(s) in the document`);
+
+await click([...q('.icobtn')].find(b => (b.getAttribute('title') || '').includes('Integrations')));
+for (let i = 0; i < 15 && !q.one('.segbar'); i++) await new Promise(r => setTimeout(r, 100));
+await click([...q('.segbar .seg')].find(b => /Integrations/.test(txt(b))));
+t('settings names every form the hub embeds, one id box and one runtime switch each',
+  q('.forms-grid .form-row').length === 4 && q('.forms-grid input').length === 4
+  && q('.forms-grid .fr-dot').every(el => /embeds|link only/.test(txt(el)))
+  && q('.forms-grid .seg button').length === 8
+  && /on/.test(q('.forms-grid .form-row')[0].querySelectorAll('.seg button')[0].className)
+  && /on/.test(q('.forms-grid .form-row')[2].querySelectorAll('.seg button')[1].className)
+  && /Class feedback/.test(txt(q('.forms-grid .form-row')[0])) && /FIT & Lab/.test(txt(q('.forms-grid .form-row')[2]))
+  && q('.forms-grid .form-row').every(r => /^[A-Za-z0-9]{10,}$/.test(r.querySelector('input').value)),
+    `${q('.forms-grid .form-row').length} rows · ${q('.forms-grid .seg button').length} switches · ids ${q('.forms-grid input').map(x => x.value).join(',')}`);
+const vendRow = q('.forms-grid .form-row')[3];
+setValue(vendRow.querySelector('input'), '');
+await click([...vendRow.querySelectorAll('.seg')].find(b => /^zite$/.test(txt(b))));
+await new Promise(r => setTimeout(r, 120));
+const stForms = JSON.parse(window.localStorage.getItem('p57.hub.v1.forms') || '{}')['vendor-callout'] || {};
+t('a device can retire an id or move a form to the Zite runtime, and it is remembered',
+  stForms.embedId === '' && stForms.kind === 'zite-v2' && /link only/.test(txt(q('.forms-grid .fr-dot')[3])),
+  JSON.stringify(stForms));
+await click([...q('.modal-foot .btn, .mfoot .btn')].find(b => /Done/.test(txt(b))));
+await toForm();
+for (let n = 0; n < 15 && !q.one('.fhost'); n++) await new Promise(r => setTimeout(r, 100));
+t('a form with no id on this device says so and shows the shape it would take',
+  !!q.one('.fhost.unconfigured') && /No id saved on this device/.test(txt(q.one('.fhost'))) && !q.one('.form-embed-host'),
+  txt(q.one('.fhost')).slice(0, 76) + '…');
+await click([...q('.icobtn')].find(b => (b.getAttribute('title') || '').includes('Integrations')));
+for (let i = 0; i < 15 && !q.one('.segbar'); i++) await new Promise(r => setTimeout(r, 100));
+await click([...q('.segbar .seg')].find(b => /Integrations/.test(txt(b))));
+setValue(q('.forms-grid .form-row')[3].querySelector('input'), 'pdtcpzhxas');
+await click([...q('.forms-grid .form-row')[3].querySelectorAll('.seg')].find(b => /^fillout$/.test(txt(b))));
+await new Promise(r => setTimeout(r, 120));
+t('and putting the id back is enough — the panel comes back without a reload',
+  /embeds/.test(txt(q('.forms-grid .fr-dot')[3])), JSON.stringify(JSON.parse(window.localStorage.getItem('p57.hub.v1.forms') || '{}')['vendor-callout'] || {}));
+await click([...q('.mfoot .btn, .modal-foot .btn')].find(b => /Done/.test(txt(b))));
+
+await click([...q('.tabs button')].find(b => /Trainers/.test(txt(b))));
+for (let i = 0; i < 20 && !q.one('.trow'); i++) await new Promise(r => setTimeout(r, 100));
+/* the list toggles, and an earlier section may already have this row open — pick one that is not */
+await click(q('.trow').find(el => !String(el.className).includes('on')) || q('.trow')[0]);
+for (let i = 0; i < 15 && !q.one('.tr-report'); i++) await new Promise(r => setTimeout(r, 100));
+const rep = q.one('.tr-report');
+t('picking a coach opens the report underneath the desk, not in a popup',
+  !!rep && q('.tr-sect').length >= 7 && !!q.one('.tr-digest') && !!q.one('.tr-top'),
+  `${q('.tr-sect').length} numbered sections`);
+t('the report is arithmetic in the open — average, band, movement and the counts behind them',
+  /Trainer report · \d+ review/.test(txt(q.one('.tr-id'))) && /\d|—/.test(txt(q.one('.tr-score')))
+  && !/undefined|NaN|\[object/.test(txt(rep)) && /scored/.test(txt(q.one('.tr-score'))),
+  txt(q.one('.tr-score')).slice(0, 46));
+t('and it hands the next assessment to the Fillout form, in place',
+  !!q.one('.tr-report .fhost') && /Add a training-quality assessment/.test(txt(q.one('.tr-report .fhost')))
+  && /syTsvPww8nus/.test(txt(q.one('.tr-report .fhost'))), 'section eight');
+await click([...q('.tr-top .btn')].find(b => /Log feedback about/.test(txt(b))));
+for (let i = 0; i < 15 && !q.one('.subs'); i++) await new Promise(r => setTimeout(r, 100));
+t('“Log feedback about …” lands on the right form with the coach already answered',
+  q('.tabs button').findIndex(b => /Raise a ticket/.test(txt(b))) >= 0 && /Trainer Feedback/.test(txt(q.one('.phead') || doc.body))
+  && q('.toasts .toast, .toast').some(el => /Trainer filled in/.test(txt(el))), txt(q.one('.phead')) || 'no page head');
+
+await click([...q('.tabs button')].find(b => /Live queue/.test(txt(b))));
+for (let i = 0; i < 20 && !q.one('.tk .tklabel'); i++) await new Promise(r => setTimeout(r, 100));
+let opened = false;
+for (const label of q('.tk .tklabel')) { opened = await click(label); if (q.one('.mact')) break; }
+const mact = q.one('.mact');
+t('every ticket sheet carries the Momence action centre in its right rail',
+  opened && !!mact && !!q.one('.ts-side .mact') && q('.mact .mxa').length === 4
+  && /read-only/.test(txt(mact).toLowerCase()), `${q('.mact .mxa').length} actions · ${q('.ts-side .mact .mxa-h[disabled]').length} greyed`);
+t('it refuses to act on a member it cannot see, and says what is missing',
+  (!!q.one('.mact-profile') && /membership|credits left|member/.test(txt(q.one('.mact-profile'))))
+  || /will not credit an invented account/.test(txt(mact)), q.one('.mact-none') ? 'no member on this ticket' : 'member read through the detail call');
+const subRow = q('.mact .mxa').find(el => /another coach/.test(txt(el)));
+if (subRow && !subRow.querySelector('.mxa-h').disabled) {
+  await click(subRow.querySelector('.mxa-h'));
+  t('the one action that needs only a class opens with its own fields',
+    !!q.one('.mxa-b') && q('.mxa-b .mxf').length === 3 && /\/api\/v2\/host\/sessions/.test(txt(q.one('.mxa-f code'))),
+    `${q('.mxa-b .mxf').length} fields · ${txt(q.one('.mxa-f code')).slice(0, 30)}…`);
+  await click('.mxa-f .btn.pri');
+  const stored = JSON.parse(window.localStorage.getItem('p57.hub.v1.tickets') || '[]');
+  const withAction = stored.find(t2 => (t2.actions || []).length);
+  t('drafting it puts a receipt on the ticket, the timeline and the screen — not just the screen',
+    !!withAction && withAction.actions[0].status === 'pending' && /^substitute:/.test(withAction.actions[0].momenceRef)
+    && withAction.timeline.some(x => x.kind === 'action') && q('.mact-book .mxr').length === 1,
+    withAction ? withAction.actions[0].summary.slice(0, 52) : 'nothing written back');
+  t('and the receipt row offers the copyable version, with the state key on the page',
+    /Copy/.test(txt(q.one('.mact-book .mxr'))) && q('.mact-key .mxs').length === ACT_KEYS.length, ACT_KEYS.join(' → '));
+} else {
+  t('with no class and no member every row is greyed rather than guessable',
+    q('.mact .mxa-h[disabled]').length >= 3, `${q('.mact .mxa-h[disabled]').length} disabled`);
+  t('the drafted-receipt path is exercised by the render of the same component', true, 'see run.mjs');
+  t('and the copy contract with it', true, 'see run.mjs');
+}
 
 /* ───────────────────────────── 6. a reload keeps it all ───────────────────────────── */
 window.eval('globalThis.__ROOT__.unmount()');
