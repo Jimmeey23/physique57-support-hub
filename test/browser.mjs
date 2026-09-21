@@ -981,6 +981,17 @@ const flags = q.one('.tk-flags');
 t('priority, escalation and the reply owed sit in the right gutter, out of the reading line',
   !!flags && /^(SEV|CRIT|HIGH|MED|LOW)$/.test(txt(flags.querySelector('.prio') || flags).trim().toUpperCase())
   && rootDecls('.tk-flags')['justify-content'] === 'flex-end', txt(flags).slice(0, 72));
+const noWs = cssText.replace(/\n\s*/g, ' ');
+const ell = [...noWs.matchAll(/([^{}]+)\{[^}]*text-overflow:ellipsis/g)].map(m => m[1].trim().split('\n').pop());
+t('the ellipsis is left only where the whole string is one click away',
+  ell.every(sel => /^\.pk-/.test(sel)) && ell.length <= 4,
+  `${ell.length} rules still ellipsize: ${ell.join(' · ')}`);
+t('so a roster name, a ticket title and the desk name are allowed a second line instead',
+  /\.c-own \.nm b,\.idwho b,\.bar \.lbl,\.heat \.hl,\.aname b,\.aname em,\.lk-txt b,\.mine \.mtitle,\.org-down span,\.tr-bar \.lb,\.ax-own \.ow-n em\{[^}]*-webkit-line-clamp:2/.test(noWs)
+  && ['.aname b', '.aname em', '.idwho b', '.c-own .nm b', '.c-dept', '.mine .mtitle'].every(sel => !new RegExp('\\' + sel + '\\{[^}]*text-overflow:ellipsis').test(noWs))
+  && !/\.lk-txt b\{[^}]*max-width/.test(noWs) && /\.sw-opts em\{[^}]*white-space:normal/.test(noWs),
+  'clamped at two lines, never cut at one');
+
 t('and the clocks are tabular, so a column of times lines up as digits',
   /tabular-nums/.test(decls('.chip.mono,.cds b,.stat b,.apay b,.now b,.fv')['font-variant-numeric'] || '')
   || /tnum/.test(decls('.mono')['font-feature-settings'] || ''), 'tnum on mono, tabular on every metric');

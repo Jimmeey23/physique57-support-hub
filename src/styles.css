@@ -304,9 +304,9 @@ main{flex:1;padding:26px 26px 90px;max-width:1680px;width:100%;margin:0 auto}
 .c-sla .t.met{color:var(--ok)}
 .c-own{display:flex;gap:8px;align-items:center;min-width:0}
 .c-own .nm{font-size:12px;line-height:1.3;min-width:0}
-.c-own .nm b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-own .nm b{display:block;font-weight:600;overflow:hidden}
 .c-own .nm span{display:block;color:var(--mut);font-size:11.0px}
-.c-dept{font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-dept{font-size:11.5px;color:var(--mut);overflow:hidden}
 .c-act{display:flex;gap:4px;justify-content:flex-end}
 .tick{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:var(--mut);transition:.16s}
 .tk.open .tick{transform:rotate(180deg);color:var(--ink)}
@@ -339,10 +339,10 @@ main{flex:1;padding:26px 26px 90px;max-width:1680px;width:100%;margin:0 auto}
 .bar .bt i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand2),var(--brand))}
 .bar .n{font:600 11.5px/1 var(--mono);text-align:right;font-variant-numeric:tabular-nums}
 .bar .p{font:500 11.0px/1 var(--mono);color:var(--mut);text-align:right}
-.bar .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .lbl{overflow:hidden}
 .heat{display:grid;gap:5px;grid-template-columns:148px repeat(7,minmax(0,1fr))}
 .heat .hh{font:500 10.6px/1 var(--mono);color:var(--mut);text-align:center;letter-spacing:.04em}
-.heat .hl{font-size:11.6px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px}
+.heat .hl{font-size:11.6px;color:var(--ink2);overflow:hidden;padding-right:6px}
 .heat .cell{height:20px;border-radius:5px;background:var(--bg2)}
 .empty{text-align:center;padding:58px 20px;color:var(--mut)}
 .empty h3{font-size:21px;color:var(--ink);margin-bottom:9px}
@@ -405,8 +405,8 @@ footer.legal b{font-weight:600;color:var(--ink2)}
   border:1px solid color-mix(in oklab,var(--brand) 26%,var(--line));font-size:12.2px;max-width:100%;
   animation:chipin .28s cubic-bezier(.2,.9,.3,1.4)}
 .lk-chip.mini{padding:3.5px 9px 3.5px 5px;animation:none}
-.lk-chip b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:24ch}
-.lk-chip em{font-style:normal;color:var(--mut);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:22ch}
+.lk-chip b{font-weight:600;overflow:hidden}
+.lk-chip em{font-style:normal;color:var(--mut);font-size:11px;overflow:hidden}
 .lk-chip-id{font:600 10.6px/1 var(--mono);color:var(--mut);letter-spacing:.03em}
 .lk-chip-num{font:600 10.6px/1 var(--mono);color:var(--brand);background:var(--brandsoft);padding:3px 5px;border-radius:5px}
 .lk-chip button{border:0;background:transparent;color:var(--mut);cursor:pointer;display:inline-flex;padding:2px;border-radius:5px;flex:none}
@@ -422,8 +422,8 @@ footer.legal b{font-weight:600;color:var(--ink2)}
 .lk-row.cur,.lk-row:hover{background:color-mix(in oklab,var(--brand) 6%,transparent)}
 .lk-row.on{background:var(--brandsoft)}
 .lk-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.lk-txt b{font-weight:600;font-size:12.9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lk-txt em{font-style:normal;color:var(--mut);font-size:11.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lk-txt b{font-weight:600;font-size:12.9px;overflow:hidden}
+.lk-txt em{font-style:normal;color:var(--mut);font-size:11.2px;overflow:hidden}
 .lk-id{font:600 11.0px/1 var(--mono);color:var(--mut);flex:none}
 .lk-mark{width:26px;height:26px;border-radius:8px;flex:none;display:grid;place-items:center;color:var(--brand);
   background:var(--brandsoft);border:1px solid color-mix(in oklab,var(--brand) 18%,transparent)}
@@ -816,8 +816,8 @@ html[data-motion=full] .tk.breach{animation:softpulse 2.6s ease-out infinite}
 .apick.on{background:var(--brand);border-color:var(--brand);color:var(--onbrand)}
 .aface{display:grid;place-items:center}
 .aname{display:grid;gap:2px;min-width:0}
-.aname b{font-size:12.8px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.aname em{font-style:normal;font-size:10.6px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aname b{font-size:12.8px;font-weight:650;overflow:hidden}
+.aname em{font-style:normal;font-size:10.6px;color:var(--mut);overflow:hidden}
 .apay{display:grid;gap:3px;min-width:0}
 .apay em{font-style:normal;font-size:10.9px;color:var(--mut);line-height:1.35}
 .astat select{width:100%;font-size:11.9px;background:var(--card2);border:1px solid var(--line2);border-radius:8px;padding:5px 7px}
@@ -1497,8 +1497,7 @@ html[data-theme=dark] .sw-btn.on{box-shadow:inset 0 2px 5px -2px rgba(0,0,0,.6),
   0 0 20px -4px color-mix(in oklab,var(--brand) 80%,transparent),0 0 0 3px color-mix(in oklab,var(--brand) 14%,transparent)}
 .sw-lab{display:grid;gap:2px;font-size:12.8px;font-weight:650;letter-spacing:-.01em}
 .sw-opts{display:flex;gap:7px}
-.sw-opts em{font:600 10.6px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);opacity:.75;
-  max-width:17ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sw-opts em{font:600 10.6px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mut);opacity:.75;overflow:hidden;white-space:normal;max-width:none}
 .sw-lab b{max-width:46ch}
 .sw .radio{padding:0;border:0;background:none}
 .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
@@ -1814,7 +1813,7 @@ html[data-density] .shell > main{padding:0}
 .idrow .av{box-shadow:0 6px 16px -10px color-mix(in oklab,var(--brand) 80%,transparent)}
 .idwho{min-width:0}
 .idwho b{display:block;font-family:var(--serif);font-size:15.4px;letter-spacing:-.01em;line-height:1.2;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  overflow:hidden}
 .idwho em{display:block;font-style:normal;letter-spacing:.02em}
 .idswitch{display:block;margin-top:10px}
 .idswitch > span{display:block;margin-bottom:5px;letter-spacing:.14em;text-transform:uppercase}
@@ -1841,7 +1840,7 @@ html[data-density] .shell > main{padding:0}
   border:1px solid var(--line);background:var(--card2);border-radius:10px;padding:7px 9px;cursor:pointer;
   font:inherit;color:inherit;text-align:left;transition:.16s}
 .mine li button:hover{border-color:color-mix(in oklab,var(--brand) 40%,var(--line));background:var(--card);transform:translateX(2px)}
-.mine .mtitle{font-size:12.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mine .mtitle{font-size:12.2px;overflow:hidden}
 .mine .mono{color:var(--mut)}
 .line .org-up{display:flex;flex-direction:column;gap:6px}
 .org-node{position:relative;border:1px solid var(--line);border-left:3px solid var(--brand);background:var(--card2);
@@ -1850,7 +1849,7 @@ html[data-density] .shell > main{padding:0}
 .org-down{list-style:none;margin:10px 0 0;padding:9px 0 0;border-top:1px dashed var(--line2);
   display:flex;flex-direction:column;gap:6px}
 .org-down li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12.2px}
-.org-down span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.org-down span{overflow:hidden}
 .org-down em{font-style:normal;color:var(--mut)}
 .rail-empty{text-align:center;padding:20px 16px 18px}
 .rail-empty .re-mark{width:44px;height:44px;margin:8px auto 10px;border-radius:14px;display:grid;place-items:center;
@@ -2068,7 +2067,7 @@ html[data-motion=calm] .writeup{animation:none}
   padding:7px 8px;border-radius:11px;border:1px solid var(--line);background:var(--card2);transition:.16s}
 .ax-own li:hover{border-color:color-mix(in oklab,var(--brand) 34%,var(--line));transform:translateX(2px)}
 .ax-own .ow-n{min-width:0}.ax-own .ow-n b{display:block;font-size:12.6px}
-.ax-own .ow-n em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ax-own .ow-n em{font-style:normal;overflow:hidden}
 .ax-own .ow-k{font-family:var(--mono);font-size:11.4px;white-space:nowrap;color:var(--ink2)}
 .ax-own .ow-k.bad{color:var(--crit);font-weight:600}
 html[data-density=compact] .ax-panel{gap:9px;padding:4px 8px 9px}
@@ -2209,7 +2208,7 @@ html[data-motion=calm] .ax-meter i,html[data-motion=calm] .ax-sp .bars i,html[da
 .tr-tt h4{margin:0;font-size:13.5px;letter-spacing:-.01em}
 .tr-body{padding:13px 14px;display:grid;gap:9px}
 .tr-bar{display:grid;grid-template-columns:120px minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:12px}
-.tr-bar .lb{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr-bar .lb{color:var(--mut);overflow:hidden}
 .tr-bar .bt{height:7px;border-radius:999px;background:var(--card2);border:1px solid var(--line);overflow:hidden}
 .tr-bar .bt>i{display:block;height:100%;border-radius:999px;background:var(--brand);transition:width .5s var(--spring)}
 .tr-bar>b{text-align:right;font-size:11.5px}
@@ -2376,7 +2375,7 @@ html[data-theme=dark] .tkrow{background:linear-gradient(90deg,hsl(var(--h,206) v
 .tk-em{width:22px;height:22px;margin-right:9px;vertical-align:-4px}
 .tklabel{margin:0;font-size:13px;line-height:1.45;max-width:82ch;color:color-mix(in oklab,var(--mut) 72%,var(--ink))}
 .path{gap:8px;margin-top:2px}
-.c-dept{white-space:normal;overflow:visible;text-overflow:clip;font-size:11.8px;max-width:52ch;color:var(--mut)}
+.c-dept{overflow:visible;font-size:11.8px;color:var(--mut)}
 .chip.crit{background:color-mix(in oklab,var(--breach) 12%,var(--card));border-color:color-mix(in oklab,var(--breach) 34%,transparent);color:var(--breach)}
 .tk-type{font-weight:600;background:hsl(var(--h,206) var(--hs,58%) 46% / .13);
   border-color:hsl(var(--h,206) var(--hs,58%) 46% / .3);color:color-mix(in oklab,hsl(var(--h,206) var(--hs,58%) var(--hl,46%)) 58%,var(--ink))}
@@ -2542,3 +2541,42 @@ html[data-theme=dark] .cat .num{color:hsl(var(--h,206) var(--hs,58%) 66%)}
 .subc-dept{font-size:11.8px;color:var(--ink2);margin-top:5px}
 .subc .meta{margin-top:11px}
 @media (max-width:640px){.cat-em{width:30px;height:30px}.cat-count b{font-size:20px}}
+
+/* 7 · the rest of the desk, on the same language: a figure on a 2px rule is how a number is
+      introduced everywhere, boxes only appear where a thing can be clicked apart from its
+      neighbour, and no inner panel keeps a frame inside a frame. */
+.cds{background:transparent;border:0;border-top:2px solid var(--line);border-radius:0;padding:9px 2px 2px;text-align:left}
+.cds b{font:600 20px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.cds span{font:600 10.8px/1.35 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+.cds:hover{transform:none;border-top-color:color-mix(in oklab,var(--brand) 55%,var(--line));box-shadow:none;background:transparent}
+.cd-stats{gap:14px;margin-top:15px}
+.cd-card,.td-side,.set-block,.cd-block,.logcard{border-radius:18px}
+.cd-card{padding:19px 20px 17px}
+.cd-block{padding:16px 17px}
+.roster{border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;overflow:visible;margin-top:14px}
+.arow{padding:0 2px}
+.ax-grp{border:0;border-top:2px solid var(--line);border-radius:0;background:transparent;padding:11px 2px 2px;gap:9px}
+.ax-panel{padding:6px 12px 14px;gap:18px}
+.ax-tbl{font-size:13px}
+.ax-tbl th{font-size:11px;letter-spacing:.1em;padding-bottom:8px}
+.ax-tbl td{padding:10px 8px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:11px;letter-spacing:.15em}
+.tier{border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;padding:11px 0}
+.tiergrid{gap:0}
+.ts-kpi{border:0;border-top:2px solid var(--line);border-radius:0;background:transparent;padding:11px 2px 10px}
+.ts-kpi:hover{transform:none;background:transparent;border-top-color:color-mix(in oklab,var(--brand) 55%,var(--line))}
+.ts-kpi b{font-size:14.4px}
+.ts-kpi em{font-size:11.8px}
+.ts-grp{border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;padding:13px 0 6px}
+.ts-grp:first-child{border-top:0;padding-top:0}
+.ts-ans .k{font-size:12px;color:color-mix(in oklab,var(--mut) 82%,var(--ink))}
+.ts-ans .v{font-size:13.4px}
+.ts-ans .v.long{font-size:13.1px;line-height:1.55}
+.logcard{border-left-width:4px;padding:16px 18px 15px;
+  background:linear-gradient(90deg,color-mix(in oklab,var(--pc,var(--brand)) 6%,transparent),transparent 46%)}
+
+/* 8 · truncation. An ellipsis is only fair where the whole string is one click away; everywhere else
+      the line is allowed to take a second line, clamped at two so a row stays the height of a row. */
+.c-own .nm b,.idwho b,.bar .lbl,.heat .hl,.aname b,.aname em,.lk-txt b,.mine .mtitle,.org-down span,.tr-bar .lb,.ax-own .ow-n em{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.lk-chip b,.lk-chip em{}
+.sw-opts em{text-align:right;line-height:1.3}
