@@ -43,14 +43,14 @@ export const resolutionGaps = f => REQUIRED_RES.filter(([k]) => !String(f?.[k] |
 export function resolutionChecks(f, t) {
   const money = /credit|refund|₹|passed|extended/i.test(String(f.goodwill || ''));
   return [
-    { id: 'cause', label: 'Cause named', ok: !!f.causeCategory && String(f.cause || '').trim().length > 12, hint: 'A category and a sentence in your own words.' },
-    { id: 'action', label: 'Action recorded', ok: String(f.action || '').trim().length > 12, hint: 'What was done, to what, by whom.' },
-    { id: 'member', label: 'Member told', ok: /^Yes/.test(String(f.memberNotified || '')) || /No follow-up/.test(String(f.memberNotified || '')), hint: 'Either a reply went out or none was owed.' },
-    { id: 'prevent', label: 'Prevention written down', ok: String(f.prevention || '') !== 'Nothing to change', hint: '“Nothing to change” is a decision, not a default.' },
-    { id: 'proof', label: 'Evidence attached', ok: String(f.proof || '') !== 'Nothing attached', hint: 'Invoice, screenshot, receipt — whatever makes it checkable.' },
-    { id: 'signoff', label: 'Signed off by a second name', ok: String(f.verifiedBy || '').trim().length > 2, hint: 'Whoever checked it, not whoever fixed it.' },
-    { id: 'money', label: money ? 'Goodwill amount entered' : 'Goodwill marked as none', ok: !money || Number(f.amountINR) > 0, hint: money ? 'Finance will ask for the rupee figure.' : 'Only asked for when money or credit moves.' },
-    { id: 'closure', label: 'Closure line written', ok: String(f.closureNote || '').trim().length > 12, hint: 'One sentence the front desk can repeat without opening the ticket.' },
+    { id: 'cause', field: 'causeCategory', label: 'Cause named', ok: !!f.causeCategory && String(f.cause || '').trim().length > 12, hint: 'A category and a sentence in your own words.' },
+    { id: 'action', field: 'action', label: 'Action recorded', ok: String(f.action || '').trim().length > 12, hint: 'What was done, to what, by whom.' },
+    { id: 'member', field: 'followUp', label: 'Member told', ok: /^Yes/.test(String(f.memberNotified || '')) || /No follow-up/.test(String(f.memberNotified || '')), hint: 'Either a reply went out or none was owed.' },
+    { id: 'prevent', field: 'prevention', label: 'Prevention written down', ok: String(f.prevention || '') !== 'Nothing to change', hint: '“Nothing to change” is a decision, not a default.' },
+    { id: 'proof', field: 'proof', label: 'Evidence attached', ok: String(f.proof || '') !== 'Nothing attached', hint: 'Invoice, screenshot, receipt — whatever makes it checkable.' },
+    { id: 'signoff', field: 'verifiedBy', label: 'Signed off by a second name', ok: String(f.verifiedBy || '').trim().length > 2, hint: 'Whoever checked it, not whoever fixed it.' },
+    { id: 'money', field: money ? 'amountINR' : 'goodwill', label: money ? 'Goodwill amount entered' : 'Goodwill marked as none', ok: !money || Number(f.amountINR) > 0, hint: money ? 'Finance will ask for the rupee figure.' : 'Only asked for when money or credit moves.' },
+    { id: 'closure', field: 'closureNote', label: 'Closure line written', ok: String(f.closureNote || '').trim().length > 12, hint: 'One sentence the front desk can repeat without opening the ticket.' },
   ];
 }
 
@@ -70,6 +70,7 @@ export function ResolutionBody({ t, f, set, readOnly = false, stack = false }) {
   const st = hasClass && t.class?.sessionId ? sessionStats(t.class.sessionId) : null;
   const attendeeCount = Object.keys(t.class?.attendees || {}).length;
   const money = /credit|refund|₹|passed|extended/i.test(String(f.goodwill || ''));
+  const need = new Set(resolutionGaps(f).map(([k]) => k));
   const ro = v => <p className={cx('res-ro', !String(v || '').trim() && 'empty')}>{String(v || '').trim() || 'not recorded'}</p>;
   const txt = (k, ph, rows = 2) => readOnly ? ro(f[k])
     : <textarea rows={rows} value={f[k] || ''} placeholder={ph} onChange={e => set(k, e.target.value)} />;
@@ -79,45 +80,45 @@ export function ResolutionBody({ t, f, set, readOnly = false, stack = false }) {
   return <div className={cx('res-cols', stack && 'stack', readOnly && 'ro')}>
     <div className="res-col">
       <h5>What went wrong</h5>
-      <label className="res-f"><span>Category<i className="req" /></span>{one('causeCategory', RES_CAUSE)}</label>
-      <label className="res-f"><span>Root cause, in your words<i className="req" /></span>
+      <label className={cx('res-f', need.has('causeCategory') && 'need')} data-fld="causeCategory"><span>Category<i className="req" /></span>{one('causeCategory', RES_CAUSE)}</label>
+      <label className={cx('res-f', need.has('cause') && 'need')} data-fld="cause"><span>Root cause, in your words<i className="req" /></span>
         {txt('cause', 'The pedal on bike 4 was never torqued to spec — reverse-threaded on the left crank.')}</label>
-      <label className="res-f"><span>Whose fix it was</span>{one('responsible', RES_OWNER)}</label>
-      {hasClass && <label className="res-f"><span>Class follow-up</span>{one('classFollowUp', RES_CLASS_FOLLOWUP)}</label>}
+      <label className={cx('res-f', need.has('responsible') && 'need')} data-fld="responsible"><span>Whose fix it was</span>{one('responsible', RES_OWNER)}</label>
+      {hasClass && <label className={cx('res-f', need.has('classFollowUp') && 'need')} data-fld="classFollowUp"><span>Class follow-up</span>{one('classFollowUp', RES_CLASS_FOLLOWUP)}</label>}
       {hasClass && st && <div className="res-class">
         <span className="eyebrow">Class snapshot</span>
         <div className="kv"><span className="k">Booked / attended</span><span className="v mono">{st.booked} / {st.attended}</span></div>
         <div className="kv"><span className="k">No-shows</span><span className="v mono">{st.absent ?? '—'}</span></div>
         <div className="kv"><span className="k">Attendees you noted</span><span className="v mono">{attendeeCount}</span></div>
       </div>}
-      {t.asset_id && <label className="res-f"><span>Asset left in what state</span>{one('assetCondition', RES_ASSET_CONDITION)}</label>}
-      <label className="res-f"><span>Vendor / AMC / invoice reference</span>{inp('vendorRef', 'Quote 2211 · Shree Fitness Services')}</label>
+      {t.asset_id && <label className={cx('res-f', need.has('assetCondition') && 'need')} data-fld="assetCondition"><span>Asset left in what state</span>{one('assetCondition', RES_ASSET_CONDITION)}</label>}
+      <label className={cx('res-f', need.has('vendorRef') && 'need')} data-fld="vendorRef"><span>Vendor / AMC / invoice reference</span>{inp('vendorRef', 'Quote 2211 · Shree Fitness Services')}</label>
     </div>
     <div className="res-col">
       <h5>What you did, and what the member gets</h5>
-      <label className="res-f"><span>Action taken<i className="req" /></span>
+      <label className={cx('res-f', need.has('action') && 'need')} data-fld="action"><span>Action taken<i className="req" /></span>
         {txt('action', 'Bike 4 out of rotation, pedal re-torqued at 42 N·m, the other nine checked on the same shift.')}</label>
       <div className="res-two">
-        <label className="res-f"><span>Outcome</span>{one('outcome', RES_OUTCOME)}</label>
-        <label className="res-f"><span>Member follow-up</span>{one('followUp', RES_FOLLOWUP)}</label>
+        <label className={cx('res-f', need.has('outcome') && 'need')} data-fld="outcome"><span>Outcome</span>{one('outcome', RES_OUTCOME)}</label>
+        <label className={cx('res-f', need.has('followUp') && 'need')} data-fld="followUp"><span>Member follow-up</span>{one('followUp', RES_FOLLOWUP)}</label>
       </div>
       <div className="res-two">
-        <label className="res-f"><span>Goodwill</span>{one('goodwill', RES_GOODWILL)}</label>
+        <label className={cx('res-f', need.has('goodwill') && 'need')} data-fld="goodwill"><span>Goodwill</span>{one('goodwill', RES_GOODWILL)}</label>
         {money
-          ? <label className="res-f"><span>Amount (₹)</span>{inp('amountINR', '0', 'number')}</label>
+          ? <label className={cx('res-f', need.has('amountINR') && 'need')} data-fld="amountINR"><span>Amount (₹)</span>{inp('amountINR', '0', 'number')}</label>
           : <div className="res-f ghost"><span>Amount</span><em className="mut xs">only asked for when money or credit moves</em></div>}
       </div>
-      <label className="res-f"><span>Prevention / SOP change</span>{one('prevention', RES_PREVENTION)}</label>
-      <label className="res-f"><span>Notes for the owner</span>{txt('ownerNotes', 'Cost, warranty, the bit finance will ask for.')}</label>
+      <label className={cx('res-f', need.has('prevention') && 'need')} data-fld="prevention"><span>Prevention / SOP change</span>{one('prevention', RES_PREVENTION)}</label>
+      <label className={cx('res-f', need.has('ownerNotes') && 'need')} data-fld="ownerNotes"><span>Notes for the owner</span>{txt('ownerNotes', 'Cost, warranty, the bit finance will ask for.')}</label>
     </div>
     <div className="res-col">
       <h5>Before it leaves the board</h5>
-      <label className="res-f"><span>Evidence attached</span>{one('proof', RES_PROOF)}</label>
+      <label className={cx('res-f', need.has('proof') && 'need')} data-fld="proof"><span>Evidence attached</span>{one('proof', RES_PROOF)}</label>
       <div className="res-two">
-        <label className="res-f"><span>Reopen risk</span>{one('reopenRisk', RES_REOPEN_RISK)}</label>
-        <label className="res-f"><span>Verified by</span>{inp('verifiedBy', 'who signed it off')}</label>
+        <label className={cx('res-f', need.has('reopenRisk') && 'need')} data-fld="reopenRisk"><span>Reopen risk</span>{one('reopenRisk', RES_REOPEN_RISK)}</label>
+        <label className={cx('res-f', need.has('verifiedBy') && 'need')} data-fld="verifiedBy"><span>Verified by</span>{inp('verifiedBy', 'who signed it off')}</label>
       </div>
-      <label className="res-f"><span>Closure line<i className="req" /></span>
+      <label className={cx('res-f', need.has('closureNote') && 'need')} data-fld="closureNote"><span>Closure line<i className="req" /></span>
         {txt('closureNote', 'One sentence the front desk can repeat to a member without opening this ticket.')}</label>
       <div className="res-meta tight">
         <div><span>raised</span><b className="mono">{fmtAt(t.createdAt)}</b></div>
@@ -145,7 +146,17 @@ export function ResolutionRail({ t, viewer, org, onSubmit, onOpenWide, onEscalat
   const gaps = resolutionGaps(draft);
   const doneCount = checks.filter(c => c.ok).length;
   const people = useMemo(() => viewerOptions(org), [org]);
-  return <section className={cx('rrail', !rights.ok && 'locked', done && 'filed')} aria-label={`Resolution record for ${t.number}`}>
+  const box = React.useRef(null);
+  /* the checklist is not a legend sitting under the fields — it is the spine of this rail, and
+     every row hands you the one field it is still waiting for */
+  const jump = k => {
+    const el = box.current && box.current.querySelector('[data-fld="' + k + '"]');
+    if (!el) return;
+    if (el.scrollIntoView) el.scrollIntoView({ block: 'nearest' });
+    const ctl = el.querySelector('select, textarea, input, button');
+    if (ctl && ctl.focus) ctl.focus({ preventScroll: true });
+  };
+  return <section ref={box} className={cx('rrail', !rights.ok && 'locked', done && 'filed')} aria-label={`Resolution record for ${t.number}`}>
     <header className="rrail-head">
       <div>
         <span className="eyebrow">Resolution{done ? ' · filed' : ''}</span>
@@ -154,6 +165,12 @@ export function ResolutionRail({ t, viewer, org, onSubmit, onOpenWide, onEscalat
       </div>
       <Pill p={t.priority} />
     </header>
+
+    <div className="rrail-meter">
+      <b className="mono">{doneCount}/{checks.length}</b>
+      <span className="mm" aria-hidden="true">{checks.map(c => <i key={c.id} className={c.ok ? 'on' : ''} />)}</span>
+      <em className="xs">{done ? 'recorded' : gaps.length ? `${gaps.length} field${gaps.length > 1 ? 's' : ''} still owed` : 'ready to record'}</em>
+    </div>
 
     <div className="rrail-clock">
       <Countdown t={t} now={now} />
@@ -182,18 +199,20 @@ export function ResolutionRail({ t, viewer, org, onSubmit, onOpenWide, onEscalat
     </div>
 
     <div className="rrail-checks">
-      <div className="rrail-checks-head"><span className="xs mut">close-out checklist</span>
-        <b className="mono">{doneCount}/{checks.length}</b></div>
-      <ul>{checks.map(c => <li key={c.id} className={cx('rk', c.ok && 'on')} data-tip={c.hint}>
-        <span className="rk-mark">{c.ok ? <I s={svg.check} /> : <I s={svg.minus} />}</span>{c.label}</li>)}</ul>
+      <div className="rrail-checks-head"><span className="fk">Close-out checklist</span>
+        {!done && <span className="xxs mut">each line goes to the field it waits for</span>}</div>
+      <div className="rk-list">{checks.map(c => <button type="button" key={c.id} className={cx('rk', c.ok && 'on')} data-goto={c.field}
+        onClick={() => jump(c.field)} title={c.hint} data-tip={c.hint}>
+        <span className="rk-mark">{c.ok ? <I s={svg.check} /> : <I s={svg.minus} />}</span>
+        <span className="rk-lab">{c.label}</span></button>)}</div>
     </div>
 
     <ResolutionBody t={t} f={draft} set={set} readOnly={!rights.ok || done} stack />
 
     <footer className="rrail-foot">
       {rights.ok && !done && <>
-        <button className="btn" onClick={() => { setSavedAt(Date.now()); onSaveDraft && onSaveDraft(draft); }}><I s={svg.copy} /> Save draft</button>
-        <button className="btn pri" disabled={gaps.length > 0} onClick={() => onSubmit(draft)}><I s={svg.check} /> Record resolution</button>
+        <button className="btn text" onClick={() => { setSavedAt(Date.now()); onSaveDraft && onSaveDraft(draft); }}><I s={svg.copy} /> Save draft</button>
+        <button className="btn pri lg" disabled={gaps.length > 0} onClick={() => onSubmit(draft)}><I s={svg.check} /> Record resolution</button>
       </>}
       {(!rights.ok || done) && <button className="btn" onClick={onOpenWide}><I s={svg.expand} /> {done ? 'Read the filed record' : 'Ask the owner to close it'}</button>}
       {!done && rights.ok && <button className="btn ghost" onClick={() => onEscalate && onEscalate(t.id)}><I s={svg.up} /> Escalate</button>}

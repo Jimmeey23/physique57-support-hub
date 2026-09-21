@@ -1873,10 +1873,10 @@ html[data-density] .shell > main{padding:0}
 .rrail-head .eyebrow{font:600 10.6px/1 var(--mono);letter-spacing:.17em;text-transform:uppercase;color:color-mix(in oklab,var(--h,var(--brand)) 78%,var(--ink))}
 .rrail-clock{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px 14px;border-bottom:1px dashed var(--line2)}
 .rrail-clock .sla-second{justify-self:end}
-.rrail-right{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;margin:12px 14px 0;
-  padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card2);position:relative}
-.rrail-right.ok{border-color:color-mix(in oklab,var(--ok) 40%,var(--line));background:color-mix(in oklab,var(--ok) 9%,var(--card2))}
-.rrail-right.ro{border-color:color-mix(in oklab,var(--warn) 38%,var(--line));background:color-mix(in oklab,var(--warn) 9%,var(--card2))}
+.rrail-right{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;margin:12px 16px 0;padding:0;border:0;border-radius:0;background:transparent;
+  position:relative}
+.rrail-right.ok{background:color-mix(in oklab,var(--ok) 10%,transparent);box-shadow:inset 2px 0 0 var(--ok);padding-left:13px}
+.rrail-right.ro{background:color-mix(in oklab,var(--warn) 10%,transparent);box-shadow:inset 2px 0 0 var(--warn);padding-left:13px}
 .rrail-right b{display:block;font-size:12.8px;margin-bottom:3px}
 .rrail-right p{margin:0 0 4px;font-size:11.8px;line-height:1.45;color:var(--ink2)}
 .rrail-lock{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
@@ -1887,10 +1887,9 @@ html[data-density] .shell > main{padding:0}
 .rrail-as > span{letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 .rrail-as select{flex:1;min-width:0;font:inherit;font-size:11.8px;padding:5px 7px;border-radius:8px;
   background:var(--card);border:1px solid var(--line2);color:var(--ink)}
-.rrail-checks{margin:12px 14px 0;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.rrail-checks{margin:14px 16px 0;padding:0;border:0;border-radius:0;background:transparent}
 .rrail-checks-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px}
 .rrail-checks-head b{font-size:13px}
-.rrail-checks ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
 .rrail .rk{display:flex;gap:7px;align-items:flex-start;font-size:11.4px;line-height:1.3;color:var(--mut)}
 .rrail .rk-mark{flex:0 0 auto;width:15px;height:15px;border-radius:5px;display:grid;place-items:center;
   background:color-mix(in oklab,var(--ink) 7%,transparent);color:var(--mut);transition:.18s}
@@ -1912,7 +1911,7 @@ html[data-density] .shell > main{padding:0}
 .rrail-foot .btn{flex:1 1 auto;justify-content:center}
 .rrail-foot > .xs{flex:1 1 100%;color:var(--mut);line-height:1.4}
 .rrail.locked .rrail-foot{background:color-mix(in oklab,var(--warn) 6%,transparent)}
-.rrail-audit,.rrail-filed{margin:0 14px 13px;padding:10px 11px;border:1px dashed var(--line2);border-radius:11px}
+.rrail-audit,.rrail-filed{margin:12px 16px 0;padding:11px 0 0;border:0;border-top:1px solid var(--line);border-radius:0}
 .rrail-audit .ra{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:baseline;
   font-size:11.6px;line-height:1.4;color:var(--ink2);padding:5px 0;border-bottom:1px dashed var(--line)}
 .rrail-audit .ra:last-child{border-bottom:0}
@@ -1927,7 +1926,6 @@ html[data-motion=calm] .rrail,html[data-motion=calm] .shell .side.in-rail .sidec
 @media (max-width:1040px){
   .rrail{border-radius:14px}
   .rrail .res-cols{padding:12px 12px 2px}
-  .rrail-checks ul{grid-template-columns:1fr}
 }
 @media (max-width:640px){
   .shell{gap:16px;padding:14px 12px 30px}
@@ -2466,3 +2464,51 @@ html[data-theme=dark] .tk-type{color:color-mix(in oklab,hsl(var(--h,206) var(--h
 .rcheck em{margin-left:auto;color:var(--mut)}
 .mine ul li button{font-size:13px}
 .mine .mtitle{color:var(--ink);font-weight:500}
+
+/* 5 · the resolution rail. Twelve fields stacked with a 3/8 checklist buried under them read as a
+      form; here the verdict is the first thing you see, the checklist is the spine, and the only
+      fields that shout are the ones the record cannot close without. */
+.rrail{border-radius:18px}
+.rrail-head{padding:15px 16px 11px;gap:12px}
+.rrail-head h4{margin:6px 0 4px;font:600 16.6px/1.24 var(--display);letter-spacing:-.024em;color:var(--ink)}
+.rrail-head .eyebrow{font-size:10.8px;letter-spacing:.15em}
+.rrail-meter{display:flex;align-items:center;gap:12px;padding:11px 16px 12px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,color-mix(in oklab,var(--h,var(--brand)) 6%,transparent),transparent)}
+.rrail-meter>b{font:600 25px/1 var(--display);letter-spacing:-.034em;font-variant-numeric:tabular-nums;color:var(--ink)}
+.rrail-meter .mm{display:flex;gap:3px;flex:1 1 auto;min-width:0}
+.rrail-meter .mm i{flex:1 1 0;height:5px;border-radius:3px;background:var(--line2);transition:background var(--dur) var(--out)}
+.rrail-meter .mm i.on{background:hsl(var(--h,206) var(--hs,58%) var(--hl,46%))}
+.rrail-meter em{font-style:normal;color:var(--mut);white-space:nowrap;font-size:11.2px}
+.rrail-clock{padding:9px 16px;border-bottom:0}
+.rrail-right b{font-size:13px}
+.rrail-right p{font-size:12.2px;color:var(--ink2)}
+.rrail-as{border-top:1px dashed var(--line)}
+.rrail-checks-head{display:flex;align-items:baseline;gap:10px;margin:0 0 2px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.rrail-checks-head .fk{font:600 10.8px/1.45 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  color:color-mix(in oklab,var(--mut) 78%,var(--ink))}
+.rrail-checks-head .xxs{margin-left:auto;text-align:right}
+.rk-list{display:grid;list-style:none;margin:0;padding:0}
+.rrail .rk{display:grid;grid-template-columns:auto minmax(0,1fr);gap:11px;align-items:center;width:100%;text-align:left;
+  border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:9px 2px;color:var(--mut);
+  font-size:12.8px;line-height:1.35;cursor:pointer}
+.rrail .rk:last-child{border-bottom:0}
+.rrail .rk:hover{background:color-mix(in oklab,var(--brand) 6%,transparent);border-bottom-color:color-mix(in oklab,var(--brand) 26%,var(--line))}
+.rrail .rk-mark{width:17px;height:17px;border-radius:6px}
+.rrail .rk-mark svg{width:11px;height:11px}
+.rrail .rk:not(.on){color:var(--ink)}
+.rrail .rk:not(.on) .rk-mark{background:color-mix(in oklab,var(--warn) 20%,transparent);color:color-mix(in oklab,var(--warn) 74%,var(--ink));transform:none}
+.rrail .rk.on{color:color-mix(in oklab,var(--mut) 82%,var(--ink))}
+.rrail .rk-lab:after{content:"→";margin-left:8px;opacity:0;transition:opacity var(--dur) var(--out),transform var(--dur) var(--out);display:inline-block}
+.rrail .rk:hover .rk-lab:after{opacity:.62;transform:translateX(2px)}
+.rrail .res-cols{padding:14px 16px 4px;border-top:1px solid var(--line)}
+.res-f.need>span{color:color-mix(in oklab,var(--warn) 70%,var(--ink))}
+.res-f.need>span:after{content:"owed";font:600 10.6px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  margin-left:auto;padding:3px 6px 2px;border-radius:5px;background:color-mix(in oklab,var(--warn) 16%,var(--card));
+  color:color-mix(in oklab,var(--warn) 74%,var(--ink))}
+.rrail-foot{padding:12px 16px 15px;margin-top:10px;border-top:1px solid var(--line);gap:9px}
+.rrail-foot .btn.lg{flex:1 1 100%}
+.rrail-foot > .xs{font-size:11.8px}
+@media (max-width:1180px){
+  .rrail-meter{padding:11px 14px 12px}
+  .rrail-checks,.rrail-audit,.rrail-filed,.rrail-right{margin-left:14px;margin-right:14px}
+}

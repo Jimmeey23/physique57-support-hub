@@ -22,6 +22,12 @@ const t = (n, c, x = '') => { c ? pass++ : fail++; console.log(`  ${c ? '\x1b[32
 
 const ACT_KEYS = ['pending', 'queued', 'synced', 'rejected'];
 
+/* the root (un-media-queried) declarations for one exact selector, so a rule restated for phones
+   cannot be mistaken for the base value — later root rules win, the way the cascade does */
+const rootDecls = sel => { const out = {}; parsed.walkRules(sel, r => { if (r.selector !== sel) return;
+  let p2 = r.parent; while (p2) { if (p2.type === 'atrule') return; p2 = p2.parent; }
+  r.walkDecls(d => { out[d.prop] = d.value; }); }); return out; };
+
 /* ───────────────────────────── 1. the stylesheet itself ───────────────────────────── */
 const postcss = require('postcss');
 const cssText = fs.readFileSync(path.join(APP, 'src/styles.css'), 'utf8');
@@ -571,9 +577,32 @@ t('opening a ticket puts its close-out record on the right rail',
   !!rail && !!focused.number && railTag.startsWith(focused.number)
   && q('.rrail .res-f').length >= 16 && q('.rrail .rrail-clock').length === 1,
   `${q('.rrail .res-f').length} fields · ${q('.rrail .pk').length} dropdowns · ${q('.rrail .res-ro').length} read-up lines · ${railTag}`);
-t('the rail asks for the checklist before it lets anything close',
-  q('.rrail-checks .rk').length === 8 && /close-out checklist/.test(txt(q.one('.rrail-checks')))
-  && /\/8/.test(txt(q.one('.rrail-checks-head'))), txt(q.one('.rrail-checks-head')));
+t('the rail opens on the verdict and asks for the checklist before it lets anything close',
+  q('.rrail-checks .rk').length === 8 && /Close-out checklist/.test(txt(q.one('.rrail-checks')))
+  && /^\d\/8$/.test(txt(q.one('.rrail-meter b')).trim()),
+  `${txt(q.one('.rrail-meter b'))} · ${q('.rrail-meter .mm i.on').length} marks filled of eight`);
+const meterN = Number(txt(q.one('.rrail-meter b')).match(/(\d+)\/(\d+)/).slice(1, 2)[0]);
+t('the meter is the checklist, not a decoration — the marks and the fraction agree',
+  q('.rrail-meter .mm i').length === 8 && q('.rrail-meter .mm i.on').length === meterN,
+  `${q('.rrail-meter .mm i.on').length} lit against ${txt(q.one('.rrail-meter b'))}`);
+t('the rail holds one surface, so the checklist, the pen and the audit lost their boxes inside it',
+  (rootDecls('.rrail-checks').border || '') === '0' && (rootDecls('.rrail-right').border || '0') === '0'
+  && /;border:0;/.test((m => m ? m[0] : '')([...cssText.replace(/\n\s*/g, '').matchAll(/\.rrail-audit,\.rrail-filed\{[^}]*\}/g)].pop()))
+  && /font:600 16\.6px\/1\.24 var\(--display\)/.test(cssText.replace(/\n\s*/g, '')),
+  `checks ${rootDecls('.rrail-checks').border} · right ${rootDecls('.rrail-right').border} · audit ${JSON.stringify(([...cssText.replace(/\n\s*/g, '').matchAll(/\.rrail-audit,\.rrail-filed\{[^}]*\}/g)].pop() || ['none'])[0]).slice(0, 90)} · h4 ${/16\.6px/.test(cssText)}`);
+const openRow = [...q('.rrail .rk')].find(b => !b.classList.contains('on'));
+const gotoKey = openRow && openRow.getAttribute('data-goto');
+if (openRow) await click(openRow);
+t('and a checklist row is a control — clicking it puts the cursor in the field it is waiting for',
+  q('.rrail .rk').every(b => b.tagName === 'BUTTON' && !!b.getAttribute('title') && !!b.getAttribute('data-goto'))
+  && !!gotoKey && !!q('.rrail [data-fld="' + gotoKey + '"]')[0]
+  && !!(doc.activeElement && doc.activeElement.closest && doc.activeElement.closest('[data-fld="' + gotoKey + '"]')),
+  openRow ? `${txt(openRow).replace(/\s+/g, ' ').trim().slice(0, 30)} → ${gotoKey}, focus landed on ${(doc.activeElement || {}).tagName || 'nothing'}` : 'no open row');
+
+t('fields the record cannot close without are marked where they are, not only in a sentence below',
+  q('.rrail .res-f.need').length >= 1
+  && /content:"owed"/.test(cssText.replace(/\n\s*/g, '').match(/\.res-f\.need>span:after\{[^}]*\}/)[0]),
+  `${q('.rrail .res-f.need').length} field${q('.rrail .res-f.need').length === 1 ? '' : 's'} flagged owed`);
 const owner = cn(focused.assignee);
 const chainNames = [...new Set([...(focused.chain || []).map(c => cn(c.who)), owner])];
 t('the record is sealed for anyone off this ticket’s line',
@@ -816,9 +845,6 @@ await click([...q('.icobtn')].find(b => (b.getAttribute('title') || '').includes
 for (let n = 0; n < 15 && !q.one('.modal'); n++) await new Promise(r => setTimeout(r, 100));
 /* declarations from the base rule only — a media block restates .modal.drawer for phones, and this
    assertion is about what the drawer is on a desk-sized window */
-const rootDecls = sel => { const out = {}; parsed.walkRules(sel, r => { if (r.selector !== sel) return;
-  let p2 = r.parent; while (p2) { if (p2.type === 'atrule') return; p2 = p2.parent; }
-  r.walkDecls(d => { out[d.prop] = d.value; }); }); return out; };
 const drw = rootDecls('.modal.drawer');
 t('settings is the second modal type — docked on the right, full height, square on that edge',
   !!q.one('.scrim.scrim-drawer') && !!q.one('.modal.drawer')
