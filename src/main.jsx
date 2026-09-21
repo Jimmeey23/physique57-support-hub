@@ -1506,7 +1506,7 @@ function App() {
         </button>))}</nav>
       <div className="spacer" />
       <div className="tools">
-        <div className="now"><span className="pulse-dot" /> {new Date(now).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })} <b>IST</b></div>
+        <div className="now"><span className="pulse-dot" /> {new Date(now).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false, hour: '2-digit', minute: '2-digit' })} <b>IST</b></div>
         <button className="cmdk" onClick={() => setPalette(true)} title="Jump to anything (⌘K)"><kbd>⌘K</kbd> search everything</button>
         <button className={cx('icobtn railbtn', shownL && 'on')} aria-pressed={shownL} onClick={() => railSet('left')}
           title="Workbench rail — dock the desk, the counters and the filters as a column ( [ )">

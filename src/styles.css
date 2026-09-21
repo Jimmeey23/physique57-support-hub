@@ -241,7 +241,7 @@ main{flex:1;padding:26px 26px 90px;max-width:1680px;width:100%;margin:0 auto}
 .radio .box{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--line2);flex:0 0 auto;margin-top:2px;
   display:grid;place-items:center;background:var(--card)}
 .radio.on .box{background:var(--brand);border-color:var(--brand)}
-.radio.on .box:after{content:"";width:5px;height:2.5px;border-left:1.8px solid var(--onbrand);border-bottom:1.8px solid #fff;transform:rotate(-45deg) translate(0,-1px)}
+.radio.on .box:after{content:"";width:5px;height:2.5px;border-left:1.8px solid var(--onbrand);border-bottom:1.8px solid var(--onbrand);transform:rotate(-45deg) translate(0,-1px)}
 .radio input{position:absolute;opacity:0;pointer-events:none}
 .drop{border:1px dashed var(--line2);border-radius:10px;padding:16px;text-align:center;color:var(--mut);
   font-size:12px;cursor:pointer;background:var(--card2);transition:.16s}
@@ -1041,10 +1041,15 @@ html[data-theme=dark] .btn::after{background:linear-gradient(105deg,transparent 
   box-shadow:0 0 0 3px color-mix(in oklab,var(--brand) 16%,transparent),0 8px 22px -18px color-mix(in oklab,var(--brand) 80%,transparent)}
 :where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 .f select,.res-f select,.fieldgrid select,.astat select,select{appearance:none;-webkit-appearance:none;
-  padding-right:30px;background-repeat:no-repeat;
-  background-position:right 9px center;background-size:13px 13px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238994ad' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>")}
-html[data-theme=dark] .f select,html[data-theme=dark] select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b869b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>")}
+  padding-right:32px;background-repeat:no-repeat;
+  background-position:calc(100% - 16px) calc(50% - 1.5px), calc(100% - 11px) calc(50% - 1.5px);
+  background-size:5px 5px, 5px 5px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%)}
+html[data-theme=dark] .f select,html[data-theme=dark] select{
+  background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+  background-repeat:no-repeat;
+  background-position:calc(100% - 16px) calc(50% - 1.5px), calc(100% - 11px) calc(50% - 1.5px);
+  background-size:5px 5px, 5px 5px}
 ::placeholder{color:color-mix(in oklab,var(--mut) 82%,transparent)}
 .switchrow input{appearance:none;width:38px;height:21px;border-radius:99px;background:var(--bg3);border:1px solid var(--line2);
   position:relative;cursor:pointer;transition:background var(--dur) var(--out),border-color var(--dur)}
@@ -2921,10 +2926,19 @@ select::-ms-expand{display:none}
 }
 html[data-motion=calm] .phead h1,html[data-motion=calm] .phead p{animation:none}
 
-.modal header .mh + *,
-.modal header svg{flex:none}
+.modal header{color:var(--ink)}
+.modal header .mico{
+  width:32px;height:32px;flex:none;border-radius:10px;
+  display:grid;place-items:center;overflow:hidden;
+  background:var(--brandsoft);color:var(--brand);
+  box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--brand) 18%,transparent)}
+.modal header .mico svg{width:16px;height:16px;display:block}
 .chev svg,.icobtn svg,.railbtn svg{display:block}
 .success .seal svg{display:block}
+html[data-theme=dark] .modal header h3,
+html[data-theme=dark] .set-block,
+html[data-theme=dark] .preset b,
+html[data-theme=dark] .intg-t b{color:var(--ink)}
 
 .deskid select:hover,.deskid select:focus,
 .ts-status:hover select,.ts-status select:focus,

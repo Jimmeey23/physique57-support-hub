@@ -3,7 +3,8 @@ import React from 'react';
 
 /* Each icon is a raw SVG string, so JSX can’t print it directly — <I> mounts it as markup. */
 export const I = ({ s: raw, className, style, size }) => (
-  <span className={className} style={{ display: 'inline-flex', alignItems: 'center', ...style,
+  <span className={className} aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center',
+    justifyContent: 'center', overflow: 'hidden', lineHeight: 0, color: 'inherit', ...style,
     ...(size ? { width: size, height: size } : {}) }} dangerouslySetInnerHTML={{ __html: raw || '' }} />
 );
 
