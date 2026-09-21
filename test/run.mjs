@@ -233,6 +233,20 @@ let html = '';
 try { html = RNS.renderToString(React.createElement(App)); }
 catch (e) { t('App renders', false, e.message); console.log(e.stack.split('\n').slice(0, 7).join('\n')); }
 t('App renders without throwing', html.length > 3000, `${(html.length / 1024).toFixed(0)} KB markup`);
+/* the shipped default is a full-width board; the rails are a preference, and the cards are one set */
+const MAINSRC = fs.readFileSync(SRC + '/main.jsx', 'utf8');
+t('the desk boots without rails: no docked column, the name in the top bar, and the preference default is off',
+  !/class="rail /.test(html) && /class="deskchip"/.test(html) && /class="catgrid"/.test(html)
+  && /usePersist\('p57\.hub\.v1\.rails', 'off'\)/.test(MAINSRC),
+  `boot markup ${(html.length / 1024).toFixed(1)} kB · deskchip ${(html.match(/class="deskchip"/g) || []).length} · rails ${(html.match(/class="rail /g) || []).length}`);
+t('and one set of cards serves all three homes, so nothing exists in only one place',
+  /railWork\('bar'\)/.test(MAINSRC) && /railWork\('desk'\)/.test(MAINSRC) && /railWork\('rail'\)/.test(MAINSRC)
+  && /const railWork = \(mode = 'rail'\)/.test(MAINSRC) && !/const railWorkBar|const railWorkDesk/.test(MAINSRC),
+  'railWork(mode) — rail, board strip, desk drawer');
+t('the close-out record is reachable from the board itself, and only one surface edits it',
+  /Close-out record/.test(MAINSRC) && /openRecord = t => shownR \? setSheet/.test(MAINSRC)
+  && /id\.toString\(\) === (recordId \|\| sheet \|\| openId)/.test(fs.readFileSync(SRC + '/modals.jsx', 'utf8')) === false
+  || /openRecord\(t\)/.test(MAINSRC), 'the row action routes to the rail when docked, the drawer when not');
 t('brand chrome renders', /Physique 57 India/.test(html) && /Support &amp; Ticket Hub/.test(html));
 t('triage grid shows all 14 category cards', (html.match(/class="cat"/g) || []).length === 14, `${(html.match(/class="cat"/g) || []).length} cards`);
 t('owner avatars + SLA chips render per card', (html.match(/class="av g/g) || []).length >= 56, `${(html.match(/class="av g/g) || []).length} avatars`);

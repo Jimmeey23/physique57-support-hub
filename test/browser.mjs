@@ -172,6 +172,9 @@ window.console.warn = () => {};                     /* the dev-mode key warnings
 window.eval(bundleJs);
 window.eval('globalThis.__C__ = { get: k => window.localStorage.getItem(k), set: (k, v) => window.localStorage.setItem(k, v) };');
 window.localStorage.setItem('p57.hub.v1.tickets', '[]');
+/* The rails are now a preference. Most of this suite documents the *docked* desk — the rails as
+   columns — so boot with them docked; section 5g then undocks them through the real controls. */
+window.localStorage.setItem('p57.hub.v1.rails', JSON.stringify('both'));
 window.eval('globalThis.__MOUNT__(document.getElementById("root"))');
 await new Promise(r => setTimeout(r, 260));
 const doc = window.document;
@@ -995,6 +998,83 @@ t('so a roster name, a ticket title and the desk name are allowed a second line 
 t('and the clocks are tabular, so a column of times lines up as digits',
   /tabular-nums/.test(decls('.chip.mono,.cds b,.stat b,.apay b,.now b,.fv')['font-variant-numeric'] || '')
   || /tnum/.test(decls('.mono')['font-feature-settings'] || ''), 'tnum on mono, tabular on every metric');
+
+/* ───────────────────────── 5g. the board without rails: the default desk ───────────────────────── */
+const railBtns = () => q('.topbar .railbtn');
+t('the rails are two buttons in the top bar, each pressed with a name to say what it docks',
+  railBtns().length === 2 && railBtns().every(b => b.getAttribute('aria-pressed') === 'true')
+  && railBtns().every(b => /rail/.test(b.getAttribute('title') || '')) && doc.documentElement.dataset.rails === 'both',
+  railBtns().map(b => txt(b) + '[' + b.getAttribute('aria-pressed') + ']').join(' '));
+await click(railBtns()[0]); await tick();           /* left releases: what is left is the right column */
+t('each button owns its own column, so the desk can be half-docked',
+  doc.documentElement.dataset.rails === 'right' && !q.one('.rail-l') && !!q.one('.rail-r'),
+  doc.documentElement.dataset.rails);
+await click(railBtns()[1]); await tick();           /* and the record releases too */
+t('undocked, the board owns the whole desk',
+  doc.documentElement.dataset.rails === 'off' && !q('.rail').length && q('.tkrow').length >= 1
+  && rootDecls('.shell')['max-width'] === '1380px',
+  `data-rails=${doc.documentElement.dataset.rails} · .shell at ${rootDecls('.shell')['max-width']} · ${q('.tkrow').length} rows across ${q('.tk').length} cards`);
+t('the counters and every lens move onto the board as one strip, and lose their card frames on the way',
+  !!q.one('.boardbar') && q('.boardbar .counts .rc').length === 4 && q('.boardbar .fgrp').length === 4
+  && q('.boardbar .filters .opt').length >= 8 && /inbar/.test(q.one('.boardbar .rcard').className)
+  && /\.boardbar \.rcard\.inbar\{[^}]*border:0/.test(cssText.replace(/\n\s*/g, '')),
+  `${q('.boardbar .rcard').length} groups · ${q('.boardbar .opt').length} lenses on the strip`);
+t('and nothing is duplicated to do it — one search box, on the toolbar',
+  q('.boardbar .searchbar, .boardbar .Search').length === 0
+  && q('.toolbar .searchbar, .toolbar .Search').length === 1,
+  `${q('.toolbar .searchbar').length} in the toolbar · ${q('.boardbar .searchbar').length} on the strip`);
+t('the six figures above the rows read as a line, not six boxes competing with the list',
+  /stats line/.test(q.one('.stats').className) && q('.stats.line .stat').length === 6
+  && /\.stats\.line \.stat\{[^}]*border:0/.test(cssText.replace(/\n\s*/g, '')),
+  q('.stats.line').length ? txt(q.one('.stats')).slice(0, 74) : 'no line');
+t('the desk folds behind the name in the top bar',
+  !q.one('.rail-l') && !!q.one('.deskchip') && !!q.one('.deskchip .av'), txt(q.one('.deskchip')));
+await click('.deskchip'); await tick();
+t('… and opens as a drawer with the identity, the next off the queue and the escalation line',
+  q('.modal.drawer').length === 1 && !!q.one('.scrim.scrim-drawer') && !!q.one('.modal.drawer .idcard')
+  && !!q.one('.modal.drawer .line') && !!q.one('.modal.drawer .idswitch select')
+  && !q.one('.modal.drawer .filters'),
+  `${q('.modal.drawer .rcard').length} cards · ${txt(q.one('.modal.drawer .idwho b'))}`);
+await click('.modal.drawer .icobtn'); await tick();
+t('closing it leaves the board exactly where it was',
+  !q.one('.modal.drawer') && q('.tkrow').length >= 1, `${q('.tkrow').length} rows still on screen`);
+
+/* the record: the same component, a drawer instead of a column */
+if (!q.one('.tk.open')) await click('.tk .tkrow'); await tick();
+const recBtn = [...q('.tk .detail .actions .btn')].find(b => /Close-out record/.test(txt(b)));
+t('every open row offers the close-out record without needing a rail', !!recBtn, recBtn ? txt(recBtn) : 'no button');
+await click(recBtn); await tick();
+t('it docks on the right and carries the record whole — verdict, checklist, every field',
+  !!q.one('.modal.drawer .rrail') && !!q.one('.modal.drawer .rrail-meter')
+  && q('.modal.drawer .rrail .rk').length === 8 && q('.modal.drawer .res-f').length >= 16
+  && !!q.one('.modal.drawer .rrail-foot .btn'),
+  `${q('.modal.drawer .res-f').length} fields · ${txt(q.one('.modal.drawer .rrail-meter b'))} · ${txt(q.one('.modal.drawer .rrail-meter em'))}`);
+t('the drawer is the surface, so the rail stops boxing itself inside it',
+  (rootDecls('.modal.drawer .rrail').border || '') === '0'
+  && (rootDecls('.modal.drawer .rcard').border || '') === '0'
+  && !!q.one('.modal.drawer .mbody'), 'border:0 on .rrail and .rcard inside .modal.drawer');
+keyOn(doc.querySelector('.modal'), 'Escape'); await tick();
+t('Esc hands the desk back, and the row is still open behind it',
+  !q.one('.modal.drawer') && !!q.one('.tk.open'), q('.tk.open').length + ' rows open');
+doc.activeElement?.blur?.(); await tick();
+const beforeKey = doc.documentElement.dataset.rails;
+window.dispatchEvent(new window.KeyboardEvent('keydown', { key: '[', bubbles: true })); await tick();
+t('one key flips the whole desk — focus mode — and the two buttons report what it did',
+  doc.documentElement.dataset.rails !== beforeKey
+  && q('.topbar .railbtn').every(b => b.getAttribute('aria-pressed') === String(doc.documentElement.dataset.rails === 'both'))
+  && ((beforeKey === 'off') === !!q.one('.rail-l') === !!q.one('.rail-r')),
+  `${beforeKey} → ${doc.documentElement.dataset.rails}`);
+t('and the key writes the same preference the buttons write, so a reload keeps the desk you left',
+  JSON.parse(window.__C__.get('p57.hub.v1.rails')) === doc.documentElement.dataset.rails,
+  `localStorage ${window.__C__.get('p57.hub.v1.rails')} · html[data-rails]=${doc.documentElement.dataset.rails}`);
+/* redock through the controls, so the rail sections that follow read the columns they expect */
+for (let n = 0; n < 3 && doc.documentElement.dataset.rails !== 'both'; n++) {
+  const cur = doc.documentElement.dataset.rails;
+  await click(q('.topbar .railbtn')[cur === 'left' ? 1 : 0]); await tick();
+}
+t('docked again for the sections that read the rails as columns',
+  doc.documentElement.dataset.rails === 'both' && !!q.one('.rail-l') && !!q.one('.rail-r'),
+  doc.documentElement.dataset.rails);
 
 /* ───────────────────────────── 6. a reload keeps it all ───────────────────────────── */
 window.eval('globalThis.__ROOT__.unmount()');

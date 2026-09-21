@@ -7,10 +7,8 @@ import {
   studioFrom, fieldLabels, narrate, narrativeOf, describeTicket, withReporterDefaults,
   DESK_PERSONAS, deskEmail,
 } from './core.js';
-import {
-  Countdown, Pill, StatusPill, Avatar, OwnerCell, IconBtn, Modal, Toasts, Search, Stats, STATUS, fmtDur, fmtAt, cx,
-} from './ui.jsx';
-import { buildOrg, viewerOptions, upline, directReports, resolutionRights, ownershipLine, cleanName as orgClean } from './org.js';
+import { Avatar, Countdown, IconBtn, Modal, OwnerCell, Pill, STATUS, Search, Stats, StatusPill, Toasts, cx, fmtAt, fmtDur } from './ui.jsx';
+import { cleanName, buildOrg, viewerOptions, upline, directReports, resolutionRights, ownershipLine, cleanName as orgClean } from './org.js';
 import { ResolutionRail } from './resolution.jsx';
 import { narrateTicket, triageAdvice, aiReady, readKey, writeKey, maskKey, memberReplyDraft, AI_MODELS } from './ai.js';
 import FormEngine, { buildFields, isVisible } from './forms.jsx';
@@ -134,7 +132,7 @@ function App() {
   /* the board is the desk’s work — wiping it deserves a door with a handle on it */
   const [wipe, setWipe] = useState(false);
   const [cycleModal, setCycleModal] = useState(false);
-  const [record, setRecord] = useState(null);
+  const [recordId, setRecordId] = useState(null);
   const [momenceStatus, setMomenceStatus] = useState('demo');
   const [palette, setPalette] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -158,6 +156,21 @@ function App() {
     d.dataset.motion = prefs.pulse && prefs.animateCounters ? 'full' : 'calm';
   }, [prefs]);
   useEffect(() => { setPrefs(p => (p.theme === theme ? p : { ...p, theme })); }, [theme]);
+
+  /* Two always-on rails were the crowding: eleven controls down the left, a second column of fields
+     down the right, and the board squeezed between them. The board takes the full width now, and each
+     rail is something you ask for — the desk behind your name in the top bar, the close-out record in
+     a drawer, and [ to put both columns back when you want them docked. */
+  const [rails, setRails] = usePersist('p57.hub.v1.rails', 'off');
+  const [deskOpen, setDeskOpen] = useState(false);
+  const [record, setRecord] = useState(null);
+  const shownL = rails === 'left' || rails === 'both';
+  const shownR = rails === 'right' || rails === 'both';
+  const railSet = side => setRails(cur => (cur === 'both' || cur === side)
+    ? (cur === 'both' ? (side === 'left' ? 'right' : 'left') : 'off')
+    : (cur === 'off' ? side : 'both'));
+  const openRecord = t => shownR ? setSheet(t.id) : setRecordId(t.id);
+  useEffect(() => { document.documentElement.dataset.rails = rails; }, [rails]);
   /* Filtered grids recompute over 296 sub-categories, so they get a beat of skeleton rather
      than a hard swap. Skipped entirely when the desk has turned skeleton loaders off. */
   useEffect(() => {
@@ -547,6 +560,7 @@ function App() {
       else if (e.key === 'c') setView('class');
       else if (e.key === 'r') setView('trainers');
       else if (e.key === 't') setTheme(x => x === 'dark' ? 'light' : 'dark');
+      else if (e.key === '[') setRails(x => x === 'off' ? 'both' : 'off');
       else if (e.key === '?') setShowHelp(true);
       else if (e.key === 's') setSettings(true);
     };
@@ -821,6 +835,8 @@ function App() {
             <button className="btn pri" onClick={reviewThenFile}><I s={svg.bolt}/> Review &amp; create ticket</button>
           </div>
         </div>
+        {/* with no rail docked the routing preview belongs to the form itself, not to a column that is closed */}
+        {!shownR && intakeAside()}
       </div>
     </div>;
   };
@@ -938,8 +954,9 @@ function App() {
           <button className="btn pri" onClick={() => { setView('triage'); setCat(null); setSub(null); }}><I s={svg.plus}/> New ticket</button>
         </div>
       </div>
-      <Stats items={[
-        { value: live.length, label: 'Open on the board', acc: 'var(--med)' },
+      {!shownL && railWork('bar')}
+      <Stats line items={[
+        { value: live.length, label: 'Open on the board', acc: 'var(--med)'},
         { value: breaches, label: 'SLA breached', acc: 'var(--crit)', tag: breaches ? 'act now' : 'clear' },
         { value: atRisk, label: 'Within 25% of breach', acc: 'var(--high)' },
         { value: due2, label: 'First reply due < 2 hr', acc: 'var(--brand2)' },
@@ -1046,6 +1063,7 @@ function App() {
                 </div>
                 <div className="actions">
                   {!t.firstResponseAt && <button className="btn sm pri" onClick={() => markFR(t.id)}><I s={svg.check}/> Log first response</button>}
+                  <button className="btn sm" onClick={() => openRecord(t)}><I s={svg.clip}/> Close-out record</button>
                   {t.escalation < t.chain.length - 1 && <button className="btn sm" onClick={() => escalate(t.id)}><I s={svg.up}/> Escalate to {short(t.chain[t.escalation + 1]?.who)}</button>}
                   <select className="sel" value={t.status} onChange={e => setStatus(t.id, e.target.value)} style={{ fontSize: 12 }}>
                     {Object.keys(STATUS).filter(s => !['resolved', 'closed'].includes(s)).map(s => <option key={s} value={s}>{STATUS[s]}</option>)}
@@ -1323,15 +1341,16 @@ function App() {
      Left: who you are on this board and what that narrows the queue to. Right: the ticket’s
      resolution record, or the intake’s routing preview while a report is still being written.
      Both are chrome, not content — the page underneath never has to scroll sideways for them. */
-  const railWork = () => {
+  /* One set of cards, three homes: docked in the rail, laid along the top of the board, or inside the
+     desk drawer. `bar` leaves the duplicated search out — the queue's own toolbar already has one. */
+  const railWork = (mode = 'rail') => {
     const live = tickets.filter(t => !['resolved', 'closed'].includes(t.status));
     const held = viewer ? live.filter(t => short(t.assignee) === viewer.name) : [];
     const breach = live.filter(t => t._breach || (t.frDueAt && t.frDueAt < now));
     const myLine = viewer ? upline(org, viewer.name, 3) : [];
     const reports = viewer ? directReports(org, viewer.name) : [];
     const load = n => live.filter(t => short(t.assignee) === n && !['resolved', 'closed'].includes(t.status)).length;
-    return <div className="railstack">
-      <section className="rcard idcard">
+    const idCard = <section className="rcard idcard">
         <span className="eyebrow">At the desk as</span>
         <div className="idrow">
           <Avatar name={viewer?.name || 'guest'} size={40} />
@@ -1356,7 +1375,7 @@ function App() {
         </p>}
       </section>
 
-      <section className="rcard counts">
+    const counts = <section className={cx('rcard counts', mode === 'bar' && 'inbar')}>
         {[[live.length, 'open on the board'], [breach.length, 'past first response'],
           [held.length, 'on my board'], [archived.length, 'filed']].map(([n, l], i) =>
           <button type="button" key={l} className={cx('rc', i === 1 && n > 0 && 'bad')} onClick={() => {
@@ -1367,11 +1386,11 @@ function App() {
           }}><b className="mono">{n}</b><span className="xxs">{l}</span></button>)}
       </section>
 
-      <section className="rcard filters">
+    const filters = <section className={cx('rcard filters', mode === 'bar' && 'inbar')}>
         <div className="rcard-head"><span className="eyebrow">Narrow the board</span>
           <button className="btn text sm" onClick={() => { setStatusFilter('live'); setPrioFilter(''); setDeptFilter(''); setOwnerFilter('');
             setStudioFilter(''); setQ(''); setMineOn(false); setOnlyClass(false); }}>reset</button></div>
-        <Search value={q} onChange={setQ} placeholder="number, title, member, machine…" />
+        {mode !== 'bar' && <Search value={q} onChange={setQ} placeholder="number, title, member, machine…" />}
         {/* three lenses, in the order a person actually reaches for them: how bad, how wide, where */}
         <div className="fgrp">
           <span className="fk">Priority</span>
@@ -1401,7 +1420,7 @@ function App() {
         </div>
       </section>
 
-      {held.length > 0 && <section className="rcard mine">
+    const mine = held.length > 0 && <section className="rcard mine">
         <div className="rcard-head"><span className="eyebrow">Next off my queue</span><b className="mono xs">{held.length}</b></div>
         <ul>{held.slice(0, 4).map(t => <li key={t.id}>
           <button onClick={() => { setView('queue'); setSheet(t.id); }}>
@@ -1409,9 +1428,9 @@ function App() {
             <span className="mtitle">{t.title || t.subCategory}</span>
             <Pill p={t.priority} />
           </button></li>)}</ul>
-      </section>}
+      </section>;
 
-      <section className="rcard line">
+    const line = <section className="rcard line">
         <div className="rcard-head"><span className="eyebrow">Reporting line</span></div>
         {myLine.length ? <div className="org-up">{myLine.map((p, i) => <span key={p.name} className="org-node"
           title={p.role}>{p.name}<em>{i === 0 ? 'directly above' : 'further up'}</em></span>)}</div>
@@ -1420,12 +1439,15 @@ function App() {
           <li key={p.name}><Avatar name={p.name} size={20} /><span>{p.name}</span>
             <em className="mono xxs">{load(p.name)} open</em></li>)}</ul>}
       </section>
-    </div>;
+    if (mode === 'bar') return <div className="boardbar">{counts}{filters}</div>;
+    return mode === 'desk'
+      ? <div className="railstack">{idCard}{mine}{line}</div>
+      : <div className="railstack">{idCard}{counts}{filters}{mine}{line}</div>;
   };
 
-  const railFocus = () => {
+  const railFocus = (tk) => {
     if (view === 'intake' && sub) return intakeAside();
-    const t = focus;
+    const t = tk === undefined ? focus : tk;
     /* one pen per record: while the wide close-out form is open the rail stands down rather
        than holding a second, unsynchronised draft of the same eighteen fields */
     if (t && resolving && resolving.id === t.id) return <div className="railstack">
@@ -1486,6 +1508,16 @@ function App() {
       <div className="tools">
         <div className="now"><span className="pulse-dot" /> {new Date(now).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })} <b>IST</b></div>
         <button className="cmdk" onClick={() => setPalette(true)} title="Jump to anything (⌘K)"><kbd>⌘K</kbd> search everything</button>
+        <button className={cx('icobtn railbtn', shownL && 'on')} aria-pressed={shownL} onClick={() => railSet('left')}
+          title="Workbench rail — dock the desk, the counters and the filters as a column ( [ )">
+          <span dangerouslySetInnerHTML={{ __html: svg.layers }} /></button>
+        <button className={cx('icobtn railbtn', shownR && 'on')} aria-pressed={shownR} onClick={() => railSet('right')}
+          title="Resolution rail — dock the close-out record as a column instead of a drawer ( [ )">
+          <span dangerouslySetInnerHTML={{ __html: svg.clip }} /></button>
+        {!shownL && <button className="deskchip" onClick={() => setDeskOpen(true)}
+          title="Who is at the desk, what is next off the queue, and who it escalates to">
+          <Avatar name={viewer?.name || 'guest'} size={22} /><b>{cleanName(viewer?.name) || 'sign in'}</b>
+          <em className="xxs">the desk</em></button>}
         <IconBtn title="Guided powerCycle report" onClick={() => setCycleModal(true)}><span dangerouslySetInnerHTML={{ __html: svg.whistle }} /></IconBtn>
         <IconBtn title="Integrations & settings" className={cx(settings && 'on')} onClick={() => setSettings(true)}><span dangerouslySetInnerHTML={{ __html: svg.sliders }} /></IconBtn>
         <IconBtn title="Shortcuts (?)" onClick={() => setShowHelp(true)}>?</IconBtn>
@@ -1493,11 +1525,11 @@ function App() {
           <span dangerouslySetInnerHTML={{ __html: theme === 'dark' ? svg.sun : svg.moon }} /></IconBtn>
       </div>
     </div>
-    <div className="shell">
-      <aside className="rail rail-l" id="rail-work" aria-label="Desk, filters and reporting line">{railWork()}</aside>
+    <div className={cx('shell', (shownL || shownR) && 'docked')}>
+      {shownL && <aside className="rail rail-l" id="rail-work" aria-label="Desk, filters and reporting line">{railWork('rail')}</aside>}
       <main>{view === 'queue' ? queue() : view === 'insights' ? insights() : view === 'class' ? classDesk()
         : view === 'trainers' ? trainers() : view === 'log' ? classLog() : (view === 'triage' && !sub) ? triage() : intake()}</main>
-      <aside className="rail rail-r" id="rail-focus" aria-label="Resolution record for the ticket in focus">{railFocus()}</aside>
+      {shownR && <aside className="rail rail-r" id="rail-focus" aria-label="Resolution record for the ticket in focus">{railFocus()}</aside>}
     </div>
     <footer className="legal">
       <span><b>{DATA.counts.categories}</b> categories · <b>{DATA.counts.subcategories}</b> sub-categories · <b>{DATA.counts.fields.toLocaleString()}</b> intake field plans</span>
@@ -1561,6 +1593,13 @@ function App() {
         onCancel={() => setPendingLink(null)}
         onCreateSeparate={() => { setPendingLink(null); fileTicket({}); }}
         onLink={t => setPendingLink({ at: Date.now(), ticket: t })} />)}
+    {deskOpen && <Modal size="drawer" tone="quiet" onClose={() => setDeskOpen(false)}
+      title="At the desk" description="Who the hub is taking calls as, what is next off the queue, and the line it escalates along."
+      footer={<span className="xs mut">{live.length} in view · {archived.length} filed · {viewer ? `signed in as ${cleanName(viewer.name)}` : 'nobody signed in'}</span>}>{railWork('desk')}</Modal>}
+    {recordId != null && (() => { const rec = all.find(x => x.id === recordId) || null;
+      return rec && <Modal size="drawer" tone="quiet" onClose={() => setRecordId(null)}
+        title={`Close-out record · ${rec.number}`}
+        description="The same record the docked rail carries, docked here so the board keeps its full width.">{railFocus(rec)}</Modal>; })()}
     {resolving && <ResolutionModal t={resolving} onCancel={() => setResolving(null)} onConfirm={f => recordResolution(resolving.id, f)} />}
     {sheet && (() => { const t = all.find(x => x.id === sheet); return t && <TicketSheet t={t} story={t.writeup || stories[t.id] || t.narrative} now={now}
       fields={buildFields(t.data, `${t.category}|||${t.subCategory}`, DATA, t.studio)}
@@ -1636,7 +1675,7 @@ function App() {
       }} />}
     {palette && <CommandPalette items={paletteItems()} onClose={() => setPalette(false)} onRun={r => r.run && r.run()} />}
     {showHelp && <Modal title="Keyboard" icon={<span dangerouslySetInnerHTML={{ __html: svg.wand }} />} onClose={() => setShowHelp(false)}>
-      <div className="kbdhelp">{[['Focus search', '/'], ['Raise a new ticket', 'n'], ['Live queue', 'q'], ['Insights', 'i'], ['Toggle theme', 't'], ['Close / back', 'Esc'], ['This panel', '?']]
+      <div className="kbdhelp">{[['Focus search', '/'], ['Raise a new ticket', 'n'], ['Live queue', 'q'], ['Insights', 'i'], ['Dock or clear the rails', '['], ['Toggle theme', 't'], ['Close / back', 'Esc'], ['This panel', '?']]
         .map(([a, b]) => <div key={a}><span className="mut">{a}</span><span><span className="kbd">{b}</span></span></div>)}</div>
     </Modal>}
   </div>;

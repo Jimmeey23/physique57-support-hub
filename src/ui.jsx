@@ -170,8 +170,10 @@ export function Search({ value, onChange, placeholder, autoFocus, idRef }) {
 }
 
 /* ------------------------------ stat strip ------------------------------ */
-export function Stats({ items }) {
-  return <div className="stats">{items.map((s, i) => <Stat key={i} s={s} />)}</div>;
+export function Stats({ items, line }) {
+  /* `line` is the same six figures as one reading line — what a board wants above its rows, rather
+     than six boxes competing with them for height. */
+  return <div className={cx('stats', line && 'line')}>{items.map((s, i) => <Stat key={i} s={s} />)}</div>;
 }
 /* Numbers that land rather than pop: a live board should feel like it is counting. */
 function Stat({ s }) {
