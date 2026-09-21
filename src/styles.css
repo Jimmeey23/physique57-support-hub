@@ -1,48 +1,48 @@
 /* Physique 57 — design tokens. Two skins, one component set, nothing hard-codes a colour.
-   light · white paper, cool gray surfaces, one confident blue, shadows with a blue in them
-   dark  · matte black, steel hairlines, neon cyan-blue that actually glows
+   light · gallery white, sapphire ink, ice-blue atmosphere, whisper shadows
+   dark  · matte void, electric cyan, aurora mint, volumetric glow
    `--serif` is kept as a name because 40 rules ask for it; it now means the display face. */
 :root{
   color-scheme:light;
-  --bg:#ffffff; --bg2:#f3f5f9; --bg3:#e9edf4;
-  --card:#ffffff; --card2:#f7f9fc; --sunk:#eef2f8;
-  --ink:#070d1a; --ink2:#333f57; --mut:#5f6a83;
-  --line:#e6ebf3; --line2:#d3dbe8; --hair:rgba(10,22,45,.055);
-  --brand:#1f5bff; --brand2:#4b8bff; --brand3:#0a3ed1;
-  --brandsoft:#eef3ff; --accent:#00c2ff;
+  --bg:#ffffff; --bg2:#f1f4f9; --bg3:#e5ebf4;
+  --card:#ffffff; --card2:#f6f8fc; --sunk:#eef2f8;
+  --ink:#070b16; --ink2:#334056; --mut:#5a657c;
+  --line:#e2e8f2; --line2:#c9d3e3; --hair:rgba(12,24,56,.06);
+  --brand:#1a4fff; --brand2:#4d7dff; --brand3:#0b3ae8;
+  --brandsoft:#eef2ff; --accent:#00b8d4;
   --onbrand:#ffffff;
-  --crit:#cb2040; --high:#955409; --med:#1a67d1; --low:#5d6880;
-  --ok:#0a7450; --risk:#955409; --breach:#cb2040;
-  --scrim:rgba(9,15,30,.44);
-  --ring:color-mix(in oklab,var(--brand) 40%,transparent);
-  --glow:0 0 0 1px color-mix(in oklab,var(--brand) 16%,transparent);
-  --sheen:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,0));
-  --shadow:0 1px 1px rgba(9,20,44,.04), 0 2px 6px -2px rgba(9,20,44,.07), 0 18px 38px -22px rgba(9,20,44,.16);
-  --shadow-lg:0 2px 4px rgba(9,20,44,.05), 0 26px 52px -20px rgba(9,20,44,.18), 0 70px 130px -50px rgba(11,32,86,.26);
-  --display:"SF Pro Display","Segoe UI Variable Display",Inter,"Helvetica Neue",system-ui,-apple-system,sans-serif;
+  --crit:#c41b38; --high:#8f4a00; --med:#1558c9; --low:#556178;
+  --ok:#0a6b48; --risk:#8f4a00; --breach:#c41b38;
+  --scrim:rgba(8,12,28,.48);
+  --ring:color-mix(in oklab,var(--brand) 42%,transparent);
+  --glow:0 0 0 1px color-mix(in oklab,var(--brand) 18%,transparent);
+  --sheen:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,0));
+  --shadow:0 1px 1px rgba(10,22,56,.04), 0 4px 12px -6px rgba(10,22,56,.08), 0 22px 44px -24px rgba(10,22,56,.18);
+  --shadow-lg:0 2px 6px rgba(10,22,56,.05), 0 28px 64px -24px rgba(10,22,56,.2), 0 80px 140px -56px rgba(16,40,120,.28);
+  --display:"Outfit","Avenir Next","SF Pro Display","Segoe UI Variable Display",Inter,"Helvetica Neue",system-ui,-apple-system,sans-serif;
   --serif:var(--display);
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text","Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
-  --r:16px; --r2:12px; --r3:24px;
-  --spring:cubic-bezier(.22,1.16,.32,1); --out:cubic-bezier(.22,.7,.16,1); --dur:.2s;
+  --sans:"Outfit","Avenir Next",-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text","Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --r:20px; --r2:14px; --r3:28px;
+  --spring:cubic-bezier(.22,1.2,.32,1); --out:cubic-bezier(.16,.8,.16,1); --dur:.22s;
 }
 html[data-theme=dark]{
   color-scheme:dark;
-  --bg:#08090b; --bg2:#0c0e13; --bg3:#11141a;
-  --card:#101319; --card2:#151a22; --sunk:#0a0c10;
-  --ink:#eef3fb; --ink2:#b4c0d4; --mut:#7b869b;
-  --line:#1e232d; --line2:#2c3441; --hair:rgba(255,255,255,.065);
-  --brand:#38d2ff; --brand2:#4f8dff; --brand3:#93ebff;
-  --brandsoft:rgba(56,210,255,.12); --accent:#57ffb9;
-  --onbrand:#04121c;
-  --crit:#ff5470; --high:#ffc861; --med:#63aaff; --low:#8b95a8;
-  --ok:#38f0a4; --risk:#ffc861; --breach:#ff5470;
-  --scrim:rgba(2,3,6,.72);
-  --ring:color-mix(in oklab,var(--brand) 58%,transparent);
-  --glow:0 0 0 1px color-mix(in oklab,var(--brand) 26%,transparent), 0 0 26px -8px color-mix(in oklab,var(--brand) 70%,transparent);
-  --sheen:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,0));
-  --shadow:0 1px 1px rgba(0,0,0,.5), 0 3px 10px -4px rgba(0,0,0,.62), 0 22px 48px -26px rgba(0,0,0,.9);
-  --shadow-lg:0 4px 12px rgba(0,0,0,.55), 0 46px 100px -34px rgba(0,0,0,1), 0 0 70px -34px color-mix(in oklab,var(--brand) 75%,transparent);
+  --bg:#08090b; --bg2:#0c0e13; --bg3:#12151c;
+  --card:#101319; --card2:#161b24; --sunk:#0a0c10;
+  --ink:#ffffff; --ink2:#d5dce8; --mut:#8b95ab;
+  --line:#1c222c; --line2:#2a3342; --hair:rgba(255,255,255,.07);
+  --brand:#3ad4ff; --brand2:#5b94ff; --brand3:#9aedff;
+  --brandsoft:rgba(58,212,255,.14); --accent:#4dffc4;
+  --onbrand:#03141c;
+  --crit:#ff5d76; --high:#ffc45e; --med:#6aafff; --low:#8f9aaf;
+  --ok:#3af0a8; --risk:#ffc45e; --breach:#ff5d76;
+  --scrim:rgba(2,3,6,.78);
+  --ring:color-mix(in oklab,var(--brand) 62%,transparent);
+  --glow:0 0 0 1px color-mix(in oklab,var(--brand) 32%,transparent), 0 0 32px -8px color-mix(in oklab,var(--brand) 72%,transparent);
+  --sheen:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,0));
+  --shadow:0 1px 1px rgba(0,0,0,.55), 0 6px 16px -6px rgba(0,0,0,.7), 0 28px 56px -28px rgba(0,0,0,.92);
+  --shadow-lg:0 6px 18px rgba(0,0,0,.6), 0 52px 110px -36px rgba(0,0,0,1), 0 0 80px -32px color-mix(in oklab,var(--brand) 80%,transparent);
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -241,7 +241,7 @@ main{flex:1;padding:26px 26px 90px;max-width:1680px;width:100%;margin:0 auto}
 .radio .box{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--line2);flex:0 0 auto;margin-top:2px;
   display:grid;place-items:center;background:var(--card)}
 .radio.on .box{background:var(--brand);border-color:var(--brand)}
-.radio.on .box:after{content:"";width:5px;height:2.5px;border-left:1.8px solid var(--onbrand);border-bottom:1.8px solid #fff;transform:rotate(-45deg) translate(0,-1px)}
+.radio.on .box:after{content:"";width:5px;height:2.5px;border-left:1.8px solid var(--onbrand);border-bottom:1.8px solid var(--onbrand);transform:rotate(-45deg) translate(0,-1px)}
 .radio input{position:absolute;opacity:0;pointer-events:none}
 .drop{border:1px dashed var(--line2);border-radius:10px;padding:16px;text-align:center;color:var(--mut);
   font-size:12px;cursor:pointer;background:var(--card2);transition:.16s}
@@ -593,9 +593,9 @@ footer.legal b{font-weight:600;color:var(--ink2)}
 .preset em{font-style:normal;font-size:11.4px;color:var(--mut)}
 .pv{width:46px;height:36px;border-radius:10px;flex:none;border:1px solid var(--line2);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 10px -8px rgba(9,20,44,.5)}
-.pv-editorial{background:linear-gradient(150deg,#ffffff,#eaf0f9 60%,#dbe6f7)}
-.pv-glass{background:linear-gradient(140deg,#eaf5ff,#dbe9ff 50%,#c9f0ff);backdrop-filter:blur(2px)}
-.pv-contrast{background:linear-gradient(150deg,#08090b 46%,#38d2ff)}
+.pv-editorial{background:linear-gradient(150deg,#ffffff,#eef2ff 55%,#d7e2ff)}
+.pv-glass{background:linear-gradient(140deg,#eaf4ff,#d4e4ff 48%,#c5f4ff);backdrop-filter:blur(2px)}
+.pv-contrast{background:linear-gradient(150deg,#08090b 46%,#3ad4ff)}
 .switchrow{display:flex;gap:9px;align-items:center;font-size:12.8px;padding:5px 0;cursor:pointer}
 .switchrow input{accent-color:var(--brand);width:15px;height:15px}
 .tiergrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:8px}
@@ -1041,10 +1041,15 @@ html[data-theme=dark] .btn::after{background:linear-gradient(105deg,transparent 
   box-shadow:0 0 0 3px color-mix(in oklab,var(--brand) 16%,transparent),0 8px 22px -18px color-mix(in oklab,var(--brand) 80%,transparent)}
 :where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 .f select,.res-f select,.fieldgrid select,.astat select,select{appearance:none;-webkit-appearance:none;
-  padding-right:30px;background-repeat:no-repeat;
-  background-position:right 9px center;background-size:13px 13px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238994ad' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>")}
-html[data-theme=dark] .f select,html[data-theme=dark] select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b869b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>")}
+  padding-right:32px;background-repeat:no-repeat;
+  background-position:calc(100% - 16px) calc(50% - 1.5px), calc(100% - 11px) calc(50% - 1.5px);
+  background-size:5px 5px, 5px 5px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%)}
+html[data-theme=dark] .f select,html[data-theme=dark] select{
+  background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+  background-repeat:no-repeat;
+  background-position:calc(100% - 16px) calc(50% - 1.5px), calc(100% - 11px) calc(50% - 1.5px);
+  background-size:5px 5px, 5px 5px}
 ::placeholder{color:color-mix(in oklab,var(--mut) 82%,transparent)}
 .switchrow input{appearance:none;width:38px;height:21px;border-radius:99px;background:var(--bg3);border:1px solid var(--line2);
   position:relative;cursor:pointer;transition:background var(--dur) var(--out),border-color var(--dur)}
@@ -2643,3 +2648,309 @@ html[data-rails=off] .boardbar{margin-bottom:16px}
 html[data-rails=off] .boardbar .filters{justify-content:flex-end}
 html[data-rails=off] .boardbar{justify-content:space-between}
 html[data-rails=off] .phead{margin-bottom:18px}
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   LUMEN · flush chrome
+   Porcelain paper in the light, a matte void in the dark. Tokens already carry
+   the palette. This layer restyles chrome only — locked geometry is left alone.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+/* ---------- atmosphere: a quiet room, not a texture ---------- */
+body{
+  background:
+    radial-gradient(1100px 560px at 8% -16%, color-mix(in oklab,var(--brand) 8%,transparent), transparent 62%),
+    radial-gradient(860px 480px at 102% -4%, color-mix(in oklab,var(--accent) 7%,transparent), transparent 58%),
+    var(--bg);
+  background-attachment:fixed}
+html[data-theme=dark] body{
+  background:
+    radial-gradient(1080px 640px at 18% -24%, color-mix(in oklab,var(--brand) 16%,transparent), transparent 64%),
+    radial-gradient(780px 480px at 100% 4%, color-mix(in oklab,var(--accent) 10%,transparent), transparent 58%),
+    var(--bg);
+  background-attachment:fixed}
+body::after{content:none;display:none;background:none}
+.app::before{
+  background:
+    radial-gradient(44% 70% at 16% -6%, color-mix(in oklab,var(--brand) 14%,transparent), transparent 68%),
+    radial-gradient(34% 58% at 86% 0%, color-mix(in oklab,var(--accent) 12%,transparent), transparent 64%);
+  filter:blur(28px);opacity:.78}
+html[data-theme=dark] .app::before{opacity:.7;
+  background:
+    radial-gradient(46% 74% at 18% -10%, color-mix(in oklab,var(--brand) 22%,transparent), transparent 66%),
+    radial-gradient(34% 58% at 84% 2%, color-mix(in oklab,var(--accent) 14%,transparent), transparent 62%)}
+
+/* ---------- editorial still the default — lifted, not boxed ---------- */
+html[data-appearance=editorial]{
+  --shadow:0 1px 1px rgba(12,24,56,.03), 0 10px 28px -20px rgba(12,24,56,.14), 0 0 0 1px rgba(12,24,56,.028);
+  --shadow-lg:0 2px 4px rgba(12,24,56,.04), 0 28px 64px -30px rgba(12,24,56,.2), 0 50px 100px -60px rgba(26,79,255,.14);
+  --r:16px; --r2:12px; --r3:22px}
+html[data-appearance=editorial] .app::before{opacity:.55}
+html[data-appearance=editorial] .cat,
+html[data-appearance=editorial] .subc,
+html[data-appearance=editorial] .card,
+html[data-appearance=editorial] .panel,
+html[data-appearance=editorial] .set-block,
+html[data-appearance=editorial] .tk{box-shadow:var(--shadow)}
+html[data-appearance=editorial] .btn::after{display:block;opacity:.4}
+html[data-theme=dark][data-appearance=editorial]{
+  --shadow:0 1px 1px rgba(0,0,0,.4), 0 14px 36px -22px rgba(0,0,0,.78), 0 0 0 1px rgba(255,255,255,.045);
+  --shadow-lg:0 4px 14px rgba(0,0,0,.48), 0 40px 90px -38px rgba(0,0,0,.92), 0 0 64px -38px color-mix(in oklab,var(--brand) 48%,transparent)}
+
+html[data-appearance=glass] body{
+  background:
+    radial-gradient(1040px 600px at 6% -12%, color-mix(in oklab,var(--brand) 16%,transparent), transparent 60%),
+    radial-gradient(860px 500px at 104% 0%, color-mix(in oklab,var(--accent) 14%,transparent), transparent 56%),
+    var(--bg)}
+html[data-appearance=glass] .topbar{
+  background:color-mix(in oklab,var(--card) 48%,transparent);
+  border-color:color-mix(in oklab,var(--ink) 8%,transparent)}
+html[data-appearance=glass] .cat,
+html[data-appearance=glass] .subc,
+html[data-appearance=glass] .tk,
+html[data-appearance=glass] .stat,
+html[data-appearance=glass] .rcard,
+html[data-appearance=glass] .boardbar{
+  background:color-mix(in oklab,var(--card) 58%,transparent);
+  backdrop-filter:blur(20px) saturate(1.5);
+  border-color:color-mix(in oklab,var(--ink) 9%,var(--line))}
+html[data-theme=dark][data-appearance=glass] .topbar,
+html[data-theme=dark][data-appearance=glass] .cat,
+html[data-theme=dark][data-appearance=glass] .tk{
+  box-shadow:0 0 0 1px var(--hair), 0 28px 70px -36px #000, 0 0 46px -32px color-mix(in oklab,var(--brand) 62%,transparent)}
+
+/* ---------- topbar: flush, nowrap, one row ---------- */
+.topbar{
+  margin:0;padding:10px 22px;gap:14px;top:0;
+  flex-wrap:nowrap;align-items:center;
+  border:0;border-bottom:1px solid color-mix(in oklab,var(--line) 88%,transparent);
+  border-radius:0;
+  background:color-mix(in oklab,var(--card) 86%,transparent);
+  backdrop-filter:saturate(1.7) blur(22px);
+  box-shadow:none}
+.topbar::after{
+  left:0;right:0;bottom:-1px;height:1px;border-radius:0;
+  background:linear-gradient(90deg,transparent,color-mix(in oklab,var(--brand) 55%,transparent) 22%,
+    color-mix(in oklab,var(--accent) 45%,transparent) 62%,transparent);
+  opacity:.55}
+html[data-theme=dark] .topbar{
+  background:color-mix(in oklab,var(--card) 62%,transparent);
+  box-shadow:none;border-bottom-color:color-mix(in oklab,var(--line) 80%,transparent)}
+.mark{flex:0 0 auto}
+.mark .glyph{width:38px;height:38px;border-radius:12px}
+.mark .who b{font-size:16.4px;letter-spacing:-.036em;font-weight:700;color:var(--ink)}
+.mark .who em{letter-spacing:.18em;color:color-mix(in oklab,var(--brand) 28%,var(--mut))}
+.now{
+  border-radius:999px;padding:6px 11px;
+  background:linear-gradient(180deg,var(--card),var(--card2));
+  box-shadow:inset 0 1px 0 var(--hair);
+  border-color:color-mix(in oklab,var(--line) 88%,transparent)}
+.tools{flex:0 0 auto;flex-wrap:nowrap;gap:7px}
+.icobtn{
+  width:34px;height:34px;border-radius:11px;flex:none;
+  background:linear-gradient(180deg,var(--card),var(--card2))}
+.deskchip{border-radius:999px;flex:none;white-space:nowrap}
+
+/* tabs take leftover width and scroll instead of wrapping the chrome */
+nav.tabs{
+  flex:1 1 0;min-width:0;overflow-x:auto;overflow-y:hidden;
+  flex-wrap:nowrap;white-space:nowrap;scrollbar-width:none;
+  padding:3px;gap:2px;border-radius:999px;
+  background:color-mix(in oklab,var(--bg2) 90%,transparent);
+  box-shadow:inset 0 1px 2px var(--hair), 0 0 0 1px color-mix(in oklab,var(--line) 70%,transparent)}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{
+  flex:0 0 auto;padding:7px 13px;border-radius:999px;font-weight:550;letter-spacing:-.01em}
+nav.tabs button svg{width:14px;height:14px;flex:none}
+nav.tabs button[aria-current=true]{
+  color:var(--brand);font-weight:700;
+  background:linear-gradient(180deg,var(--card),color-mix(in oklab,var(--brandsoft) 74%,var(--card)));
+  box-shadow:var(--shadow), inset 0 0 0 1px color-mix(in oklab,var(--brand) 26%,transparent)}
+html[data-theme=dark] nav.tabs button[aria-current=true]{
+  color:var(--ink);
+  text-shadow:0 0 18px color-mix(in oklab,var(--brand) 70%,transparent);
+  box-shadow:var(--glow), var(--shadow)}
+nav.tabs .dot{
+  background:linear-gradient(160deg,var(--brand2),var(--brand3));
+  box-shadow:0 4px 12px -6px color-mix(in oklab,var(--brand) 90%,transparent)}
+
+/* command: keep the key, drop the label that crowds the row */
+.cmdk{
+  font-size:0;letter-spacing:0;gap:0;padding:6px 9px;min-height:34px;
+  border-radius:11px;flex:none;white-space:nowrap;
+  background:linear-gradient(180deg,var(--card),var(--card2))}
+.cmdk kbd{font-size:11px;color:var(--ink2)}
+
+html[data-density=spread] .topbar{margin:0;padding:12px 26px;border-radius:0}
+html[data-density=compact] .topbar{margin:0;padding:8px 14px;border-radius:0}
+@media (max-width:760px){
+  .topbar{margin:0;padding:8px 12px;border-radius:0;flex-wrap:nowrap;gap:10px}
+  .phead h1{font-size:28px}
+  nav.tabs{flex:1 1 auto}
+}
+
+/* ---------- type ---------- */
+.phead{margin-bottom:22px;gap:18px}
+.phead .eyebrow{
+  color:var(--brand);letter-spacing:.2em;font-weight:700}
+.phead h1{font-size:34px;letter-spacing:-.04em;font-weight:720;line-height:1.06;color:var(--ink)}
+.phead p{font-size:14px;max-width:68ch;color:var(--ink2);line-height:1.55}
+.empty .big{
+  color:var(--brand);opacity:.72;
+  background:linear-gradient(180deg,var(--brand),color-mix(in oklab,var(--accent) 50%,var(--brand)));
+  -webkit-background-clip:text;background-clip:text}
+footer.legal{padding:8px 28px 28px;gap:16px;font-size:11.4px}
+footer.legal b{color:var(--ink)}
+
+/* ---------- actions ---------- */
+.btn{
+  border-radius:12px;letter-spacing:-.014em;
+  background:linear-gradient(180deg,var(--card),var(--card2));
+  box-shadow:0 1px 1px var(--hair), 0 10px 22px -18px rgba(10,22,56,.4)}
+.btn.pri{
+  background:linear-gradient(168deg,var(--brand2),var(--brand) 48%,var(--brand3));
+  color:var(--onbrand);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.36),
+    0 14px 32px -16px color-mix(in oklab,var(--brand) 90%,transparent)}
+html[data-theme=dark] .btn.pri{
+  color:var(--onbrand);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),
+    0 0 0 1px color-mix(in oklab,var(--brand) 42%,transparent),
+    0 16px 40px -16px color-mix(in oklab,var(--brand) 95%,transparent)}
+.opt.on{
+  background:linear-gradient(168deg,var(--brand2),var(--brand3));
+  color:var(--onbrand);
+  box-shadow:0 10px 24px -14px color-mix(in oklab,var(--brand) 86%,transparent)}
+html[data-theme=dark] .opt.on{color:var(--onbrand)}
+
+/* ---------- surfaces ---------- */
+.cat,.subc,.panel,.formcard,.logcard,.cd-card,.td-side,.set-block,.rrail,.ax-tools{
+  transition:transform .32s var(--spring), box-shadow var(--dur) var(--out), border-color var(--dur) var(--out), background var(--dur)}
+.cat:hover,.subc:hover{
+  transform:translateY(-3px);
+  box-shadow:0 2px 2px var(--hair), 0 26px 52px -28px color-mix(in oklab,var(--brand) 48%,transparent)}
+.stat{
+  background:linear-gradient(180deg,var(--card),color-mix(in oklab,var(--brandsoft) 22%,var(--card2)));
+  box-shadow:var(--shadow)}
+.stat:hover{transform:translateY(-2px)}
+.boardbar{
+  border-radius:18px;
+  background:linear-gradient(180deg,color-mix(in oklab,var(--card) 94%,transparent),var(--card2));
+  box-shadow:var(--shadow)}
+.rcard{box-shadow:var(--shadow);
+  background:linear-gradient(180deg,var(--card),color-mix(in oklab,var(--card2) 70%,var(--card)))}
+.idcard{background:linear-gradient(165deg,color-mix(in oklab,var(--brand) 9%,var(--card)),var(--card2))}
+.idwho b,.c-title>b{color:var(--ink)}
+.tk:hover{transform:translateY(-1px)}
+.tk.open{box-shadow:var(--shadow-lg), 0 0 0 1px color-mix(in oklab,var(--brand) 20%,transparent)}
+
+.scrim{backdrop-filter:blur(20px) saturate(1.4)}
+.modal{box-shadow:var(--shadow-lg), 0 0 0 1px var(--hair)}
+html[data-theme=dark] .modal{box-shadow:var(--shadow-lg), var(--glow)}
+.toast{backdrop-filter:blur(14px)}
+
+html[data-theme=dark] .cat:hover,
+html[data-theme=dark] .subc:hover,
+html[data-theme=dark] .tk.open,
+html[data-theme=dark] .icobtn:hover,
+html[data-theme=dark] .cmdk:hover{box-shadow:var(--glow), var(--shadow-lg)}
+html[data-theme=dark] .pulse-dot{
+  box-shadow:0 0 0 4px color-mix(in oklab,var(--ok) 22%,transparent),
+    0 0 14px color-mix(in oklab,var(--ok) 65%,transparent)}
+html[data-theme=dark] .phead .eyebrow{
+  text-shadow:0 0 22px color-mix(in oklab,var(--brand) 50%,transparent)}
+
+/* watermarks: present, not shouting */
+.ts-wm{opacity:.05}
+.subc-wm{opacity:.055}
+.subc:hover .subc-wm{opacity:.1}
+
+/* dark: every reading colour is light — never leftover ink */
+html[data-theme=dark],
+html[data-theme=dark] body{color:var(--ink)}
+html[data-theme=dark] .idwho b,
+html[data-theme=dark] .idswitch select,
+html[data-theme=dark] .phead h1,
+html[data-theme=dark] .c-title>b,
+html[data-theme=dark] .modal header h3,
+html[data-theme=dark] .cat h3,
+html[data-theme=dark] .subc b,
+html[data-theme=dark] .deskchip b,
+html[data-theme=dark] .mark .who b{color:var(--ink)}
+html[data-theme=dark] option{background:#101319;color:#ffffff}
+
+/* ---------- one chevron: CSS triangles, restated last so identity selects cannot retile ---------- */
+select,
+.f select,
+.sel,
+.res-f select,
+.fieldgrid select,
+.astat select,
+.cd-block select,
+.cd-sub select,
+.gq select,
+.mxf select,
+.rrail-as select,
+.idswitch select,
+.deskid select,
+.ts-status select,
+html[data-theme=dark] select,
+html[data-theme=dark] .f select,
+html[data-theme=dark] .sel,
+html[data-theme=dark] .idswitch select,
+html[data-theme=dark] .deskid select,
+html[data-theme=dark] .ts-status select{
+  -webkit-appearance:none;appearance:none;
+  background-image:
+    linear-gradient(45deg,transparent 50%,var(--mut) 50%),
+    linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+  background-position:calc(100% - 16px) calc(50% - 1.5px), calc(100% - 11px) calc(50% - 1.5px);
+  background-size:5px 5px, 5px 5px;
+  background-repeat:no-repeat;
+  padding-right:32px}
+.idswitch select,
+html[data-theme=dark] .idswitch select{
+  background-color:var(--card);
+  color:var(--ink)}
+.deskid select,
+.ts-status select,
+html[data-theme=dark] .deskid select,
+html[data-theme=dark] .ts-status select{
+  background-color:transparent;
+  padding-right:22px;
+  background-position:calc(100% - 8px) calc(50% - 1.5px), calc(100% - 3px) calc(50% - 1.5px)}
+select::-ms-expand{display:none}
+
+@media (prefers-reduced-motion:no-preference){
+  html[data-motion=full] .phead h1{animation:rise .5s var(--spring) both}
+  html[data-motion=full] .phead p{animation:rise .5s var(--spring) .05s both}
+}
+html[data-motion=calm] .phead h1,html[data-motion=calm] .phead p{animation:none}
+
+.modal header{color:var(--ink)}
+.modal header .mico{
+  width:32px;height:32px;flex:none;border-radius:10px;
+  display:grid;place-items:center;overflow:hidden;
+  background:var(--brandsoft);color:var(--brand);
+  box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--brand) 18%,transparent)}
+.modal header .mico svg{width:16px;height:16px;display:block}
+.chev svg,.icobtn svg,.railbtn svg{display:block}
+.success .seal svg{display:block}
+html[data-theme=dark] .modal header h3,
+html[data-theme=dark] .set-block,
+html[data-theme=dark] .preset b,
+html[data-theme=dark] .intg-t b{color:var(--ink)}
+
+.deskid select:hover,.deskid select:focus,
+.ts-status:hover select,.ts-status select:focus,
+html[data-theme=dark] .deskid select:hover,
+html[data-theme=dark] .deskid select:focus,
+html[data-theme=dark] .ts-status:hover select,
+html[data-theme=dark] .ts-status select:focus{
+  background-color:transparent;
+  background-image:
+    linear-gradient(45deg,transparent 50%,var(--mut) 50%),
+    linear-gradient(135deg,var(--mut) 50%,transparent 50%);
+  background-position:calc(100% - 8px) calc(50% - 1.5px), calc(100% - 3px) calc(50% - 1.5px);
+  background-size:5px 5px, 5px 5px;
+  background-repeat:no-repeat;
+  box-shadow:none;border:0}

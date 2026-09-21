@@ -89,7 +89,7 @@ export function Modal({ title, icon, onClose, children, footer, wide, size, desc
     onKeyDown={e => e.key === 'Escape' && (e.stopPropagation(), onClose?.())}>
     <div className={cx('modal', size || (wide ? 'wide' : ''), 'enter', tone === 'danger' && 'tone-danger', tone === 'quiet' && 'tone-quiet')} style={size === 'xl' ? { width: 'min(1120px,100%)' } : undefined}
       role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined}>
-      <header>{icon}<div className="mh"><h3>{title}</h3>{description && <p>{description}</p>}</div>
+      <header>{icon ? <span className="mico">{icon}</span> : null}<div className="mh"><h3>{title}</h3>{description && <p>{description}</p>}</div>
         {tag && <span className="chip">{tag}</span>}
         <IconBtn title="Close (Esc)" onClick={onClose}><I s={svg.x}/></IconBtn></header>
       <div className="mbody">{children}</div>
