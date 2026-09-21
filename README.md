@@ -1,5 +1,12 @@
 # Physique 57 — Support & Ticket Hub
 
+> **Independent demo, not affiliated with Physique 57 or Momence.** The brand names are used only to
+> describe what the product vocabulary was compiled against; they are their owners' trademarks. Every
+> person in this repo is synthetic — the members, coaches, studios, bookings and tickets are generated
+> demo records, and the taxonomy and field plan in `data/` are this project's own working documents.
+> Nothing is posted anywhere: the running app keeps its board in your browser's `localStorage`, and the
+> Momence surface is served from `src/data.json` behind the same read contract the real API documents.
+
 The 14-category / 296-sub-category taxonomy and the 3,152-row intake-field plan are compiled into
 `src/data.json`. The app renders them as a triage grid, generates a bespoke form per sub-category,
 links the form into a Momence-shaped member/class directory, files a routed ticket with running
