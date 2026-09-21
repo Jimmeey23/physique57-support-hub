@@ -1,0 +1,30 @@
+{
+  "name": "p57-ticket-hub",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Physique 57 India — internal support & ticket creation hub",
+  "scripts": {
+    "data": "node scripts/gen-data.mjs && node scripts/enrich-repo.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "test": "npm run test:unit && npm run test:flow && npm run test:flow2 && npm run test:browser",
+    "test:unit": "node test/run.mjs",
+    "test:flow": "node test/flow.mjs",
+    "test:flow2": "node test/flow2.mjs",
+    "test:browser": "node test/browser.mjs",
+    "enrich": "node scripts/enrich-repo.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^29.1.1",
+    "postcss": "^8.5.28",
+    "react-test-renderer": "18.3.1",
+    "vite": "^5.4.11"
+  }
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Physique 57 India · Support &amp; Ticket Hub</title>
+  <meta name="description" content="Internal support desk and ticket creation hub for Physique 57 India — category triage, tailored intake forms, live SLA clocks and a centralised resolution queue." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234b8bff'/%3E%3Cstop offset='1' stop-color='%230a3ed1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext x='32' y='42' font-family='-apple-system,Segoe UI,Inter,sans-serif' font-size='26' font-weight='700' fill='%23fff' text-anchor='middle'%3EP57%3C/text%3E%3C/svg%3E" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#08090b" media="(prefers-color-scheme: dark)" />
+  <style>html{background:#fff}html[data-theme=dark]{background:#08090b}
+    body{margin:0}#root{min-height:100vh}
+    /* first paint should already look like the app: the saved skin is put on <html> before React
+       runs, so a dark-mode desk never flashes white, and a lit spinner covers the bundle. */
+    #boot{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none}
+    #boot i{width:34px;height:34px;border-radius:50%;border:2px solid #dfe6f3;border-top-color:#1f5bff;
+      animation:bootspin .8s linear infinite}
+    html[data-theme=dark] #boot i{border-color:#1e232d;border-top-color:#38d2ff}
+    @keyframes bootspin{to{transform:rotate(1turn)}}</style>
+  <script>try{const p=JSON.parse(localStorage.getItem('p57.hub.v1.prefs')||'null')||{};const d=document.documentElement;
+    d.dataset.theme=p.theme==='auto'||!p.theme
+      ?(matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p.theme;
+    if(p.density)d.dataset.density=p.density; if(p.appearance)d.dataset.appearance=p.appearance;
+    if(p.pulse===false||p.animateCounters===false)d.dataset.motion='calm';
+    d.style.background=d.dataset.theme==='dark'?'#08090b':'#fff';}catch(e){}</script>
+</head>
+<body>
+  <div id="root"><div id="boot"><i></i></div></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

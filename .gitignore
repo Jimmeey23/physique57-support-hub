@@ -1,0 +1,15 @@
+# dependencies and build output
+node_modules/
+dist/
+.vite/
+
+# harness scratch: the test suites bundle src/ through esbuild into here
+test/.tmp/
+
+# noise
+*.log
+npm-debug.*
+.DS_Store
+Thumbs.db
+.env
+.env.*

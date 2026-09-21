@@ -1,0 +1,2331 @@
+{
+ "raw": {
+  "STUDIOS": [
+   {
+    "id": "kwality",
+    "name": "Kwality House, Kemps Corner",
+    "city": "Mumbai",
+    "region": "Mumbai",
+    "studioIds": [
+     1
+    ],
+    "momenceLocationId": 9030,
+    "address": "Kwality House, Kemps Corner, Mumbai"
+   },
+   {
+    "id": "supreme",
+    "name": "Supreme HQ, Bandra",
+    "city": "Mumbai",
+    "region": "Bandra",
+    "studioIds": [
+     2
+    ],
+    "momenceLocationId": 29821,
+    "address": "Supreme HQ, Bandra, Mumbai"
+   },
+   {
+    "id": "kenkere",
+    "name": "Kenkere House, Bengaluru",
+    "city": "Bengaluru",
+    "region": "Bengaluru",
+    "studioIds": [
+     3
+    ],
+    "momenceLocationId": null,
+    "address": "Kenkere House, Bengaluru"
+   },
+   {
+    "id": "courtside",
+    "name": "Courtside, Mumbai",
+    "city": "Mumbai",
+    "region": "Mumbai",
+    "studioIds": [
+     1
+    ],
+    "momenceLocationId": 181416,
+    "address": "Courtside, Mumbai"
+   },
+   {
+    "id": "copper",
+    "name": "the Studio by Copper & Cloves, Bengaluru",
+    "city": "Bengaluru",
+    "region": "Bengaluru",
+    "studioIds": [
+     3
+    ],
+    "momenceLocationId": null,
+    "address": "the Studio by Copper & Cloves, Bengaluru"
+   }
+  ],
+  "CLASS_FORMATS": [
+   "Studio Hosted Class",
+   "Studio FIT",
+   "Studio Back Body Blaze",
+   "Studio Barre 57",
+   "Studio Mat 57",
+   "Studio Trainer's Choice",
+   "Studio Cardio Barre Express",
+   "Studio Amped Up!",
+   "Studio HIIT",
+   "Studio Foundations",
+   "Studio SWEAT In 30",
+   "Studio Cardio Barre Plus",
+   "Studio Barre 57 Express",
+   "Studio Cardio Barre",
+   "Studio Back Body Blaze Express",
+   "Studio Recovery",
+   "Studio Pre/Post Natal",
+   "Studio Mat 57 Express",
+   "Studio PowerCycle",
+   "Studio PowerCycle Express",
+   "Studio Strength Lab (Full Body)",
+   "Studio Strength Lab (Pull)",
+   "Studio Strength Lab (Push)",
+   "Studio Strength Lab"
+  ],
+  "STUDIO_AREAS": [
+   "Main studio floor",
+   "Reception / lobby",
+   "Locker room",
+   "Showers / washroom",
+   "Member lounge",
+   "Boutique",
+   "Parking / valet",
+   "Back office",
+   "Staircase / corridor",
+   "Cycle studio",
+   "Strength Lab floor",
+   "Studio 1",
+   "Studio 2",
+   "Strength Studio",
+   "PowerCycle Studio",
+   "His Space",
+   "Her Space",
+   "GUEST WASHROOM",
+   "Brain Cell",
+   "Pantry",
+   "Lockers & Changing",
+   "Washrooms",
+   "Washroom & Changing"
+  ],
+  "STUDIO_LAYOUTS": {
+   "kwality": {
+    "studioName": "Kwality House, Kemps Corner",
+    "rooms": [
+     {
+      "name": "Studio 1",
+      "capacity": 22,
+      "category": "studio",
+      "description": "Studio 1 (capacity: 22 pax)"
+     },
+     {
+      "name": "Studio 2",
+      "capacity": 13,
+      "category": "studio",
+      "description": "Studio 2 (capacity: 13 pax)"
+     },
+     {
+      "name": "Strength Studio",
+      "capacity": 7,
+      "category": "studio",
+      "description": "Strength Studio (capacity: 7 pax)"
+     },
+     {
+      "name": "PowerCycle Studio",
+      "capacity": 10,
+      "category": "studio",
+      "description": "PowerCycle Studio (capacity: 10 pax)"
+     },
+     {
+      "name": "His Space",
+      "category": "washroom",
+      "description": "His Space (men's washroom & changing)"
+     },
+     {
+      "name": "Her Space",
+      "category": "washroom",
+      "description": "Her Space (women's washroom & changing)"
+     },
+     {
+      "name": "GUEST WASHROOM",
+      "category": "washroom",
+      "description": "Guest Washroom"
+     },
+     {
+      "name": "Brain Cell",
+      "category": "workspace",
+      "description": "Brain Cell (office space)"
+     },
+     {
+      "name": "Pantry",
+      "category": "workspace",
+      "description": "Pantry (staff kitchen)"
+     },
+     {
+      "name": "Lobby / Reception",
+      "category": "common",
+      "description": "Lobby & Reception desk"
+     }
+    ]
+   },
+   "supreme": {
+    "studioName": "Supreme HQ, Bandra",
+    "rooms": [
+     {
+      "name": "Studio 1",
+      "capacity": 13,
+      "category": "studio",
+      "description": "Studio 1 (capacity: 13 pax)"
+     },
+     {
+      "name": "Studio 2",
+      "capacity": 13,
+      "category": "studio",
+      "description": "Studio 2 (capacity: 13 pax)"
+     },
+     {
+      "name": "PowerCycle Studio",
+      "capacity": 13,
+      "category": "studio",
+      "description": "PowerCycle Studio (capacity: 13 pax)"
+     },
+     {
+      "name": "Lobby / Reception",
+      "category": "common",
+      "description": "Lobby & Reception desk"
+     },
+     {
+      "name": "Lockers & Changing",
+      "category": "washroom",
+      "description": "Lockers & shower rooms"
+     },
+     {
+      "name": "Washrooms",
+      "category": "washroom",
+      "description": "Studio washrooms"
+     }
+    ]
+   },
+   "kenkere": {
+    "studioName": "Kenkere House, Bengaluru",
+    "rooms": [
+     {
+      "name": "Studio 1",
+      "capacity": 13,
+      "category": "studio",
+      "description": "Studio 1 (capacity: 13 pax)"
+     },
+     {
+      "name": "Studio 2",
+      "capacity": 13,
+      "category": "studio",
+      "description": "Studio 2 (capacity: 13 pax)"
+     },
+     {
+      "name": "Lobby / Reception",
+      "category": "common",
+      "description": "Lobby & Reception desk"
+     },
+     {
+      "name": "Washroom & Changing",
+      "category": "washroom",
+      "description": "Washrooms & changing area"
+     }
+    ]
+   },
+   "courtside": {
+    "studioName": "Courtside, Mumbai",
+    "rooms": [
+     {
+      "name": "Main Studio Floor",
+      "category": "studio",
+      "description": "Main studio floor"
+     },
+     {
+      "name": "Reception / Lobby",
+      "category": "common",
+      "description": "Reception & check-in"
+     },
+     {
+      "name": "Member Lounge",
+      "category": "common",
+      "description": "Member lounge"
+     }
+    ]
+   },
+   "copper": {
+    "studioName": "the Studio by Copper & Cloves, Bengaluru",
+    "rooms": [
+     {
+      "name": "Main Studio Floor",
+      "category": "studio",
+      "description": "Main studio floor"
+     },
+     {
+      "name": "Reception",
+      "category": "common",
+      "description": "Reception"
+     },
+     {
+      "name": "Changing Area",
+      "category": "washroom",
+      "description": "Changing area & washroom"
+     }
+    ]
+   }
+  },
+  "AREA_ALIASES": {
+   "cycle studio": "PowerCycle Studio",
+   "spin studio": "PowerCycle Studio",
+   "cycle room": "PowerCycle Studio",
+   "strength lab": "Strength Studio",
+   "strength lab floor": "Strength Studio",
+   "main floor": "Main studio floor",
+   "reception": "Reception / lobby",
+   "reception / lobby": "Reception / lobby",
+   "front desk": "Reception / lobby",
+   "locker rooms": "Locker room",
+   "changing room": "Lockers & Changing",
+   "changing rooms": "Lockers & Changing",
+   "washroom": "Washrooms",
+   "gents": "His Space",
+   "ladies": "Her Space"
+  },
+  "COMMON_STUDIO_AREAS": [
+   "Main studio floor",
+   "Reception / lobby",
+   "Locker room",
+   "Showers / washroom",
+   "Member lounge",
+   "Boutique",
+   "Parking / valet",
+   "Back office",
+   "Staircase / corridor"
+  ],
+  "SYSTEMS": [
+   "Momence",
+   "POS / card machine",
+   "Wi-Fi / router",
+   "Front desk iPad",
+   "Website / mobile app",
+   "Payment gateway (Stripe / Razorpay)",
+   "Audio / mic system",
+   "CCTV / surveillance",
+   "Access control / door lock",
+   "Cash counting machine",
+   "Yellow Messenger",
+   "Other system"
+  ],
+  "OCCURRED_OPTIONS": [
+   "Just now",
+   "Earlier today",
+   "Yesterday",
+   "Earlier this week",
+   "Last week",
+   "Ongoing / recurring"
+  ],
+  "REPORTED_BY_OPTIONS": [
+   "I noticed this myself",
+   "A member told me about it",
+   "A colleague flagged it to me",
+   "Raised during a walkthrough / audit"
+  ],
+  "TRAINERS": [
+   "Anisha Shah",
+   "Anmol Sharma",
+   "Atulan Purohit",
+   "Bret Saldanha",
+   "Cauveri Vikrant",
+   "Chaitanya Nahar",
+   "Kajol Kanchan",
+   "Karan Bhatia",
+   "Karanvir Bhatia",
+   "Mrigakshi Jaiswal",
+   "Pranjali Jain",
+   "Pushyank Nahar",
+   "Raunak Khemuka",
+   "Reshma Sharma",
+   "Richard D'Costa",
+   "Rohan Dahima",
+   "Shruti Kulkarni",
+   "Siddhartha Kusuma",
+   "Simonelle De Vitre",
+   "Vivaran Dhasmana"
+  ],
+  "MEMBERSHIPS": [
+   "Barre 1 month Unlimited",
+   "Barre 2 week Unlimited",
+   "Barre 3 months Unlimited",
+   "Barre 6 month Unlimited",
+   "Barre Annual Membership",
+   "Newcomers 2 For 1",
+   "Owner's Special - 2 for 1",
+   "powerCycle 1 month Unlimited",
+   "powerCycle 2 week Unlimited",
+   "powerCycle 3 months Unlimited",
+   "powerCycle 6 months Unlimited",
+   "powerCycle Annual Membership",
+   "Strength Lab 1 month Unlimited",
+   "Strength Lab 2 week Unlimited",
+   "Strength Lab 3 months Unlimited",
+   "Strength Lab 6 months Unlimited",
+   "Strength Lab Annual Membership",
+   "Studio 1 Month Unlimited Membership",
+   "Studio 10 Single Class Pack",
+   "Studio 12 Class Package",
+   "Studio 2 Week Unlimited Membership",
+   "Studio 20 Single Class Pack",
+   "Studio 3 Month U/L Monthly Installment",
+   "Studio 3 Month Unlimited Membership",
+   "Studio 30 Single Class Pack",
+   "Studio 4 Class Package",
+   "Studio 6 Month Unlimited Membership",
+   "Studio 8 Class Package",
+   "Studio Annual Membership - Monthly Intsallment",
+   "Studio Annual Unlimited Membership",
+   "Studio Extended 10 Single Class Pack",
+   "Studio Happy Hour Private",
+   "Studio Newcomers 2 Week Unlimited Membership",
+   "Studio Private - Anisha (Single Class)",
+   "Studio Private Class",
+   "Studio Private Class X 10",
+   "Studio Privates - Anisha x 10",
+   "Studio Single Class",
+   "Summer Bootcamp - Studio 6 Week Unlimited",
+   "Virtual Private - Anisha",
+   "Virtual Private Class",
+   "Virtual Private Class X 10",
+   "Virtual Privates - Anisha x 10"
+  ],
+  "STATUS_LABELS": {
+   "recorded": "Recorded",
+   "new": "New",
+   "triaged": "Triaged",
+   "assigned": "Assigned",
+   "in_progress": "In progress",
+   "waiting_on_member": "Waiting on member",
+   "waiting_on_vendor": "Waiting on vendor",
+   "resolved": "Resolved",
+   "closed": "Closed"
+  },
+  "PRIORITY_SLA_HOURS": {
+   "critical": 1,
+   "high": 4,
+   "medium": 24,
+   "low": 72
+  },
+  "CYCLE_INTAKE_QUESTIONS": [
+   {
+    "key": "bikeNumber",
+    "prompt": "Which bike number is this about? (e.g. Bike #3, Bike 7)",
+    "type": "text"
+   },
+   {
+    "key": "cycleIssueType",
+    "prompt": "What exactly is wrong?",
+    "type": "select",
+    "values": [
+     "Flywheel scraping / grinding noise",
+     "FitLoc lever slipping / handlebar dropping",
+     "Power meter not pairing / no watts displayed",
+     "Zero reset failing (ADC outside 790–990)",
+     "Pedal detached / came off",
+     "Pedal cross-threaded / won't tighten",
+     "Console dead / no display",
+     "Belt vibration or slipping",
+     "Resistance knob not engaging / no resistance change",
+     "Bike wobbling / unstable",
+     "Seat won't stay at height",
+     "SprintShift lever stuck or unresponsive"
+    ]
+   },
+   {
+    "key": "cyclePart",
+    "prompt": "Which part of the bike is affected?",
+    "type": "select",
+    "values": [
+     "SIC2 Console",
+     "SPM2 Power Meter",
+     "FitLoc Lever & Handlebar Stem",
+     "Fore/Aft Slide Knob",
+     "Resistance / Brake Knob",
+     "SprintShift Lever",
+     "Flywheel",
+     "Pedal CR-L (Left)",
+     "Pedal CR-R (Right)",
+     "Saddle Height Clamp",
+     "Stabilizers (Front/Rear)",
+     "Belt Drive",
+     "Crank Arm"
+    ]
+   },
+   {
+    "key": "cycleFirstOrRecurring",
+    "prompt": "Is this the first time this has happened on this bike, or has it happened before?",
+    "type": "select",
+    "values": [
+     "First time",
+     "Recurring — happened before",
+     "Not sure"
+    ]
+   },
+   {
+    "key": "cycleReporterAction",
+    "prompt": "What did you do when you noticed it?",
+    "type": "select",
+    "values": [
+     "Took bike out of rotation",
+     "Flagged it but class continued",
+     "Member reported mid-class",
+     "Noticed during setup/walkthrough"
+    ]
+   }
+  ],
+  "EQUIPMENT_CATALOGUE": [
+   {
+    "type": "PowerCycle bike",
+    "category": "Cardio",
+    "aliases": [
+     "bike",
+     "cycle",
+     "powercycle",
+     "spin bike"
+    ]
+   },
+   {
+    "type": "Barre",
+    "category": "Strength & studio",
+    "aliases": [
+     "barre",
+     "ballet barre"
+    ]
+   },
+   {
+    "type": "Resistance band",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "band",
+     "bands",
+     "resistance band"
+    ]
+   },
+   {
+    "type": "Exercise ball",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "ball",
+     "balls",
+     "pilates ball",
+     "swiss ball"
+    ]
+   },
+   {
+    "type": "Weight 1 kg",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "1kg",
+     "1 kg weight",
+     "1kg weight"
+    ]
+   },
+   {
+    "type": "Weight 2 kg",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "2kg",
+     "2 kg weight",
+     "2kg weight"
+    ]
+   },
+   {
+    "type": "Weight 3 kg",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "3kg",
+     "3 kg weight",
+     "3kg weight"
+    ]
+   },
+   {
+    "type": "Weight 4 kg",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "4kg",
+     "4 kg weight",
+     "4kg weight"
+    ]
+   },
+   {
+    "type": "Weight 5 kg",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "5kg",
+     "5 kg weight",
+     "5kg weight"
+    ]
+   },
+   {
+    "type": "Weight 7 kg",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "7kg",
+     "7 kg weight",
+     "7kg weight"
+    ]
+   },
+   {
+    "type": "Weight 10 kg",
+    "category": "Strength & studio",
+    "countable": true,
+    "aliases": [
+     "10kg",
+     "10 kg weight",
+     "10kg weight"
+    ]
+   },
+   {
+    "type": "Laptop",
+    "category": "IT & systems",
+    "aliases": [
+     "laptop",
+     "notebook",
+     "macbook"
+    ]
+   },
+   {
+    "type": "Printer",
+    "category": "IT & systems",
+    "aliases": [
+     "printer",
+     "scanner"
+    ]
+   },
+   {
+    "type": "Biometric machine",
+    "category": "IT & systems",
+    "aliases": [
+     "biometric",
+     "biometric machine",
+     "attendance machine",
+     "fingerprint scanner"
+    ]
+   },
+   {
+    "type": "TFA system",
+    "category": "IT & systems",
+    "aliases": [
+     "tfa",
+     "tfa system",
+     "two factor",
+     "access control"
+    ]
+   },
+   {
+    "type": "Landline",
+    "category": "IT & systems",
+    "aliases": [
+     "landline",
+     "landline phone"
+    ]
+   },
+   {
+    "type": "Studio phone",
+    "category": "IT & systems",
+    "aliases": [
+     "studio phone",
+     "front desk phone",
+     "reception phone"
+    ]
+   },
+   {
+    "type": "Microphone",
+    "category": "Audio & visual",
+    "aliases": [
+     "mic",
+     "microphone",
+     "headset mic"
+    ]
+   },
+   {
+    "type": "Portable microphone",
+    "category": "Audio & visual",
+    "aliases": [
+     "portable mic",
+     "handheld mic",
+     "roving mic"
+    ]
+   },
+   {
+    "type": "Music system",
+    "category": "Audio & visual",
+    "aliases": [
+     "music system",
+     "sound system",
+     "console",
+     "mixer",
+     "amp"
+    ]
+   },
+   {
+    "type": "Speaker",
+    "category": "Audio & visual",
+    "aliases": [
+     "speaker",
+     "speakers",
+     "monitor speaker"
+    ]
+   },
+   {
+    "type": "Studio lighting rig",
+    "category": "Audio & visual",
+    "aliases": [
+     "lighting rig",
+     "studio lights",
+     "light rig"
+    ]
+   },
+   {
+    "type": "Ambient light",
+    "category": "Audio & visual",
+    "aliases": [
+     "ambient light",
+     "mood light"
+    ]
+   },
+   {
+    "type": "Spotlight",
+    "category": "Audio & visual",
+    "aliases": [
+     "spotlight",
+     "spot light"
+    ]
+   },
+   {
+    "type": "Strip light",
+    "category": "Audio & visual",
+    "aliases": [
+     "strip light",
+     "led strip"
+    ]
+   },
+   {
+    "type": "Emergency light",
+    "category": "Audio & visual",
+    "aliases": [
+     "emergency light",
+     "exit light"
+    ]
+   },
+   {
+    "type": "Neon signage",
+    "category": "Audio & visual",
+    "aliases": [
+     "neon",
+     "neon sign",
+     "signage"
+    ]
+   },
+   {
+    "type": "Air conditioning system",
+    "category": "Climate & facilities",
+    "aliases": [
+     "ac",
+     "a/c",
+     "air conditioning",
+     "aircon",
+     "air conditioner"
+    ]
+   },
+   {
+    "type": "Portable cooler",
+    "category": "Climate & facilities",
+    "aliases": [
+     "cooler",
+     "portable cooler",
+     "air cooler"
+    ]
+   },
+   {
+    "type": "Washing machine",
+    "category": "Climate & facilities",
+    "aliases": [
+     "washing machine",
+     "washer",
+     "laundry machine"
+    ]
+   },
+   {
+    "type": "Shoe disinfectant",
+    "category": "Climate & facilities",
+    "aliases": [
+     "shoe disinfectant",
+     "shoe sanitiser",
+     "shoe sanitizer",
+     "sanitising mat"
+    ]
+   },
+   {
+    "type": "Coffee maker",
+    "category": "Pantry",
+    "aliases": [
+     "coffee maker",
+     "coffee machine",
+     "espresso machine"
+    ]
+   },
+   {
+    "type": "Microwave",
+    "category": "Pantry",
+    "aliases": [
+     "microwave",
+     "microwave oven"
+    ]
+   }
+  ],
+  "EQUIPMENT_CONDITIONS": [
+   "new",
+   "good",
+   "fair",
+   "worn",
+   "needs replacement"
+  ],
+  "STAGES_SC3_PARTS": [
+   {
+    "id": "sic2-console",
+    "name": "SIC2 Console",
+    "aliases": [
+     "console",
+     "screen",
+     "display",
+     "monitor"
+    ],
+    "tools": "3mm hex wrench",
+    "description": "Top-mounted console with ANT+ power display. Secured by 3mm hex screws via the power wire channel."
+   },
+   {
+    "id": "spm2-power-meter",
+    "name": "SPM2 Power Meter",
+    "aliases": [
+     "power meter",
+     "watt meter",
+     "spm2",
+     "power sensor"
+    ],
+    "tools": "8mm hex wrench",
+    "torque": "52–57 N·m",
+    "description": "Crank-arm power meter. ANT+ 5-digit ID. Battery spacer or taped AA batteries. Zero reset ADC must read 790–990."
+   },
+   {
+    "id": "fitloc-lever",
+    "name": "FitLoc Lever & Handlebar Stem",
+    "aliases": [
+     "fitloc",
+     "handlebar lever",
+     "handlebar clamp",
+     "stem lever",
+     "handlebar"
+    ],
+    "tools": "Hand-tightened",
+    "description": "Quick-release lever for handlebar height adjustment. Insert handlebar post, push lever down to lock."
+   },
+   {
+    "id": "fore-aft-knob",
+    "name": "Fore/Aft Slide Knob",
+    "aliases": [
+     "fore aft",
+     "slider",
+     "seat slider",
+     "saddle slider"
+    ],
+    "tools": "Hand-tightened",
+    "description": "Adjusts horizontal saddle position along the rail."
+   },
+   {
+    "id": "resistance-knob",
+    "name": "Resistance / Brake Knob",
+    "aliases": [
+     "resistance",
+     "brake knob",
+     "resistance dial",
+     "brake"
+    ],
+    "tools": "N/A",
+    "description": "Controls magnetic eddy-current braking force. Press down for emergency stop."
+   },
+   {
+    "id": "sprintshift-lever",
+    "name": "SprintShift Lever",
+    "aliases": [
+     "sprint shift",
+     "shift lever",
+     "quick shift",
+     "sprint"
+    ],
+    "tools": "N/A",
+    "description": "Multi-stage quick shift for instant resistance jumps during sprints."
+   },
+   {
+    "id": "flywheel",
+    "name": "Flywheel",
+    "aliases": [
+     "flywheel",
+     "fly wheel",
+     "wheel"
+    ],
+    "tools": "N/A",
+    "description": "Perimeter-weighted aluminum flywheel with magnetic eddy-current brake."
+   },
+   {
+    "id": "pedal-left",
+    "name": "Pedal CR-L (Left)",
+    "aliases": [
+     "left pedal",
+     "cr-l",
+     "pedal left"
+    ],
+    "tools": "15mm pedal wrench",
+    "torque": "42 N·m",
+    "description": "Left pedal — REVERSE THREADED. Turn CLOCKWISE to remove, counterclockwise to install."
+   },
+   {
+    "id": "pedal-right",
+    "name": "Pedal CR-R (Right)",
+    "aliases": [
+     "right pedal",
+     "cr-r",
+     "pedal right"
+    ],
+    "tools": "15mm pedal wrench",
+    "torque": "42 N·m",
+    "description": "Right pedal — standard thread. Turn counterclockwise to remove, clockwise to install."
+   },
+   {
+    "id": "saddle-clamp",
+    "name": "Saddle Height Clamp",
+    "aliases": [
+     "seat clamp",
+     "saddle clamp",
+     "seat height",
+     "saddle height"
+    ],
+    "tools": "13mm wrench",
+    "description": "Clamp securing the seatpost at the desired height."
+   },
+   {
+    "id": "stabilizers",
+    "name": "Stabilizers (Front/Rear)",
+    "aliases": [
+     "stabilizer",
+     "stabiliser",
+     "feet",
+     "leveling feet",
+     "base"
+    ],
+    "tools": "6mm hex + 17mm wrench",
+    "description": "Front: wheels facing forward. Rear: step plates with sloped edge pointing away. M10 bolts. 4 leveling feet with 14mm nut."
+   },
+   {
+    "id": "belt-drive",
+    "name": "Belt Drive",
+    "aliases": [
+     "belt",
+     "drive belt",
+     "belt tension"
+    ],
+    "tools": "Technician service",
+    "description": "Poly-V belt connecting pedal crank to flywheel. Vibration or slipping requires technician service."
+   },
+   {
+    "id": "crank-arm",
+    "name": "Crank Arm",
+    "aliases": [
+     "crank",
+     "crank arm"
+    ],
+    "tools": "8mm hex wrench",
+    "torque": "52–57 N·m",
+    "description": "Connects pedals to the flywheel via the bottom bracket. SPM2 power meter is integrated here."
+   }
+  ],
+  "STAGES_SC3_TROUBLESHOOTING": [
+   {
+    "symptom": "Flywheel scraping / grinding noise",
+    "keywords": [
+     "scraping",
+     "grinding",
+     "noise",
+     "flywheel noise",
+     "rubbing"
+    ],
+    "diagnosis": "Brake pad or flywheel housing misalignment. Possible loose flywheel bolt.",
+    "action": "Immediately take bike out of rotation. Do NOT ride. Schedule technician inspection.",
+    "severity": "critical",
+    "partId": "flywheel"
+   },
+   {
+    "symptom": "FitLoc lever slipping / handlebar dropping",
+    "keywords": [
+     "fitloc",
+     "handlebar dropping",
+     "handlebar slipping",
+     "handlebar loose",
+     "lever loose",
+     "handlebar won't hold"
+    ],
+    "diagnosis": "FitLoc cam mechanism worn or post not inserted deep enough.",
+    "action": "Check post insertion depth (min line visible). If still slipping, tag bike for FitLoc replacement.",
+    "severity": "high",
+    "partId": "fitloc-lever"
+   },
+   {
+    "symptom": "Power meter not pairing / no watts displayed",
+    "keywords": [
+     "no power",
+     "watts not showing",
+     "power meter",
+     "not pairing",
+     "ant+",
+     "no reading",
+     "console blank power"
+    ],
+    "diagnosis": "ANT+ pairing failure or dead batteries in SPM2.",
+    "action": "1. Check/replace AA batteries (use spacer or tape). 2. Re-pair using 5-digit ANT+ ID on console. 3. If still dead, check power wire channel connection.",
+    "severity": "medium",
+    "partId": "spm2-power-meter"
+   },
+   {
+    "symptom": "Zero reset failing (ADC outside 790–990)",
+    "keywords": [
+     "zero reset",
+     "adc",
+     "calibration",
+     "power calibration",
+     "zero offset"
+    ],
+    "diagnosis": "SPM2 zero offset out of range. May indicate mechanical stress on crank arm.",
+    "action": "Re-attempt zero reset with NO weight on pedals. If ADC reads outside 790–990 after 3 attempts, remove and reseat crank arm at 52–57 N·m. Escalate to Stages support if persistent.",
+    "severity": "medium",
+    "partId": "spm2-power-meter"
+   },
+   {
+    "symptom": "Pedal detached / came off",
+    "keywords": [
+     "pedal came off",
+     "pedal off",
+     "pedal fell off",
+     "pedal detached",
+     "pedal missing",
+     "pedal came loose",
+     "lost a pedal",
+     "pedal is off"
+    ],
+    "diagnosis": "Pedal has unscrewed from the crank arm — most often the left (CR-L) pedal, which is REVERSE threaded and works loose if it was never torqued to spec.",
+    "action": "Take the bike out of rotation immediately — a pedal that can detach is a rider-safety fault. Refit at 42 N·m with a 15mm pedal wrench (left pedal: turn CLOCKWISE to tighten). Inspect the crank-arm threads; if they are stripped, replace the crank arm (8mm hex, 52–57 N·m).",
+    "severity": "critical",
+    "partId": "pedal-left"
+   },
+   {
+    "symptom": "Pedal cross-threaded / won't tighten",
+    "keywords": [
+     "pedal cross",
+     "stripped",
+     "pedal stuck",
+     "pedal loose",
+     "pedal thread",
+     "cross thread"
+    ],
+    "diagnosis": "Pedal threads stripped or cross-threaded. Remember: left pedal is REVERSE threaded.",
+    "action": "Do NOT force. Remove pedal, inspect threads. If crank arm threads are stripped, replace crank arm (8mm hex, 52–57 N·m). Apply grease to threads before reinstall.",
+    "severity": "high",
+    "partId": "pedal-left"
+   },
+   {
+    "symptom": "Console dead / no display",
+    "keywords": [
+     "console dead",
+     "no display",
+     "screen blank",
+     "console not working",
+     "monitor dead"
+    ],
+    "diagnosis": "Power wire disconnected or console battery dead.",
+    "action": "1. Check power wire in channel under handlebar. 2. Replace console batteries. 3. Reseat 3mm hex screws. If still dead, replace SIC2 console unit.",
+    "severity": "medium",
+    "partId": "sic2-console"
+   },
+   {
+    "symptom": "Belt vibration or slipping",
+    "keywords": [
+     "belt vibration",
+     "belt slip",
+     "belt noise",
+     "vibrating",
+     "belt squeal"
+    ],
+    "diagnosis": "Belt tension loss or misalignment. Normal wear after heavy usage.",
+    "action": "Take bike out of rotation. Belt tensioning requires trained technician. Do not attempt field adjustment.",
+    "severity": "high",
+    "partId": "belt-drive"
+   },
+   {
+    "symptom": "Resistance knob not engaging / no resistance change",
+    "keywords": [
+     "no resistance",
+     "resistance stuck",
+     "brake not working",
+     "resistance knob",
+     "can't feel resistance"
+    ],
+    "diagnosis": "Magnetic brake pad gap too wide or brake knob cable disconnected.",
+    "action": "Check brake knob cable routing under shroud. If cable intact, brake pad gap needs technician adjustment.",
+    "severity": "high",
+    "partId": "resistance-knob"
+   },
+   {
+    "symptom": "Bike wobbling / unstable",
+    "keywords": [
+     "wobble",
+     "wobbling",
+     "unstable",
+     "rocking",
+     "bike moves",
+     "not stable"
+    ],
+    "diagnosis": "Stabilizer feet not leveled or stabilizer bolts loose.",
+    "action": "Adjust 4 leveling feet (14mm nut) until all contact the floor evenly. Tighten M10 stabilizer bolts (6mm hex + 17mm wrench).",
+    "severity": "medium",
+    "partId": "stabilizers"
+   },
+   {
+    "symptom": "Seat won't stay at height",
+    "keywords": [
+     "seat drops",
+     "seat slips",
+     "saddle drops",
+     "seat won't hold",
+     "seat height"
+    ],
+    "diagnosis": "Saddle clamp not tightened or clamp mechanism worn.",
+    "action": "Tighten saddle clamp with 13mm wrench. If clamp is worn/stripped, replace the clamp assembly.",
+    "severity": "medium",
+    "partId": "saddle-clamp"
+   },
+   {
+    "symptom": "SprintShift lever stuck or unresponsive",
+    "keywords": [
+     "sprint shift stuck",
+     "shift not working",
+     "sprint lever",
+     "quick shift"
+    ],
+    "diagnosis": "SprintShift cable binding or lever mechanism jammed.",
+    "action": "Check cable routing. If lever mechanism is jammed, take bike out of rotation for technician service.",
+    "severity": "medium",
+    "partId": "sprintshift-lever"
+   }
+  ]
+ },
+ "studios": [
+  {
+   "id": "kwality",
+   "name": "Kwality House, Kemps Corner",
+   "city": "Mumbai",
+   "region": "Mumbai",
+   "studioIds": [
+    1
+   ],
+   "momenceLocationId": 9030,
+   "address": "Kwality House, Kemps Corner, Mumbai"
+  },
+  {
+   "id": "supreme",
+   "name": "Supreme HQ, Bandra",
+   "city": "Mumbai",
+   "region": "Bandra",
+   "studioIds": [
+    2
+   ],
+   "momenceLocationId": 29821,
+   "address": "Supreme HQ, Bandra, Mumbai"
+  },
+  {
+   "id": "kenkere",
+   "name": "Kenkere House, Bengaluru",
+   "city": "Bengaluru",
+   "region": "Bengaluru",
+   "studioIds": [
+    3
+   ],
+   "momenceLocationId": null,
+   "address": "Kenkere House, Bengaluru"
+  },
+  {
+   "id": "courtside",
+   "name": "Courtside, Mumbai",
+   "city": "Mumbai",
+   "region": "Mumbai",
+   "studioIds": [
+    1
+   ],
+   "momenceLocationId": 181416,
+   "address": "Courtside, Mumbai"
+  },
+  {
+   "id": "copper",
+   "name": "the Studio by Copper & Cloves, Bengaluru",
+   "city": "Bengaluru",
+   "region": "Bengaluru",
+   "studioIds": [
+    3
+   ],
+   "momenceLocationId": null,
+   "address": "the Studio by Copper & Cloves, Bengaluru"
+  }
+ ],
+ "classFormats": [
+  "Studio Hosted Class",
+  "Studio FIT",
+  "Studio Back Body Blaze",
+  "Studio Barre 57",
+  "Studio Mat 57",
+  "Studio Trainer's Choice",
+  "Studio Cardio Barre Express",
+  "Studio Amped Up!",
+  "Studio HIIT",
+  "Studio Foundations",
+  "Studio SWEAT In 30",
+  "Studio Cardio Barre Plus",
+  "Studio Barre 57 Express",
+  "Studio Cardio Barre",
+  "Studio Back Body Blaze Express",
+  "Studio Recovery",
+  "Studio Pre/Post Natal",
+  "Studio Mat 57 Express",
+  "Studio PowerCycle",
+  "Studio PowerCycle Express",
+  "Studio Strength Lab (Full Body)",
+  "Studio Strength Lab (Pull)",
+  "Studio Strength Lab (Push)",
+  "Studio Strength Lab"
+ ],
+ "studioAreas": [
+  "Main studio floor",
+  "Reception / lobby",
+  "Locker room",
+  "Showers / washroom",
+  "Member lounge",
+  "Boutique",
+  "Parking / valet",
+  "Back office",
+  "Staircase / corridor",
+  "Cycle studio",
+  "Strength Lab floor",
+  "Studio 1",
+  "Studio 2",
+  "Strength Studio",
+  "PowerCycle Studio",
+  "His Space",
+  "Her Space",
+  "GUEST WASHROOM",
+  "Brain Cell",
+  "Pantry",
+  "Lockers & Changing",
+  "Washrooms",
+  "Washroom & Changing"
+ ],
+ "commonAreas": [
+  "Main studio floor",
+  "Reception / lobby",
+  "Locker room",
+  "Showers / washroom",
+  "Member lounge",
+  "Boutique",
+  "Parking / valet",
+  "Back office",
+  "Staircase / corridor"
+ ],
+ "areaAliases": {
+  "cycle studio": "PowerCycle Studio",
+  "spin studio": "PowerCycle Studio",
+  "cycle room": "PowerCycle Studio",
+  "strength lab": "Strength Studio",
+  "strength lab floor": "Strength Studio",
+  "main floor": "Main studio floor",
+  "reception": "Reception / lobby",
+  "reception / lobby": "Reception / lobby",
+  "front desk": "Reception / lobby",
+  "locker rooms": "Locker room",
+  "changing room": "Lockers & Changing",
+  "changing rooms": "Lockers & Changing",
+  "washroom": "Washrooms",
+  "gents": "His Space",
+  "ladies": "Her Space"
+ },
+ "layouts": {
+  "kwality": {
+   "studioName": "Kwality House, Kemps Corner",
+   "rooms": [
+    {
+     "name": "Studio 1",
+     "capacity": 22,
+     "category": "studio",
+     "description": "Studio 1 (capacity: 22 pax)"
+    },
+    {
+     "name": "Studio 2",
+     "capacity": 13,
+     "category": "studio",
+     "description": "Studio 2 (capacity: 13 pax)"
+    },
+    {
+     "name": "Strength Studio",
+     "capacity": 7,
+     "category": "studio",
+     "description": "Strength Studio (capacity: 7 pax)"
+    },
+    {
+     "name": "PowerCycle Studio",
+     "capacity": 10,
+     "category": "studio",
+     "description": "PowerCycle Studio (capacity: 10 pax)"
+    },
+    {
+     "name": "His Space",
+     "capacity": null,
+     "category": "washroom",
+     "description": "His Space (men's washroom & changing)"
+    },
+    {
+     "name": "Her Space",
+     "capacity": null,
+     "category": "washroom",
+     "description": "Her Space (women's washroom & changing)"
+    },
+    {
+     "name": "GUEST WASHROOM",
+     "capacity": null,
+     "category": "washroom",
+     "description": "Guest Washroom"
+    },
+    {
+     "name": "Brain Cell",
+     "capacity": null,
+     "category": "workspace",
+     "description": "Brain Cell (office space)"
+    },
+    {
+     "name": "Pantry",
+     "capacity": null,
+     "category": "workspace",
+     "description": "Pantry (staff kitchen)"
+    },
+    {
+     "name": "Lobby / Reception",
+     "capacity": null,
+     "category": "common",
+     "description": "Lobby & Reception desk"
+    }
+   ]
+  },
+  "supreme": {
+   "studioName": "Supreme HQ, Bandra",
+   "rooms": [
+    {
+     "name": "Studio 1",
+     "capacity": 13,
+     "category": "studio",
+     "description": "Studio 1 (capacity: 13 pax)"
+    },
+    {
+     "name": "Studio 2",
+     "capacity": 13,
+     "category": "studio",
+     "description": "Studio 2 (capacity: 13 pax)"
+    },
+    {
+     "name": "PowerCycle Studio",
+     "capacity": 13,
+     "category": "studio",
+     "description": "PowerCycle Studio (capacity: 13 pax)"
+    },
+    {
+     "name": "Lobby / Reception",
+     "capacity": null,
+     "category": "common",
+     "description": "Lobby & Reception desk"
+    },
+    {
+     "name": "Lockers & Changing",
+     "capacity": null,
+     "category": "washroom",
+     "description": "Lockers & shower rooms"
+    },
+    {
+     "name": "Washrooms",
+     "capacity": null,
+     "category": "washroom",
+     "description": "Studio washrooms"
+    }
+   ]
+  },
+  "kenkere": {
+   "studioName": "Kenkere House, Bengaluru",
+   "rooms": [
+    {
+     "name": "Studio 1",
+     "capacity": 13,
+     "category": "studio",
+     "description": "Studio 1 (capacity: 13 pax)"
+    },
+    {
+     "name": "Studio 2",
+     "capacity": 13,
+     "category": "studio",
+     "description": "Studio 2 (capacity: 13 pax)"
+    },
+    {
+     "name": "Lobby / Reception",
+     "capacity": null,
+     "category": "common",
+     "description": "Lobby & Reception desk"
+    },
+    {
+     "name": "Washroom & Changing",
+     "capacity": null,
+     "category": "washroom",
+     "description": "Washrooms & changing area"
+    }
+   ]
+  },
+  "courtside": {
+   "studioName": "Courtside, Mumbai",
+   "rooms": [
+    {
+     "name": "Main Studio Floor",
+     "capacity": null,
+     "category": "studio",
+     "description": "Main studio floor"
+    },
+    {
+     "name": "Reception / Lobby",
+     "capacity": null,
+     "category": "common",
+     "description": "Reception & check-in"
+    },
+    {
+     "name": "Member Lounge",
+     "capacity": null,
+     "category": "common",
+     "description": "Member lounge"
+    }
+   ]
+  },
+  "copper": {
+   "studioName": "the Studio by Copper & Cloves, Bengaluru",
+   "rooms": [
+    {
+     "name": "Main Studio Floor",
+     "capacity": null,
+     "category": "studio",
+     "description": "Main studio floor"
+    },
+    {
+     "name": "Reception",
+     "capacity": null,
+     "category": "common",
+     "description": "Reception"
+    },
+    {
+     "name": "Changing Area",
+     "capacity": null,
+     "category": "washroom",
+     "description": "Changing area & washroom"
+    }
+   ]
+  }
+ },
+ "systems": [
+  "Momence",
+  "POS / card machine",
+  "Wi-Fi / router",
+  "Front desk iPad",
+  "Website / mobile app",
+  "Payment gateway (Stripe / Razorpay)",
+  "Audio / mic system",
+  "CCTV / surveillance",
+  "Access control / door lock",
+  "Cash counting machine",
+  "Yellow Messenger",
+  "Other system"
+ ],
+ "occurredOptions": [
+  "Just now",
+  "Earlier today",
+  "Yesterday",
+  "Earlier this week",
+  "Last week",
+  "Ongoing / recurring"
+ ],
+ "reportedByOptions": [
+  "I noticed this myself",
+  "A member told me about it",
+  "A colleague flagged it to me",
+  "Raised during a walkthrough / audit"
+ ],
+ "trainers": [
+  "Anisha Shah",
+  "Anmol Sharma",
+  "Atulan Purohit",
+  "Bret Saldanha",
+  "Cauveri Vikrant",
+  "Chaitanya Nahar",
+  "Kajol Kanchan",
+  "Karan Bhatia",
+  "Karanvir Bhatia",
+  "Mrigakshi Jaiswal",
+  "Pranjali Jain",
+  "Pushyank Nahar",
+  "Raunak Khemuka",
+  "Reshma Sharma",
+  "Richard D'Costa",
+  "Rohan Dahima",
+  "Shruti Kulkarni",
+  "Siddhartha Kusuma",
+  "Simonelle De Vitre",
+  "Vivaran Dhasmana"
+ ],
+ "memberships": [
+  "Barre 1 month Unlimited",
+  "Barre 2 week Unlimited",
+  "Barre 3 months Unlimited",
+  "Barre 6 month Unlimited",
+  "Barre Annual Membership",
+  "Newcomers 2 For 1",
+  "Owner's Special - 2 for 1",
+  "powerCycle 1 month Unlimited",
+  "powerCycle 2 week Unlimited",
+  "powerCycle 3 months Unlimited",
+  "powerCycle 6 months Unlimited",
+  "powerCycle Annual Membership",
+  "Strength Lab 1 month Unlimited",
+  "Strength Lab 2 week Unlimited",
+  "Strength Lab 3 months Unlimited",
+  "Strength Lab 6 months Unlimited",
+  "Strength Lab Annual Membership",
+  "Studio 1 Month Unlimited Membership",
+  "Studio 10 Single Class Pack",
+  "Studio 12 Class Package",
+  "Studio 2 Week Unlimited Membership",
+  "Studio 20 Single Class Pack",
+  "Studio 3 Month U/L Monthly Installment",
+  "Studio 3 Month Unlimited Membership",
+  "Studio 30 Single Class Pack",
+  "Studio 4 Class Package",
+  "Studio 6 Month Unlimited Membership",
+  "Studio 8 Class Package",
+  "Studio Annual Membership - Monthly Intsallment",
+  "Studio Annual Unlimited Membership",
+  "Studio Extended 10 Single Class Pack",
+  "Studio Happy Hour Private",
+  "Studio Newcomers 2 Week Unlimited Membership",
+  "Studio Private - Anisha (Single Class)",
+  "Studio Private Class",
+  "Studio Private Class X 10",
+  "Studio Privates - Anisha x 10",
+  "Studio Single Class",
+  "Summer Bootcamp - Studio 6 Week Unlimited",
+  "Virtual Private - Anisha",
+  "Virtual Private Class",
+  "Virtual Private Class X 10",
+  "Virtual Privates - Anisha x 10"
+ ],
+ "statusLabels": {
+  "recorded": "Recorded",
+  "new": "New",
+  "triaged": "Triaged",
+  "assigned": "Assigned",
+  "in_progress": "In progress",
+  "waiting_on_member": "Waiting on member",
+  "waiting_on_vendor": "Waiting on vendor",
+  "resolved": "Resolved",
+  "closed": "Closed"
+ },
+ "prioritySlaHours": {
+  "critical": 1,
+  "high": 4,
+  "medium": 24,
+  "low": 72
+ },
+ "cycleIntakeQuestions": [
+  {
+   "key": "bikeNumber",
+   "prompt": "Which bike number is this about? (e.g. Bike #3, Bike 7)",
+   "type": "text"
+  },
+  {
+   "key": "cycleIssueType",
+   "prompt": "What exactly is wrong?",
+   "type": "select",
+   "values": [
+    "Flywheel scraping / grinding noise",
+    "FitLoc lever slipping / handlebar dropping",
+    "Power meter not pairing / no watts displayed",
+    "Zero reset failing (ADC outside 790–990)",
+    "Pedal detached / came off",
+    "Pedal cross-threaded / won't tighten",
+    "Console dead / no display",
+    "Belt vibration or slipping",
+    "Resistance knob not engaging / no resistance change",
+    "Bike wobbling / unstable",
+    "Seat won't stay at height",
+    "SprintShift lever stuck or unresponsive"
+   ]
+  },
+  {
+   "key": "cyclePart",
+   "prompt": "Which part of the bike is affected?",
+   "type": "select",
+   "values": [
+    "SIC2 Console",
+    "SPM2 Power Meter",
+    "FitLoc Lever & Handlebar Stem",
+    "Fore/Aft Slide Knob",
+    "Resistance / Brake Knob",
+    "SprintShift Lever",
+    "Flywheel",
+    "Pedal CR-L (Left)",
+    "Pedal CR-R (Right)",
+    "Saddle Height Clamp",
+    "Stabilizers (Front/Rear)",
+    "Belt Drive",
+    "Crank Arm"
+   ]
+  },
+  {
+   "key": "cycleFirstOrRecurring",
+   "prompt": "Is this the first time this has happened on this bike, or has it happened before?",
+   "type": "select",
+   "values": [
+    "First time",
+    "Recurring — happened before",
+    "Not sure"
+   ]
+  },
+  {
+   "key": "cycleReporterAction",
+   "prompt": "What did you do when you noticed it?",
+   "type": "select",
+   "values": [
+    "Took bike out of rotation",
+    "Flagged it but class continued",
+    "Member reported mid-class",
+    "Noticed during setup/walkthrough"
+   ]
+  }
+ ],
+ "cycleParts": [
+  {
+   "id": "sic2-console",
+   "name": "SIC2 Console",
+   "aliases": [
+    "console",
+    "screen",
+    "display",
+    "monitor"
+   ],
+   "tools": "3mm hex wrench",
+   "description": "Top-mounted console with ANT+ power display. Secured by 3mm hex screws via the power wire channel."
+  },
+  {
+   "id": "spm2-power-meter",
+   "name": "SPM2 Power Meter",
+   "aliases": [
+    "power meter",
+    "watt meter",
+    "spm2",
+    "power sensor"
+   ],
+   "tools": "8mm hex wrench",
+   "torque": "52–57 N·m",
+   "description": "Crank-arm power meter. ANT+ 5-digit ID. Battery spacer or taped AA batteries. Zero reset ADC must read 790–990."
+  },
+  {
+   "id": "fitloc-lever",
+   "name": "FitLoc Lever & Handlebar Stem",
+   "aliases": [
+    "fitloc",
+    "handlebar lever",
+    "handlebar clamp",
+    "stem lever",
+    "handlebar"
+   ],
+   "tools": "Hand-tightened",
+   "description": "Quick-release lever for handlebar height adjustment. Insert handlebar post, push lever down to lock."
+  },
+  {
+   "id": "fore-aft-knob",
+   "name": "Fore/Aft Slide Knob",
+   "aliases": [
+    "fore aft",
+    "slider",
+    "seat slider",
+    "saddle slider"
+   ],
+   "tools": "Hand-tightened",
+   "description": "Adjusts horizontal saddle position along the rail."
+  },
+  {
+   "id": "resistance-knob",
+   "name": "Resistance / Brake Knob",
+   "aliases": [
+    "resistance",
+    "brake knob",
+    "resistance dial",
+    "brake"
+   ],
+   "tools": "N/A",
+   "description": "Controls magnetic eddy-current braking force. Press down for emergency stop."
+  },
+  {
+   "id": "sprintshift-lever",
+   "name": "SprintShift Lever",
+   "aliases": [
+    "sprint shift",
+    "shift lever",
+    "quick shift",
+    "sprint"
+   ],
+   "tools": "N/A",
+   "description": "Multi-stage quick shift for instant resistance jumps during sprints."
+  },
+  {
+   "id": "flywheel",
+   "name": "Flywheel",
+   "aliases": [
+    "flywheel",
+    "fly wheel",
+    "wheel"
+   ],
+   "tools": "N/A",
+   "description": "Perimeter-weighted aluminum flywheel with magnetic eddy-current brake."
+  },
+  {
+   "id": "pedal-left",
+   "name": "Pedal CR-L (Left)",
+   "aliases": [
+    "left pedal",
+    "cr-l",
+    "pedal left"
+   ],
+   "tools": "15mm pedal wrench",
+   "torque": "42 N·m",
+   "description": "Left pedal — REVERSE THREADED. Turn CLOCKWISE to remove, counterclockwise to install."
+  },
+  {
+   "id": "pedal-right",
+   "name": "Pedal CR-R (Right)",
+   "aliases": [
+    "right pedal",
+    "cr-r",
+    "pedal right"
+   ],
+   "tools": "15mm pedal wrench",
+   "torque": "42 N·m",
+   "description": "Right pedal — standard thread. Turn counterclockwise to remove, clockwise to install."
+  },
+  {
+   "id": "saddle-clamp",
+   "name": "Saddle Height Clamp",
+   "aliases": [
+    "seat clamp",
+    "saddle clamp",
+    "seat height",
+    "saddle height"
+   ],
+   "tools": "13mm wrench",
+   "description": "Clamp securing the seatpost at the desired height."
+  },
+  {
+   "id": "stabilizers",
+   "name": "Stabilizers (Front/Rear)",
+   "aliases": [
+    "stabilizer",
+    "stabiliser",
+    "feet",
+    "leveling feet",
+    "base"
+   ],
+   "tools": "6mm hex + 17mm wrench",
+   "description": "Front: wheels facing forward. Rear: step plates with sloped edge pointing away. M10 bolts. 4 leveling feet with 14mm nut."
+  },
+  {
+   "id": "belt-drive",
+   "name": "Belt Drive",
+   "aliases": [
+    "belt",
+    "drive belt",
+    "belt tension"
+   ],
+   "tools": "Technician service",
+   "description": "Poly-V belt connecting pedal crank to flywheel. Vibration or slipping requires technician service."
+  },
+  {
+   "id": "crank-arm",
+   "name": "Crank Arm",
+   "aliases": [
+    "crank",
+    "crank arm"
+   ],
+   "tools": "8mm hex wrench",
+   "torque": "52–57 N·m",
+   "description": "Connects pedals to the flywheel via the bottom bracket. SPM2 power meter is integrated here."
+  }
+ ],
+ "cycleTroubleshooting": [
+  {
+   "symptom": "Flywheel scraping / grinding noise",
+   "keywords": [
+    "scraping",
+    "grinding",
+    "noise",
+    "flywheel noise",
+    "rubbing"
+   ],
+   "diagnosis": "Brake pad or flywheel housing misalignment. Possible loose flywheel bolt.",
+   "action": "Immediately take bike out of rotation. Do NOT ride. Schedule technician inspection.",
+   "severity": "critical",
+   "partId": "flywheel"
+  },
+  {
+   "symptom": "FitLoc lever slipping / handlebar dropping",
+   "keywords": [
+    "fitloc",
+    "handlebar dropping",
+    "handlebar slipping",
+    "handlebar loose",
+    "lever loose",
+    "handlebar won't hold"
+   ],
+   "diagnosis": "FitLoc cam mechanism worn or post not inserted deep enough.",
+   "action": "Check post insertion depth (min line visible). If still slipping, tag bike for FitLoc replacement.",
+   "severity": "high",
+   "partId": "fitloc-lever"
+  },
+  {
+   "symptom": "Power meter not pairing / no watts displayed",
+   "keywords": [
+    "no power",
+    "watts not showing",
+    "power meter",
+    "not pairing",
+    "ant+",
+    "no reading",
+    "console blank power"
+   ],
+   "diagnosis": "ANT+ pairing failure or dead batteries in SPM2.",
+   "action": "1. Check/replace AA batteries (use spacer or tape). 2. Re-pair using 5-digit ANT+ ID on console. 3. If still dead, check power wire channel connection.",
+   "severity": "medium",
+   "partId": "spm2-power-meter"
+  },
+  {
+   "symptom": "Zero reset failing (ADC outside 790–990)",
+   "keywords": [
+    "zero reset",
+    "adc",
+    "calibration",
+    "power calibration",
+    "zero offset"
+   ],
+   "diagnosis": "SPM2 zero offset out of range. May indicate mechanical stress on crank arm.",
+   "action": "Re-attempt zero reset with NO weight on pedals. If ADC reads outside 790–990 after 3 attempts, remove and reseat crank arm at 52–57 N·m. Escalate to Stages support if persistent.",
+   "severity": "medium",
+   "partId": "spm2-power-meter"
+  },
+  {
+   "symptom": "Pedal detached / came off",
+   "keywords": [
+    "pedal came off",
+    "pedal off",
+    "pedal fell off",
+    "pedal detached",
+    "pedal missing",
+    "pedal came loose",
+    "lost a pedal",
+    "pedal is off"
+   ],
+   "diagnosis": "Pedal has unscrewed from the crank arm — most often the left (CR-L) pedal, which is REVERSE threaded and works loose if it was never torqued to spec.",
+   "action": "Take the bike out of rotation immediately — a pedal that can detach is a rider-safety fault. Refit at 42 N·m with a 15mm pedal wrench (left pedal: turn CLOCKWISE to tighten). Inspect the crank-arm threads; if they are stripped, replace the crank arm (8mm hex, 52–57 N·m).",
+   "severity": "critical",
+   "partId": "pedal-left"
+  },
+  {
+   "symptom": "Pedal cross-threaded / won't tighten",
+   "keywords": [
+    "pedal cross",
+    "stripped",
+    "pedal stuck",
+    "pedal loose",
+    "pedal thread",
+    "cross thread"
+   ],
+   "diagnosis": "Pedal threads stripped or cross-threaded. Remember: left pedal is REVERSE threaded.",
+   "action": "Do NOT force. Remove pedal, inspect threads. If crank arm threads are stripped, replace crank arm (8mm hex, 52–57 N·m). Apply grease to threads before reinstall.",
+   "severity": "high",
+   "partId": "pedal-left"
+  },
+  {
+   "symptom": "Console dead / no display",
+   "keywords": [
+    "console dead",
+    "no display",
+    "screen blank",
+    "console not working",
+    "monitor dead"
+   ],
+   "diagnosis": "Power wire disconnected or console battery dead.",
+   "action": "1. Check power wire in channel under handlebar. 2. Replace console batteries. 3. Reseat 3mm hex screws. If still dead, replace SIC2 console unit.",
+   "severity": "medium",
+   "partId": "sic2-console"
+  },
+  {
+   "symptom": "Belt vibration or slipping",
+   "keywords": [
+    "belt vibration",
+    "belt slip",
+    "belt noise",
+    "vibrating",
+    "belt squeal"
+   ],
+   "diagnosis": "Belt tension loss or misalignment. Normal wear after heavy usage.",
+   "action": "Take bike out of rotation. Belt tensioning requires trained technician. Do not attempt field adjustment.",
+   "severity": "high",
+   "partId": "belt-drive"
+  },
+  {
+   "symptom": "Resistance knob not engaging / no resistance change",
+   "keywords": [
+    "no resistance",
+    "resistance stuck",
+    "brake not working",
+    "resistance knob",
+    "can't feel resistance"
+   ],
+   "diagnosis": "Magnetic brake pad gap too wide or brake knob cable disconnected.",
+   "action": "Check brake knob cable routing under shroud. If cable intact, brake pad gap needs technician adjustment.",
+   "severity": "high",
+   "partId": "resistance-knob"
+  },
+  {
+   "symptom": "Bike wobbling / unstable",
+   "keywords": [
+    "wobble",
+    "wobbling",
+    "unstable",
+    "rocking",
+    "bike moves",
+    "not stable"
+   ],
+   "diagnosis": "Stabilizer feet not leveled or stabilizer bolts loose.",
+   "action": "Adjust 4 leveling feet (14mm nut) until all contact the floor evenly. Tighten M10 stabilizer bolts (6mm hex + 17mm wrench).",
+   "severity": "medium",
+   "partId": "stabilizers"
+  },
+  {
+   "symptom": "Seat won't stay at height",
+   "keywords": [
+    "seat drops",
+    "seat slips",
+    "saddle drops",
+    "seat won't hold",
+    "seat height"
+   ],
+   "diagnosis": "Saddle clamp not tightened or clamp mechanism worn.",
+   "action": "Tighten saddle clamp with 13mm wrench. If clamp is worn/stripped, replace the clamp assembly.",
+   "severity": "medium",
+   "partId": "saddle-clamp"
+  },
+  {
+   "symptom": "SprintShift lever stuck or unresponsive",
+   "keywords": [
+    "sprint shift stuck",
+    "shift not working",
+    "sprint lever",
+    "quick shift"
+   ],
+   "diagnosis": "SprintShift cable binding or lever mechanism jammed.",
+   "action": "Check cable routing. If lever mechanism is jammed, take bike out of rotation for technician service.",
+   "severity": "medium",
+   "partId": "sprintshift-lever"
+  }
+ ],
+ "equipment": [
+  {
+   "type": "PowerCycle bike",
+   "category": "Cardio",
+   "aliases": [
+    "bike",
+    "cycle",
+    "powercycle",
+    "spin bike"
+   ]
+  },
+  {
+   "type": "Barre",
+   "category": "Strength & studio",
+   "aliases": [
+    "barre",
+    "ballet barre"
+   ]
+  },
+  {
+   "type": "Resistance band",
+   "category": "Strength & studio",
+   "aliases": [
+    "band",
+    "bands",
+    "resistance band"
+   ]
+  },
+  {
+   "type": "Exercise ball",
+   "category": "Strength & studio",
+   "aliases": [
+    "ball",
+    "balls",
+    "pilates ball",
+    "swiss ball"
+   ]
+  },
+  {
+   "type": "Weight 1 kg",
+   "category": "Strength & studio",
+   "aliases": [
+    "1kg",
+    "1 kg weight",
+    "1kg weight"
+   ]
+  },
+  {
+   "type": "Weight 2 kg",
+   "category": "Strength & studio",
+   "aliases": [
+    "2kg",
+    "2 kg weight",
+    "2kg weight"
+   ]
+  },
+  {
+   "type": "Weight 3 kg",
+   "category": "Strength & studio",
+   "aliases": [
+    "3kg",
+    "3 kg weight",
+    "3kg weight"
+   ]
+  },
+  {
+   "type": "Weight 4 kg",
+   "category": "Strength & studio",
+   "aliases": [
+    "4kg",
+    "4 kg weight",
+    "4kg weight"
+   ]
+  },
+  {
+   "type": "Weight 5 kg",
+   "category": "Strength & studio",
+   "aliases": [
+    "5kg",
+    "5 kg weight",
+    "5kg weight"
+   ]
+  },
+  {
+   "type": "Weight 7 kg",
+   "category": "Strength & studio",
+   "aliases": [
+    "7kg",
+    "7 kg weight",
+    "7kg weight"
+   ]
+  },
+  {
+   "type": "Weight 10 kg",
+   "category": "Strength & studio",
+   "aliases": [
+    "10kg",
+    "10 kg weight",
+    "10kg weight"
+   ]
+  },
+  {
+   "type": "Laptop",
+   "category": "IT & systems",
+   "aliases": [
+    "laptop",
+    "notebook",
+    "macbook"
+   ]
+  },
+  {
+   "type": "Printer",
+   "category": "IT & systems",
+   "aliases": [
+    "printer",
+    "scanner"
+   ]
+  },
+  {
+   "type": "Biometric machine",
+   "category": "IT & systems",
+   "aliases": [
+    "biometric",
+    "biometric machine",
+    "attendance machine",
+    "fingerprint scanner"
+   ]
+  },
+  {
+   "type": "TFA system",
+   "category": "IT & systems",
+   "aliases": [
+    "tfa",
+    "tfa system",
+    "two factor",
+    "access control"
+   ]
+  },
+  {
+   "type": "Landline",
+   "category": "IT & systems",
+   "aliases": [
+    "landline",
+    "landline phone"
+   ]
+  },
+  {
+   "type": "Studio phone",
+   "category": "IT & systems",
+   "aliases": [
+    "studio phone",
+    "front desk phone",
+    "reception phone"
+   ]
+  },
+  {
+   "type": "Microphone",
+   "category": "Audio & visual",
+   "aliases": [
+    "mic",
+    "microphone",
+    "headset mic"
+   ]
+  },
+  {
+   "type": "Portable microphone",
+   "category": "Audio & visual",
+   "aliases": [
+    "portable mic",
+    "handheld mic",
+    "roving mic"
+   ]
+  },
+  {
+   "type": "Music system",
+   "category": "Audio & visual",
+   "aliases": [
+    "music system",
+    "sound system",
+    "console",
+    "mixer",
+    "amp"
+   ]
+  },
+  {
+   "type": "Speaker",
+   "category": "Audio & visual",
+   "aliases": [
+    "speaker",
+    "speakers",
+    "monitor speaker"
+   ]
+  },
+  {
+   "type": "Studio lighting rig",
+   "category": "Audio & visual",
+   "aliases": [
+    "lighting rig",
+    "studio lights",
+    "light rig"
+   ]
+  },
+  {
+   "type": "Ambient light",
+   "category": "Audio & visual",
+   "aliases": [
+    "ambient light",
+    "mood light"
+   ]
+  },
+  {
+   "type": "Spotlight",
+   "category": "Audio & visual",
+   "aliases": [
+    "spotlight",
+    "spot light"
+   ]
+  },
+  {
+   "type": "Strip light",
+   "category": "Audio & visual",
+   "aliases": [
+    "strip light",
+    "led strip"
+   ]
+  },
+  {
+   "type": "Emergency light",
+   "category": "Audio & visual",
+   "aliases": [
+    "emergency light",
+    "exit light"
+   ]
+  },
+  {
+   "type": "Neon signage",
+   "category": "Audio & visual",
+   "aliases": [
+    "neon",
+    "neon sign",
+    "signage"
+   ]
+  },
+  {
+   "type": "Air conditioning system",
+   "category": "Climate & facilities",
+   "aliases": [
+    "ac",
+    "a/c",
+    "air conditioning",
+    "aircon",
+    "air conditioner"
+   ]
+  },
+  {
+   "type": "Portable cooler",
+   "category": "Climate & facilities",
+   "aliases": [
+    "cooler",
+    "portable cooler",
+    "air cooler"
+   ]
+  },
+  {
+   "type": "Washing machine",
+   "category": "Climate & facilities",
+   "aliases": [
+    "washing machine",
+    "washer",
+    "laundry machine"
+   ]
+  },
+  {
+   "type": "Shoe disinfectant",
+   "category": "Climate & facilities",
+   "aliases": [
+    "shoe disinfectant",
+    "shoe sanitiser",
+    "shoe sanitizer",
+    "sanitising mat"
+   ]
+  },
+  {
+   "type": "Coffee maker",
+   "category": "Pantry",
+   "aliases": [
+    "coffee maker",
+    "coffee machine",
+    "espresso machine"
+   ]
+  },
+  {
+   "type": "Microwave",
+   "category": "Pantry",
+   "aliases": [
+    "microwave",
+    "microwave oven"
+   ]
+  }
+ ],
+ "equipmentTypes": [
+  "PowerCycle bike",
+  "Barre",
+  "Resistance band",
+  "Exercise ball",
+  "Weight 1 kg",
+  "Weight 2 kg",
+  "Weight 3 kg",
+  "Weight 4 kg",
+  "Weight 5 kg",
+  "Weight 7 kg",
+  "Weight 10 kg",
+  "Laptop",
+  "Printer",
+  "Biometric machine",
+  "TFA system",
+  "Landline",
+  "Studio phone",
+  "Microphone",
+  "Portable microphone",
+  "Music system",
+  "Speaker",
+  "Studio lighting rig",
+  "Ambient light",
+  "Spotlight",
+  "Strip light",
+  "Emergency light",
+  "Neon signage",
+  "Air conditioning system",
+  "Portable cooler",
+  "Washing machine",
+  "Shoe disinfectant",
+  "Coffee maker",
+  "Microwave"
+ ],
+ "equipmentCategories": [
+  "Cardio",
+  "Strength & studio",
+  "IT & systems",
+  "Audio & visual",
+  "Climate & facilities",
+  "Pantry"
+ ],
+ "equipmentConditions": [
+  "new",
+  "good",
+  "fair",
+  "worn",
+  "needs replacement"
+ ],
+ "counts": {
+  "studios": 5,
+  "classFormats": 24,
+  "trainers": 20,
+  "memberships": 43,
+  "equipmentTypes": 33,
+  "systems": 12,
+  "rooms": 26,
+  "statuses": 9,
+  "cycleQuestions": 5,
+  "areas": 23
+ }
+}

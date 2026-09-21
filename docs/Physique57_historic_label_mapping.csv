@@ -1,0 +1,87 @@
+﻿Historic sub-category (old log),Historic category,Maps to new sub-category,How matched,Tickets
+Internal Operations Memo,Internal Systems,Internal Operations Memo / Escalation,rule,156
+Studio Temperature / AC,Facility / Hygiene,AC and HVAC Issues,alias,58
+Class Experience Feedback,Class Quality,Class Format Satisfaction,alias,35
+Marketing Campaign Launch & Internal Alignment,Internal Systems,Marketing Collateral Production & Review,rule,15
+Internal Session Reporting / Post-Class Feedback,Other,Post-Class Session Reporting & Feedback Loop,rule,14
+Punctuality and Client Engagement,Trainer Conduct,Trainer Punctuality Issues,alias,13
+Class Availability / Variety,Booking / Scheduling,Additional Classes,alias,11
+Internal Campaign Coordination,Internal Systems,Marketing Collateral Production & Review,rule,11
+Hosted Class / Instructor Swap Request,Booking / Scheduling,Trainer Substitutions,alias,11
+Boutique / Retail Offerings,Facility / Hygiene,Boutique Availability Issues,alias,8
+Marketing / Operational Workflow,Internal Systems,Internal Communication Gap / Workflow Approval,rule,7
+Theft / Missing Items,Injury / Safety,Stolen Personal Items,alias,6
+Payment Reconciliation,Internal Systems,Auto-Debit Incorrect Charges,alias,6
+Partnership / Collaboration Approval,Internal Systems,Marketing Collateral Production & Review,rule,6
+Performance Review / Payroll,Internal Systems,Performance Review / Payroll / Leave (HR-Admin),rule,5
+Standard Operating Procedures (SOP),Internal Systems,Standard Operating Procedure (SOP) — create / update,alias,5
+Incident Report,Injury / Safety,Member Injury During Class,rule,5
+Data Accuracy & CRM Integration,Internal Systems,CRM System Errors,alias,4
+Class Cancellation & Schedule Imbalance,Booking / Scheduling,Last-minute Cancellations,alias,4
+Workshop Scheduling / Capacity Planning,Booking / Scheduling,Workshop / Event Capacity & Planning,alias,4
+Trainer Performance,Trainer Conduct,Trainer Behaviour,alias,4
+Zoho Shift Scheduling / HRIS Access,Internal Systems,HRIS & Shift Tooling Access (Zoho Shift),rule,3
+Creative Asset Production,Internal Systems,Marketing Collateral Production & Review,rule,3
+Handover / Shift Reporting,Internal Systems,Handover / Shift Reporting Gap,rule,3
+Trainer Performance / Intensity Level,Class Quality,Class Intensity Too High/Low,alias,2
+Locker Security & Maintenance,Facility / Hygiene,Locker Theft,alias,2
+Client Conflict Management,Trainer Conduct,Client Harassment Reports,alias,2
+Late Entry Policy Enforcement,Access / Check-in,Late Arrival Policy,alias,2
+SOP / Operational Checklist Alignment,Internal Systems,Standard Operating Procedure (SOP) — create / update,alias,2
+Hosted Class Lead Tracking,Internal Systems,Hosted Class / Event Lead Capture & Tracking,rule,1
+Atmosphere / Music Volume,Class Quality,Music Volume Issues,alias,1
+Studio Location & Pricing Preference,Booking / Scheduling,Studio Location & Pricing Preference,exact,1
+Late Entry Policy & Schedule Inflexibility,Booking / Scheduling,Late Arrival Policy,alias,1
+Payment Reconciliation / Audit,Internal Systems,Auto-Debit Incorrect Charges,alias,1
+Class Capacity & Schedule Gaps,Booking / Scheduling,Class Capacity & Schedule Gaps,exact,1
+Process Implementation & Communication Gap,Internal Systems,Internal Communication Gap / Workflow Approval,rule,1
+Inattentiveness & Safety Modification Failure,Trainer Conduct,Injury Prevention and Safety,alias,1
+Class Schedule Delay / Internal Follow-up,Communication Gap,Class Schedule Delay / Internal Follow-up,exact,1
+Performance Review Scheduling,Internal Systems,Performance Review / Payroll / Leave (HR-Admin),rule,1
+Harassment / Member Conflict,Trainer Conduct,Client Harassment Reports,alias,1
+Hosted Class Lead Feedback,Communication Gap,Hosted Class / Event Lead Capture & Tracking,rule,1
+Competitor Solicitation / Client Poaching,Other,Competitor Solicitation / Client Poaching,exact,1
+Performance Review Process,Internal Systems,Performance Review / Payroll / Leave (HR-Admin),rule,1
+Class Overbooking / Headcount Error,Booking / Scheduling,Class Overbooking / Unregistered Attendance,rule,1
+Internal Feedback / Sales Reporting,Communication Gap,Internal Communication Gap / Workflow Approval,rule,1
+Lead Conversion / Engagement Strategy,Communication Gap,Lead Conversion / Engagement Strategy,exact,1
+Standard Operating Procedure (SOP) improvement,Internal Systems,"SOP & Policy Governance (issue, version, publish)",rule,1
+Standard Operating Procedures / Logistics,Internal Systems,"SOP & Policy Governance (issue, version, publish)",rule,1
+Lead Feedback & Follow-up,Communication Gap,Hosted Class / Event Lead Capture & Tracking,rule,1
+Communication Gap,Internal Systems,Internal Communication Gap / Workflow Approval,rule,1
+Post-Event Report / Lead Generation,Internal Systems,Hosted Class / Event Lead Capture & Tracking,rule,1
+Late Entry Policy Denial,Booking / Scheduling,Additional Classes,rule,1
+Influencer/Partnership Approval,Internal Systems,Marketing Collateral Production & Review,rule,1
+Music Volume & Trainer Conduct,Class Quality,Music Volume Issues,rule,1
+Marketing/Collateral Production Delay,Internal Systems,Marketing Collateral Production & Review,rule,1
+Partnership Coordination / Business Development,Internal Systems,Marketing Collateral Production & Review,rule,1
+Lead Following / Contact Information Missing,Communication Gap,Hosted Class / Event Lead Capture & Tracking,rule,1
+Class Delay & Feedback Management,Booking / Scheduling,Class Schedule Delay / Internal Follow-up,rule,1
+Class Frequency and Format Preference,Booking / Scheduling,Class Frequency and Format Preference,exact,1
+Maternity Leave / Resignation,Other,Performance Review / Payroll / Leave (HR-Admin),rule,1
+Payment Reconciliation / UPI Verification,Internal Systems,Policy Non-Compliance / Unauthorised Refunds,rule,1
+Workflow Approval / Communication Gap,Internal Systems,Internal Communication Gap / Workflow Approval,rule,1
+Ventilation and Air Quality,Facility / Hygiene,Ventilation and Air Quality,exact,1
+Fainting/Light-headedness & Ventilation Concerns,Injury / Safety,Physical Discomfort During Class (cramping / dizziness),rule,1
+Trainer No-show / Late Arrival,Booking / Scheduling,Trainer No-Show / Late Arrival,rule,1
+Lead Management / Sales Tracking,Internal Systems,Lead Management / Sales Tracking,exact,1
+Policy Non-Compliance & Unauthorized Refunds,Internal Systems,Policy Non-Compliance / Unauthorised Refunds,rule,1
+Recurring Physical Discomfort / Cramping,Injury / Safety,Physical Discomfort During Class (cramping / dizziness),rule,1
+Instructor Lateness,Trainer Conduct,Trainer No-Show / Late Arrival,rule,1
+Marketing Campaign Launch / Ad Coordination,Internal Systems,Marketing Collateral Production & Review,rule,1
+Class Availability / Technical Sync,Booking / Scheduling,Error in Class Listings,rule,1
+B2B Operations / Schedule Feedback Survey,Communication Gap,Post-Class Session Reporting & Feedback Loop,rule,1
+Class Timing / Schedule Feedback,Booking / Scheduling,Additional Classes,rule,1
+Trainer Experience and Intensity Consistency,Class Quality,Trainer Experience and Intensity Consistency,exact,1
+Class Overbooking / Unregistered Attendance,Booking / Scheduling,Class Overbooking / Unregistered Attendance,exact,1
+Private Group Booking / Guestlist Management,Booking / Scheduling,Private Group Booking / Guestlist Management,exact,1
+Trainer No-Show,Booking / Scheduling,Trainer No-Show / Late Arrival,rule,1
+Marketing Collateral Review,Other,Marketing Collateral Production & Review,rule,1
+Instructor Availability Request,Booking / Scheduling,Additional Classes,rule,1
+Event Reporting / Sales Lead Tracking,Internal Systems,Hosted Class / Event Lead Capture & Tracking,rule,1
+Studio Operations / Class Feedback,Internal Systems,Post-Class Session Reporting & Feedback Loop,rule,1
+Internal Feedback / Sales Lead,Other,Internal Communication Gap / Workflow Approval,rule,1
+Instructor/Music Balance & Schedule Fit,Class Quality,Music Volume Issues,rule,1
+Quality Assurance Process,Class Quality,Quality Assurance Audit / Checklist Sign-off,rule,1
+Equipment / Weights Arrangement,Class Quality,Equipment Layout / Weights Arrangement,rule,1
+Physical Injury During Class,Injury / Safety,Member Injury During Class,rule,1
