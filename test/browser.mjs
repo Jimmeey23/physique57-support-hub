@@ -332,6 +332,24 @@ const hueOk = els => els.every(el => /^-?[\d.]+$/.test(el.style.getPropertyValue
 t('every card hands its theme to the stylesheet as custom properties',
   q('.cat').length >= 10 && hueOk(q('.cat')),
   `${q('.cat').length} category cards · first one hsl(${q('.cat')[0]?.style.getPropertyValue('--h')} ${q('.cat')[0]?.style.getPropertyValue('--hs')} ${q('.cat')[0]?.style.getPropertyValue('--hl')})`);
+const card0 = q('.cat')[0];
+const cnt0 = card0 && card0.querySelector('.cat-count b');
+t('a category card leads with its mark, its name and the one number that matters',
+  !!cnt0 && /^\d+$/.test(txt(cnt0).trim())
+  && /23px/.test(rootDecls('.cat-count b').font || '')
+  && card0.querySelector('.cat-em') === card0.querySelector('.ctop>*:first-child')
+  && /\bfont:600 15\.2px/.test(cssText.replace(/\n\s*/g, '').match(/\.subc b\{[^}]*\}/)[0]) === false,
+  `figure at ${rootDecls('.cat-count b').font} · emblem is the first thing in the row`);
+t('and the card is the only box on it — the detail lines lost their borders',
+  /\.cat \.rowmeta \.chip,\.subc \.meta \.chip\{[^}]*border-color:transparent/.test(cssText.replace(/\n\s*/g, ''))
+  && (rootDecls('.cat .owners')['border-top'] || '').startsWith('1px solid'),
+  'chips are tinted marks now, and the owner line is a hairline');
+const px = v => parseFloat(String(v || '0')) || 0;
+const g = px(rootDecls('.catgrid').gap), pad = px(rootDecls('.cat').padding.split(' ')[0]);
+t('the whitespace runs the right way: more air inside a card than between cards',
+  pad > g && g >= 14 && px(rootDecls('.cat .rowmeta').gap) < g,
+  `${g}px between cards · ${pad}px inside them · ${rootDecls('.cat .rowmeta').gap} between the marks`);
+
 await click([...q('.cat')].find(c => /Pricing and Memberships/.test(txt(c))));
 const subHues = [...q('.subc')].map(el => el.style.getPropertyValue('--h'));
 t('the sub-category cards each carry their own hue, saturation and lightness',

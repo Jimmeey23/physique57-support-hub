@@ -649,11 +649,13 @@ function App() {
           const open = tickets.filter(t => t.category === c.name && !['resolved', 'closed'].includes(t.status)).length;
           const th = themeCache(c.name, '');
           return <article className={cx('cat', searching && 'skel')} style={{ ...themeVars(th), animationDelay: `${Math.min(i, 8) * 22}ms` }} key={c.name} onClick={() => setCat(c.name)}>
-            <span className="cat-em" aria-hidden="true"><I s={glyphSvg(th.emblem, 17, 1.8)} /></span>
             <div className="ctop">
-              <span className="num">{String(i + 1).padStart(2, '0')}</span>
-              <div style={{ flex: 1 }}><h3>{c.name}</h3><div className="sub">{c.department}</div></div>
-              {open > 0 && <span className="chip brand mono" title={`${open} live tickets in this category`}>{open} live</span>}
+              <span className="cat-em" aria-hidden="true" title={`${c.name} files under this mark`}><I s={glyphSvg(th.emblem, 17, 1.8)} /></span>
+              <div className="cat-name"><span className="num">{String(i + 1).padStart(2, '0')}</span>
+                <h3>{c.name}</h3><div className="sub">{c.department}</div></div>
+              {/* the one number that matters on this card gets the size, not a chip in the corner */}
+              <div className={cx('cat-count', !open && 'zero')} title={`${open} live ticket${open === 1 ? '' : 's'} in this category`}>
+                <b className="mono">{open}</b><span className="xxs">{open === 1 ? 'open now' : 'open now'}</span></div>
             </div>
             <div className="rowmeta">
               <span className="chip mono"><I s={svg.layers}/> {c.subs.length} sub-categories</span>

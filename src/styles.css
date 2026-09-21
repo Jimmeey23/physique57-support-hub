@@ -2512,3 +2512,33 @@ html[data-theme=dark] .tk-type{color:color-mix(in oklab,hsl(var(--h,206) var(--h
   .rrail-meter{padding:11px 14px 12px}
   .rrail-checks,.rrail-audit,.rrail-filed,.rrail-right{margin-left:14px;margin-right:14px}
 }
+
+/* 6 · the triage grid. A category card is an instrument: its mark, its name, and the one number
+      that decides whether you click it — the rest of it is detail, so it stopped wearing boxes. */
+.catgrid{gap:16px}
+.cat{padding:19px 20px 16px;border-color:hsl(var(--h,206) var(--hs,58%) 50% / .2);border-radius:18px}
+.cat:hover{border-color:hsl(var(--h,206) var(--hs,58%) 50% / .45);
+  background:linear-gradient(180deg,hsl(var(--h,206) var(--hs,58%) 50% / .06),transparent 60%),var(--card)}
+.cat .ctop{align-items:flex-start;gap:13px}
+.cat-em{position:static;width:34px;height:34px;flex:none;margin:2px 0 0}
+.cat-name{flex:1 1 auto;min-width:0;display:grid;gap:1px}
+.cat .num{padding-top:0;letter-spacing:.13em;font-weight:600;color:hsl(var(--h,206) var(--hs,58%) var(--hl,46%))}
+html[data-theme=dark] .cat .num{color:hsl(var(--h,206) var(--hs,58%) 66%)}
+.cat h3{margin:1px 0 0}
+.cat-count{display:grid;justify-items:end;gap:3px;flex:none;text-align:right}
+.cat-count b{font:600 23px/1 var(--display);letter-spacing:-.034em;font-variant-numeric:tabular-nums;
+  color:color-mix(in oklab,hsl(var(--h,206) var(--hs,58%) var(--hl,46%)) 62%,var(--ink))}
+.cat-count span{font:600 10.6px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--mut)}
+.cat-count.zero b{color:color-mix(in oklab,var(--mut) 62%,var(--card));font-weight:500}
+.cat .rowmeta{margin-top:13px}
+.cat .rowmeta .chip,.subc .meta .chip{border-color:transparent;background:color-mix(in oklab,var(--ink) 5.5%,transparent);color:var(--ink2)}
+.cat .owners{border-top:1px solid var(--line);padding-top:12px;margin-top:13px}
+.cat .who{font-size:11.8px}
+.subs{gap:13px;grid-template-columns:repeat(auto-fill,minmax(292px,1fr))}
+.subc{padding:15px 16px 14px;border-radius:18px;border-color:hsl(var(--h,206) var(--hs,58%) 50% / .17)}
+.subc:hover{border-color:hsl(var(--h,206) var(--hs,58%) 50% / .42);
+  background:linear-gradient(180deg,hsl(var(--h,206) var(--hs,58%) 50% / .05),transparent 62%),var(--card)}
+.subc b{font-size:15.2px;letter-spacing:-.015em;line-height:1.28}
+.subc-dept{font-size:11.8px;color:var(--ink2);margin-top:5px}
+.subc .meta{margin-top:11px}
+@media (max-width:640px){.cat-em{width:30px;height:30px}.cat-count b{font-size:20px}}
