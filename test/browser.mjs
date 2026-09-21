@@ -559,11 +559,12 @@ parsed.walkAtRules('media', r => atRules.push({ params: flat2(r.params), text: f
 const mediaWith = n => atRules.filter(r => r.params.includes(n));
 let baseRail = '';
 parsed.walkRules('.rail', r => { if (!r.parent || r.parent.type !== 'atrule') baseRail += r.toString(); });
-t('and they fold in two steps instead of overflowing',
+t('and the docked columns still fold in two steps, with nothing reserved when nothing is docked',
   /display:\s*none/.test(baseRail)
-  && mediaWith('1041px').some(r => /250px minmax\(0, ?1fr\)/.test(r.text))
-  && mediaWith('1321px').some(r => /372px/.test(r.text))
-  && mediaWith('1040px').some(r => /\.rail\s*\{[^}]*display:\s*block/.test(r.text)),
+  && mediaWith('1041px').some(r => /data-rails=left[\s\S]*?300px minmax\(0, ?1fr\)/.test(r.text))
+  && mediaWith('1321px').some(r => /data-rails=both[\s\S]*?400px/.test(r.text))
+  && mediaWith('1040px').some(r => /\.rail\s*\{[^}]*display:\s*block/.test(r.text))
+  && !atRules.some(r => /\.shell\s*\{[^}]*grid-template-columns:[^}]*px/.test(r.text) && !r.text.includes('data-rails')),
   `${atRules.length} media blocks · base .rail = ${flat2(baseRail).slice(0, 44)}`);
 const liveB = JSON.parse(window.localStorage.getItem('p57.hub.v1.tickets') || '[]');
 const archB = JSON.parse(window.localStorage.getItem('p57.hub.v1.archived') || '[]');
@@ -1010,10 +1011,19 @@ t('each button owns its own column, so the desk can be half-docked',
   doc.documentElement.dataset.rails === 'right' && !q.one('.rail-l') && !!q.one('.rail-r'),
   doc.documentElement.dataset.rails);
 await click(railBtns()[1]); await tick();           /* and the record releases too */
+const shellCols = [];
+parsed.walkAtRules(min => { if (min.name !== 'media') return;
+  min.walkRules(r => { if (/[{,]\s*\.shell\s*$/.test(r.selector + '$') || r.selector.trim() === '.shell')
+    r.walkDecls(d => { if (d.prop === 'grid-template-columns' || d.prop === 'max-width') shellCols.push(min.params + ' → ' + d.prop); }); }); });
+t('and no unqualified .shell rule can reserve a column again — the tracks belong to a docked state',
+  shellCols.length === 0 && !/(?:^|[},]\s*)\.shell\s*\{[^}]*grid-template-columns:[^;}]*px/m.test(cssText.replace(/\n\s*/g, ' '))
+  && /html\[data-rails=off\] \.shell\{max-width:none/.test(cssText.replace(/\n\s*/g, '')),
+  shellCols.length ? 'unqualified: ' + shellCols.join(', ') : 'every .shell track rule is rail-qualified · undocked max-width:none');
 t('undocked, the board owns the whole desk',
   doc.documentElement.dataset.rails === 'off' && !q('.rail').length && q('.tkrow').length >= 1
-  && rootDecls('.shell')['max-width'] === '1380px',
-  `data-rails=${doc.documentElement.dataset.rails} · .shell at ${rootDecls('.shell')['max-width']} · ${q('.tkrow').length} rows across ${q('.tk').length} cards`);
+  && rootDecls('.shell')['grid-template-columns'] === 'minmax(0,1fr)'
+  && (rootDecls('html[data-rails=off] .shell')['max-width'] || '') === 'none',
+  `data-rails=${doc.documentElement.dataset.rails} · .shell ${rootDecls('.shell')['grid-template-columns']} at ${rootDecls('html[data-rails=off] .shell')['max-width']} · ${q('.tkrow').length} rows across ${q('.tk').length} cards`);
 t('the counters and every lens move onto the board as one strip, and lose their card frames on the way',
   !!q.one('.boardbar') && q('.boardbar .counts .rc').length === 4 && q('.boardbar .fgrp').length === 4
   && q('.boardbar .filters .opt').length >= 8 && /inbar/.test(q.one('.boardbar .rcard').className)

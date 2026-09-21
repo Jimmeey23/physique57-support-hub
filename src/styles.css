@@ -1781,13 +1781,13 @@ html[data-density] .shell > main{padding:0}
 .rail{min-width:0;display:none}
 .railstack{display:flex;flex-direction:column;gap:13px}
 @media (min-width:1041px){
-  .shell{grid-template-columns:250px minmax(0,1fr)}
+  /* the columns exist only when something is docked in them — an unqualified track here left a 250px
+     empty gutter on the left of the board all through the rails work */
   .rail{display:block}
   .rail-l{position:sticky;top:74px;max-height:calc(100vh - 92px);overflow:auto;overscroll-behavior:contain;
     padding:2px 4px 8px 0;scrollbar-width:thin}
 }
 @media (min-width:1321px){
-  .shell{grid-template-columns:250px minmax(0,1fr) 372px}
   .rail-r{position:sticky;top:74px;max-height:calc(100vh - 92px);overflow:auto;overscroll-behavior:contain;
     padding:2px 0 8px 6px;scrollbar-width:thin}
 }
@@ -2584,11 +2584,13 @@ html[data-theme=dark] .cat .num{color:hsl(var(--h,206) var(--hs,58%) 66%)}
 /* 9 · the board without rails. The queue is the thing; everything else is asked for. Left is the
       desk, right is the record, and both are one click or one key away rather than furniture that
       eats 620px of a 1440px screen. Nothing was deleted — the cards moved containers. */
-.shell{max-width:1380px}
-html[data-rails=left] .shell,html[data-rails=right] .shell,html[data-rails=both] .shell{max-width:1680px}
+html[data-rails=off] .shell{max-width:none;padding-left:clamp(18px,2.6vw,54px);padding-right:clamp(18px,2.6vw,54px)}
+html[data-rails=left] .shell,html[data-rails=right] .shell,html[data-rails=both] .shell{max-width:1840px}
 @media (min-width:1041px){
-  html[data-rails=left] .shell{grid-template-columns:300px minmax(0,1fr)}
+  html[data-rails=left] .shell,html[data-rails=both] .shell{grid-template-columns:300px minmax(0,1fr)}
   html[data-rails=right] .shell{grid-template-columns:minmax(0,1fr) 400px}
+}
+@media (min-width:1321px){
   html[data-rails=both] .shell{grid-template-columns:300px minmax(0,1fr) 400px}
 }
 .railbtn svg{width:15px;height:15px}
@@ -2636,8 +2638,8 @@ html[data-rails=off] .c-title>b{font-size:16.2px}
 html[data-rails=off] .tklist{gap:14px}
 html[data-rails=off] .tk-side{min-width:264px}
 html[data-rails=off] .boardbar{margin-bottom:16px}
+/* full width means the strip has to be *composed*, not just stretched: figures at the left edge,
+   the lenses grouped against the right, nothing floating in the middle of the desk */
+html[data-rails=off] .boardbar .filters{justify-content:flex-end}
+html[data-rails=off] .boardbar{justify-content:space-between}
 html[data-rails=off] .phead{margin-bottom:18px}
-@media (max-width:1040px){
-  /* below the rail breakpoint there was never a column to dock into, so the strip is the only home */
-  .shell{max-width:none}
-}
