@@ -353,7 +353,7 @@ export function SettingsModal({ onClose, prefs, setPrefs, onTestMomence, momence
               <button className="btn ghost" onClick={() => { ai?.setKey(''); setKeyDraft(''); setAiTest('key forgotten — the local line is used again'); }}><I s={svg.x} /> Forget the key</button></div>
           </div>
           <div className="fieldgrid sm">
-            <label className="fg"><span className="fk">API key</span>
+            <label className="fg fld"><span className="fk">API key</span>
               <input type="password" autoComplete="off" spellCheck="false" value={keyDraft}
                 onChange={e => setKeyDraft(e.target.value)} placeholder="sk-… (kept in this browser only)" /></label>
             <div className="fg"><span className="fk">&nbsp;</span>

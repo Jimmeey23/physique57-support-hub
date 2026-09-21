@@ -971,28 +971,35 @@ function App() {
           const th = themeCache(t.category, t.subCategory);
           return <article className={cx('tk', isOpen && 'open')} style={{ '--pc': PC[t.priority], ...themeVars(th) }} key={t.id}>
             <div className="tkrow" onClick={() => setOpenId(isOpen ? null : t.id)}>
-              <div className="c-num">{t.number}<small>{fmtAt(t.createdAt)}</small></div>
-              <div className="c-title">
-                <span className="tk-em" aria-hidden="true" data-tip={`${t.subCategory} files under its own colour, so the queue reads by kind`}><I s={glyphSvg(th.emblem, 15, 1.9)} /></span>
-                <b>{t.title}</b>
-                {(stories[t.id] || t.narrative || t.label) && (stories[t.id] || t.narrative || t.label) !== t.title
-                  && <p className="tklabel" data-tip="Auto-labelled from the answers on this ticket — click to open the full record"
-                    onClick={e => { e.stopPropagation(); setSheet(t.id); }}>{stories[t.id] || t.narrative || t.label}</p>}
-                <div className="path"><span className="chip">{t.category} › {t.subCategory}</span>
-                  {t.class?.sessionId && <span className="chip brand"><I s={svg.calendar}/> {t.class.name} · {t.class.booked ?? 0}/{t.class.capacity ?? '—'} seats</span>}
-                  {t.class?.attendees?.length > 0 && <span className="chip warn"><I s={svg.user}/> {t.class.attendees.length} attendee note{t.class.attendees.length > 1 ? 's' : ''}</span>}
-                  {(t.recurrenceCount || 1) > 1 && <span className="chip mono">report #{t.recurrenceCount}</span>}
+              {/* two columns: what the ticket says, then when it is due and who owes it. Nothing here
+                  is cut with an ellipsis — the row wraps instead of hiding the answer. */}
+              <div className="tk-main">
+                <div className="c-num">{t.number}<small>{fmtAt(t.createdAt)}</small></div>
+                <div className="c-title">
+                  <b><span className="tk-em" aria-hidden="true" data-tip={`${t.subCategory} files under its own colour, so the queue reads by kind`}><I s={glyphSvg(th.emblem, 15, 1.9)} /></span>{t.title}</b>
+                  {(stories[t.id] || t.narrative || t.label) && (stories[t.id] || t.narrative || t.label) !== t.title
+                    && <p className="tklabel" data-tip="Auto-labelled from the answers on this ticket — click to open the full record"
+                      onClick={e => { e.stopPropagation(); setSheet(t.id); }}>{stories[t.id] || t.narrative || t.label}</p>}
+                  <div className="path">
+                    <span className="chip tk-type">{t.category} › {t.subCategory}</span>
+                    <span className="c-dept">{t.studio}{t.area ? ' · ' + t.area : ''}</span>
+                    {t.class?.sessionId && <span className="chip brand"><I s={svg.calendar}/> {t.class.name} · {t.class.booked ?? 0}/{t.class.capacity ?? '—'} seats</span>}
+                    {t.class?.attendees?.length > 0 && <span className="chip warn"><I s={svg.user}/> {t.class.attendees.length} attendee note{t.class.attendees.length > 1 ? 's' : ''}</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="tk-side">
+                <div className="col-sla"><Countdown t={t} now={now} />
+                  <div className="sla-second"><Countdown t={t} now={now} mode="res" compact /></div></div>
+                <div className="col-own"><OwnerCell t={t} /></div>
+                <div className="tk-flags">
                   <Pill p={t.priority} />
+                  {(t.recurrenceCount || 1) > 1 && <span className="chip mono">report #{t.recurrenceCount}</span>}
+                  {t.escalation > 0 && <span className="chip brand mono">L{t.escalation}</span>}
                   {t.data.member_name && <span className="chip mono"><I s={svg.user}/> {t.data.member_name}</span>}
-                  {t.escalation > 0 && <span className="chip brand">L{t.escalation}</span>}
-                  {!t.firstResponseAt && <span className="chip" style={{ color: 'var(--crit)' }}>awaiting first reply</span>}
-                </div></div>
-              <div className="col-sla"><Countdown t={t} now={now} />
-                <div className="sla-second"><Countdown t={t} now={now} mode="res" compact /></div></div>
-              <div className="c-dept col-dept">{t.studio}{t.area ? ' · ' + t.area : ''}</div>
-              <div className="col-own"><OwnerCell t={t} /></div>
-              <div className="c-act">
-                <span className="tick"><I s={svg.chev}/></span>
+                  {!t.firstResponseAt && <span className="chip crit">awaiting first reply</span>}
+                </div>
+                <span className="c-act"><span className="tick"><I s={svg.chev}/></span></span>
               </div>
             </div>
             {isOpen && <div className="detail" onClick={e => e.stopPropagation()}>

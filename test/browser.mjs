@@ -878,6 +878,51 @@ t('and each of them is watermarked with the mark its name chose',
   && new Set(q('.subc-wm svg path').map(p => (p.getAttribute('d') || '').slice(0, 12))).size > 1,
   `${new Set(q('.subc-wm svg path').map(p => (p.getAttribute('d') || '').slice(0, 12))).size} different emblems on one screen`);
 
+/* ───────────────────────────── 5e. the instrument pass: no truncation, a real scale, one hairline ── */
+const backToQueue = async () => {
+  /* the sections above leave the desk in a sheet or a drawer; get out the way the app lets a person */
+  for (let n = 0; n < 5 && !q('.tkrow').length; n++) {
+    const x = q('.modal .icobtn')[0];
+    if (x) { await click(x); await tick(); }
+    const tab = [...q('.tabs button')].find(b => /queue/i.test(txt(b)));
+    if (tab) { await click(tab); await tick(); }
+    if (!q('.tkrow').length) break;
+  }
+};
+await backToQueue();
+const row0 = q.one('.tkrow');
+t('the queue row is two blocks — what it says, then when it is due and who owes it',
+  !!row0 && row0.children.length === 2 && !!row0.querySelector('.tk-main') && !!row0.querySelector('.tk-side')
+  && rootDecls('.tkrow')['grid-template-columns'] === 'minmax(0,1fr) minmax(224px,300px)',
+  'DEBUG children=' + (row0 ? row0.children.length + ':' + [...row0.children].map(c => c.className).join(',') + ' cols=' + rootDecls('.tkrow')['grid-template-columns'] : 'no row'));
+t('the subject line wraps instead of being cut — no ellipsis on the queue’s primary text',
+  (rootDecls('.c-title>b')['white-space'] || '') === 'normal' && (rootDecls('.c-title>b')['text-overflow'] || '') === 'clip'
+  && (rootDecls('.c-title>b')['-webkit-line-clamp'] || '') === '2' && !/text-overflow:ellipsis/.test(rootDecls('.c-title>b')['all'] || ''),
+  `white-space:${rootDecls('.c-title>b')['white-space']} · text-overflow:${rootDecls('.c-title>b')['text-overflow']} · clamp ${rootDecls('.c-title>b')['-webkit-line-clamp']}`);
+t('and it is the loudest thing in the row, at 15.6px on the display face',
+  /15\.6px/.test(rootDecls('.c-title>b').font || '') && /var\(--display\)/.test(rootDecls('.c-title>b').font || ''),
+  rootDecls('.c-title>b').font);
+const tiny = [...new Set([...cssText.matchAll(/font:\s*\d{2,3}\s+(\d+(?:\.\d+)?)px/g)].map(m => +m[1])
+  .concat([...cssText.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g)].map(m => +m[1])))].filter(px => px < 10.6);
+t('nothing on this desk is allowed smaller than 10.6px', tiny.length === 0,
+  tiny.length ? 'still tiny: ' + tiny.join(', ') + 'px' : 'the whole sheet sits at or above 10.6px, and the pass lifts the labels further');
+t('read-only answers lost their boxes and kept a hairline',
+  rootDecls('.fg').border === '0' && rootDecls('.fg').background === 'transparent'
+  && /^1px solid var\(--line\)$/.test(rootDecls('.fg')['border-top'] || '')
+  && /10\.8px/.test(rootDecls('.fg .fk').font || '') && /13\.3px/.test(rootDecls('.fg .fv').font || rootDecls('.fg .fv')['font-size'] || ''),
+  `label ${rootDecls('.fg .fk').font} · value ${rootDecls('.fg .fv')['font-size'] || rootDecls('.fg .fv').font}`);
+t('the ticket type’s hue runs the row: 4px of it on the edge, a wash behind the text, a tint on the chip',
+  rootDecls('.tk:before').width === '4px' && /hsl\(var\(--h/.test(rootDecls('.tkrow').background || '')
+  && /hsl\(var\(--h/.test(rootDecls('.tk-type').background || '') && /var\(--ink\)/.test(rootDecls('.tk-type').color || ''),
+  `bar ${rootDecls('.tk:before').width} · chip colour keeps the ink mix for contrast`);
+const flags = q.one('.tk-flags');
+t('priority, escalation and the reply owed sit in the right gutter, out of the reading line',
+  !!flags && /^(SEV|CRIT|HIGH|MED|LOW)$/.test(txt(flags.querySelector('.prio') || flags).trim().toUpperCase())
+  && rootDecls('.tk-flags')['justify-content'] === 'flex-end', txt(flags).slice(0, 72));
+t('and the clocks are tabular, so a column of times lines up as digits',
+  /tabular-nums/.test(decls('.chip.mono,.cds b,.stat b,.apay b,.now b,.fv')['font-variant-numeric'] || '')
+  || /tnum/.test(decls('.mono')['font-feature-settings'] || ''), 'tnum on mono, tabular on every metric');
+
 /* ───────────────────────────── 6. a reload keeps it all ───────────────────────────── */
 window.eval('globalThis.__ROOT__.unmount()');
 await new Promise(r => setTimeout(r, 60));
