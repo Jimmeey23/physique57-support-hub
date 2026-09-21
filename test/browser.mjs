@@ -43,7 +43,12 @@ const NEED = ['fsec', 'fbody', 'fprogress', 'fp-txt', 'fp-bar', 'ring', 'fh-meta
   'trainerdesk', 'td-bar', 'td-grid', 'td-list', 'trow', 'td-name', 'td-kpis', 'td-side', 'td-head', 'td-rates',
   'td-rate', 'td-tk', 'loggrid', 'logcard', 'logtitle', 'logatt', 'logatt-row', 'numgrid', 'hours', 'hr-bar',
   'presetbar', 'preset', 'chiprow', 'rec-tags', 'rec-stats', 'rec-fields', 'rec-field', 'scopebar', 'res-cols',
-  'res-col', 'res-f', 'res-two', 'rv-att', 'rv-class', 'sla-second'];
+  'res-col', 'res-f', 'res-two', 'rv-att', 'rv-class', 'sla-second',
+  'shell', 'rail', 'rail-l', 'rail-r', 'railstack', 'rcard', 'rcard-head', 'idcard', 'idrow', 'idwho',
+  'idswitch', 'idnote', 'counts', 'rc', 'filters', 'rf-row', 'rcheck', 'mine', 'mtitle', 'line',
+  'org-up', 'org-node', 'org-down', 'rail-empty', 're-mark', 'rrail', 'rrail-head', 'rrail-clock',
+  'rrail-right', 'rrail-lock', 'rrail-as', 'rrail-checks', 'rrail-checks-head', 'rk', 'rk-mark',
+  'rrail-foot', 'rrail-audit', 'rrail-filed', 'res-ro', 'ra', 'in-rail'];
 const missing = NEED.filter(c => !new RegExp('\\.' + c + '(?![\\w-])').test(cssText));
 t('every class the markup relies on has a rule', !missing.length, missing.length ? 'no CSS for: ' + missing.join(', ') : `${NEED.length} classes covered`);
 /* Selector hygiene, both directions. Quotes and url() payloads are stripped from the CSS first so a
@@ -491,6 +496,102 @@ t('icons are elements, so they inherit colour instead of printing their source',
   doc.querySelectorAll('svg').length + ' <svg> nodes painted, none written as text');
 if (q('.toast').length) t('a toast carries no raw markup either',
   !/<[a-z/]/.test(q('.toast').map(el => el.textContent).join(' ')), q('.toast').map(el => txt(el)).join(' · ').slice(0, 50));
+
+/* ─────────────────────── 5b. the two rails, and whose pen the record needs ─────────────────────── */
+const railL = q.one('#rail-work'), railR = q.one('#rail-focus');
+t('the board sits between a workbench rail and a resolution rail',
+  q('.shell').length === 1 && !!railL && !!railR && q('.app > .shell > main').length === 1,
+  `${q('.rcard').length} cards in the left rail · ${q('.sidecard, .rrail').length} panels in the right`);
+const flat2 = x => String(x).replace(/\s+/g, ' ');
+const atRules = [];
+parsed.walkAtRules('media', r => atRules.push({ params: flat2(r.params), text: flat2(r.toString()) }));
+const mediaWith = n => atRules.filter(r => r.params.includes(n));
+let baseRail = '';
+parsed.walkRules('.rail', r => { if (!r.parent || r.parent.type !== 'atrule') baseRail += r.toString(); });
+t('and they fold in two steps instead of overflowing',
+  /display:\s*none/.test(baseRail)
+  && mediaWith('1041px').some(r => /250px minmax\(0, ?1fr\)/.test(r.text))
+  && mediaWith('1321px').some(r => /372px/.test(r.text))
+  && mediaWith('1040px').some(r => /\.rail\s*\{[^}]*display:\s*block/.test(r.text)),
+  `${atRules.length} media blocks · base .rail = ${flat2(baseRail).slice(0, 44)}`);
+const liveB = JSON.parse(window.localStorage.getItem('p57.hub.v1.tickets') || '[]');
+const archB = JSON.parse(window.localStorage.getItem('p57.hub.v1.archived') || '[]');
+const cn = n => String(n || '').replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+const numbers = q('.counts .rc').map(el => Number((txt(el).match(/\d+/) || ['0'])[0]));
+t('the counters are the board, not a decoration',
+  numbers[0] === liveB.filter(x => !['resolved', 'closed'].includes(x.status)).length
+  && numbers[3] === archB.length && txt(q('.counts .rc')[3]).includes('filed'),
+  `${numbers.join(' · ')} against ${liveB.length} live / ${archB.length} filed`);
+const idSel = q('.idswitch select')[0];
+t('the desk signs in as a person the escalation ladder already names',
+  !!idSel && idSel.options.length >= 12 && /·/.test(txt(idSel.options[1])),
+  idSel ? [...idSel.options].slice(1, 4).map(o => txt(o)).join(' / ').slice(0, 76) : 'no switcher');
+const beforeRows = q('.tkrow').length;
+await click('.rcheck input');
+t('the rail filter narrows the same board the queue lists',
+  q('.rcheck input')[0].checked === true
+  && JSON.parse(window.__C__.get('p57.hub.v1.mine') || 'false') === true
+  && q('.tkrow').length <= beforeRows,
+  `${beforeRows} rows → ${q('.tkrow').length} rows with “only what I own” on`);
+await click('.rcheck input');
+await click([...q('.filters .opt')].find(el => /critical/i.test(txt(el))));
+t('a priority chip on the rail drives the queue too',
+  q('.filters .opt.on').length >= 1 && q('.tkrow').length <= beforeRows,
+  `${q('.tkrow').length} rows left of ${beforeRows} at Critical · ${q('.filters .opt.on').map(txt).join(',')}`);
+await click([...q('.filters .opt')].find(el => /any priority/i.test(txt(el))));
+
+const rail = q.one('.rrail');
+const railTag = txt(q.one('.rrail-head .mono'));
+const focused = liveB.concat(archB).find(x => railTag.startsWith(x.number)) || {};
+t('opening a ticket puts its close-out record on the right rail',
+  !!rail && !!focused.number && railTag.startsWith(focused.number)
+  && q('.rrail .res-f').length >= 16 && q('.rrail .rrail-clock').length === 1,
+  `${q('.rrail .res-f').length} fields · ${q('.rrail .pk').length} dropdowns · ${q('.rrail .res-ro').length} read-up lines · ${railTag}`);
+t('the rail asks for the checklist before it lets anything close',
+  q('.rrail-checks .rk').length === 8 && /close-out checklist/.test(txt(q.one('.rrail-checks')))
+  && /\/8/.test(txt(q.one('.rrail-checks-head'))), txt(q.one('.rrail-checks-head')));
+const owner = cn(focused.assignee);
+const chainNames = [...new Set([...(focused.chain || []).map(c => cn(c.who)), owner])];
+t('the record is sealed for anyone off this ticket’s line',
+  !!q.one('.rrail') && !!owner && chainNames.length >= 2, `${owner} · ${chainNames.length} names on the line`);
+const readerOpt = [...idSel.options].find(o => o.value && !chainNames.includes(cn(o.value)));
+if (readerOpt) {
+  setValue(idSel, readerOpt.value); await new Promise(r => setTimeout(r, 200));
+  const locked = q.one('.rrail.locked');
+  t('a colleague who neither owns nor supervises it reads the whole record but writes none of it',
+    !!locked && /rrail-right ro/.test(locked.className + ' ro') === false
+    && q('.rrail .res-ro').length >= 12 && q('.rrail textarea').length === 0
+    && q('.rrail .pk').length === 0,
+    `${q('.rrail .res-ro').length} lines read back · ${txt(q('.rrail-right')).slice(0, 72)}`);
+  t('and the rail says exactly whose pen it is waiting for',
+    /Read-only/.test(txt(q.one('.rrail-right'))) && txt(q.one('.rrail-right')).includes(owner),
+    txt(q.one('.rrail-right p')).slice(0, 116));
+}
+if ([...idSel.options].some(o => o.value === owner)) {
+  setValue(idSel, owner); await new Promise(r => setTimeout(r, 200));
+  t('the owner gets the same rail unlocked, with their name on the record',
+    !!q.one('.rrail:not(.locked)') && q('.rrail .pk').length >= 8 && q('.rrail .res-ro').length === 0
+    && /You may write this record/.test(txt(q.one('.rrail-right'))),
+    `${q('.rrail .pk').length} editable dropdowns · ${txt(q.one('.rrail-right b'))}`);
+  const tas = q('.rrail textarea');
+  const ticksBefore = q('.rrail .rk.on').length;
+  setValue(tas[0], 'The condenser coil on the mezzanine failed mid-class; the vendor part is on order.');
+  setValue(tas[1], 'Room closed for the last two sessions, portable units brought in, both classes moved to the studio below.');
+  setValue(tas[tas.length - 1], 'Coil replaced on Thursday; the other nine rooms get the same check every month from now.');
+  await new Promise(r => setTimeout(r, 120));
+  await click('.rrail .pk-btn');
+  const catOpt = q('.rrail .pk-opt').find(el => /^Wear and tear$/.test(txt(el)));
+  if (catOpt) await click(catOpt);
+  t('the checklist answers back while the record is being written',
+    q('.rrail .rk.on').length > ticksBefore, `${ticksBefore}/8 → ${q('.rrail .rk.on').length}/8 marked`);
+  const pri = [...q('.rrail-foot .btn')].find(b => /Record resolution/.test(txt(b)));
+  t('and the rail will not file until the four fields the next shift needs are on the page',
+    !!pri && pri.disabled === false, pri ? txt(q.one('.rrail-foot .xs')).slice(0, 74) : 'no file button');
+  await click('.ts-foot .btn');
+} else {
+  t('the owner is on the sign-in list', false, `“${owner}” missing from ${idSel.options.length} identities`);
+  await click('.ts-foot .btn');
+}
 await click('.ts-foot .btn');
 t('an action taken from the sheet lands on the ticket, not only on the screen',
   q('.tsheet').length === 0 || !!q('.ts-foot').length, 'sheet still coherent after acting');

@@ -10,6 +10,8 @@ import {
 import {
   Countdown, Pill, StatusPill, Avatar, OwnerCell, IconBtn, Modal, Toasts, Search, Stats, STATUS, fmtDur, fmtAt, cx,
 } from './ui.jsx';
+import { buildOrg, viewerOptions, upline, directReports, resolutionRights, ownershipLine, cleanName as orgClean } from './org.js';
+import { ResolutionRail } from './resolution.jsx';
 import FormEngine, { buildFields, isVisible } from './forms.jsx';
 import { LookupControl, RecordModal, AttendeeRoster, decodeLookup, decodeLookups, encodeLookup, encodeLookups,
   MODULE_META, hasLookup } from './lookups.jsx';
@@ -143,6 +145,16 @@ function App() {
 
   /* ---------- derived ---------- */
   const all = useMemo(() => [...tickets, ...archived], [tickets, archived]);
+
+  /* ── who is looking at the board, and what that person may write ───────────────
+     The org chart is read out of the escalation ladder the taxonomy already carries, so the
+     reporting line is never a second source of truth. Everything the rails show hangs off it. */
+  const org = useMemo(() => buildOrg(DATA.categories, [...tickets, ...archived]), [tickets, archived]);
+  const [viewerName, setViewerName] = usePersist('p57.hub.v1.viewer', '');
+  const people = useMemo(() => viewerOptions(org), [org]);
+  const viewer = useMemo(() => people.find(p => p.name === viewerName) || people[0] || null, [people, viewerName]);
+  const focus = useMemo(() => all.find(x => x.id === (sheet || openId)) || null, [all, sheet, openId]);
+  const [mineOn, setMineOn] = usePersist('p57.hub.v1.mine', false);
   const live = useMemo(() => {
     const list = tickets.map(t => {
       const left = t.frDueAt - now, closed = false;
@@ -157,6 +169,7 @@ function App() {
       && (!ownerFilter || String(t.chain[Math.min(t.escalation, t.chain.length - 1)]?.who).includes(ownerFilter))
       && (!studioFilter || t.studio === studioFilter)
       && (!onlyClass || !!(t.class?.sessionId || t.kind === 'hosted-class'))
+      && (!mineOn || (short(t.assignee) === viewer?.name && !['resolved', 'closed'].includes(t.status)))
       && (!q || (t.title + ' ' + (t.label || '') + t.number + t.subCategory + t.category + (t.data.member_name || '') + t.studio + t.summary
         + (t.class?.name || '') + (t.class?.attendees || []).map(a => a.name + ' ' + (a.note || '')).join(' ')).toLowerCase().includes(q.toLowerCase())));
     const bySla = (a, b) => a._left - b._left;
@@ -164,7 +177,7 @@ function App() {
     const byNew = (a, b) => b.createdAt - a.createdAt;
     return f.sort(sort === 'sla' ? bySla : sort === 'priority' ? byPri : sort === 'newest' ? byNew : (a, b) => a._left - b._left)
       .sort((a, b) => (b._breach - a._breach) || (sort === 'sla' ? bySla(a, b) : 0));
-  }, [tickets, now, statusFilter, prioFilter, deptFilter, ownerFilter, studioFilter, q, sort, onlyClass]);
+  }, [tickets, now, statusFilter, prioFilter, deptFilter, ownerFilter, studioFilter, q, sort, onlyClass, mineOn, viewer]);
 
   /* ---- hosted-class workspace derivations ---- */
   const classDeskId = decodeLookups(captured.class_date)[0]?.id || null;
@@ -186,6 +199,8 @@ function App() {
   const visible = useMemo(() => fields.filter(f => isVisible(f, data)), [fields, data]);
   const missing = useMemo(() => visible.filter(f => f.required && !filled(data[f.id])), [visible, data]);
   const livePriority = useMemo(() => sub ? inferPriority(sub.priority, data, sub) : 'medium', [sub, data]);
+  /* whether the answers so far have pushed the priority above the sub-category’s own default */
+  const raised = !!sub && livePriority !== sub.priority;
   /* The reference only insists on a member record when someone is reporting on a member's
      behalf, and only insists on a session when a class was actually involved. */
   const gating = useMemo(() => {
@@ -577,62 +592,10 @@ function App() {
     </div>;
   };
 
-  const intake = () => {
-    if (!sub) return null;
-    const auto = `${sub.name} — ${studio ? short(studio).split(',')[0] : 'studio'}${data.area ? ' · ' + data.area : ''}`;
-    const titleVal = data.title ?? auto;
-    const d2 = { ...data, title: data.title === undefined ? auto : data.title };
-    const raised = livePriority !== sub.priority;
-    return <div>
-      <div className="phead">
-        <div><div className="eyebrow">{sub.category}</div>
-          <button className="back" onClick={() => { setSub(null); setView('triage'); }}><I s={svg.back}/> change sub-category</button>
-          <h1 style={{ marginTop: 7 }}>{sub.name}</h1>
-          <p>{visible.filter(f => f.required).length} required of {visible.length} shown · {missing.length + gating.length} outstanding ·
-            clock starts the moment you send.</p></div>
-        <div className="right">
-          <label className="chip" style={{ cursor: 'pointer' }}>
-            <input type="checkbox" style={{ accentColor: 'var(--brand)' }} checked={requiredOnly}
-              onChange={e => setRequiredOnly(e.target.checked)} /> required only</label>
-          <span className={cx('chip mono', hasLookup(data.member_name) && 'ok')}><I s={svg.user}/> {hasLookup(data.member_name) ? decodeLookup(data.member_name).label : 'no member linked'}</span>
-          <span className="chip mono">{DATA.universal.length + (DATA.subFields[`${sub.category}|||${sub.name}`] || []).length} fields in this form</span>
-          <label className="chip deskid" data-tip="Who the reporter block is prefilled with. Everything it writes stays editable on the form."
-            title="The desk identity remembered on this device">
-            <I s={svg.user} />
-            <select value={DESK_PERSONAS.find(p => p.name === (desk?.name || data.reporter_name))?.id || ''}
-              onChange={e => {
-                const p = DESK_PERSONAS.find(x => x.id === e.target.value); if (!p) return;
-                setDesk({ persona: p.id, name: p.name, contact: deskEmail(p.name), channel: p.channel });
-              }}>
-              <option value="">{short(data.reporter_name || 'pick who is reporting')}</option>
-              {DESK_PERSONAS.map(p => <option key={p.id} value={p.id}>{p.name} · {p.type}</option>)}
-            </select></label>
-        </div>
-      </div>
-      <div className="intake">
-        <div className="formcard">
-          <FormEngine fields={fields.map(f => {
-              const g = f.id === 'title' ? { ...f, value: titleVal } : f;
-              return g.type === 'lookup' && g.module === 'ticket' ? { ...g, tickets: all } : g;
-            })}
-            data={d2} setData={setData} errors={errors} requiredOnly={requiredOnly}
-            autoFill={autoFill} studio={studio} tickets={all}
-            onOpenRecord={rec => setRecord(rec)}
-            onFindTicket={() => setPendingLink({ at: Date.now(), fromIntake: true })}
-            collapsed={collapsed} toggle={s => setCollapsed(c => { const n = new Set(c); n.has(s) ? n.delete(s) : n.add(s); return n; })} />
-          <div className="formfoot">
-            <div style={{ flex: 1 }}>
-              {missing.length
-                ? <span className="errcount"><I s={svg.warn}/> {missing.length} required field{missing.length > 1 ? 's' : ''}: {missing.map(m => m.label).slice(0, 3).join(', ')}{missing.length > 3 ? '…' : ''}</span>
-                : <span className="st resolved"><i /> Ready to route to {short(previewChain[0]?.who)}</span>}
-              {gating.length > 0 && <span className="errcount"><I s={svg.user}/> {gating.map(g => g.label).join(' + ')} must be linked from the directory</span>}
-            </div>
-            <button className="btn" onClick={() => { setSub(null); setView('triage'); }}>Cancel</button>
-            <button className="btn" onClick={() => setCycleModal(true)}><I s={svg.whistle}/> Guided cycle report</button>
-            <button className="btn pri" onClick={reviewThenFile}><I s={svg.bolt}/> Review &amp; create ticket</button>
-          </div>
-        </div>
-        <aside className="side">
+  /* The intake’s context column. It does not sit under the form any more — it *is* the right-hand
+     rail while a ticket is being written, which is what lets the field grid use the whole width. */
+  const intakeAside = () => (
+    <aside className="side in-rail">
           <div className="sidecard momcard">
             <h5>Where this goes</h5>
             <div className="kv"><span className="k">Studio</span><span className="v">{studio || <i className="mut">pick one</i>}</span></div>
@@ -688,7 +651,64 @@ function App() {
                 <label className="checkrow" key={i}><input type="checkbox" readOnly checked={ok} />{txt}</label>)}
             </div>
           </div>}
-        </aside>
+    </aside>
+  );
+
+  const intake = () => {
+    if (!sub) return null;
+    const auto = `${sub.name} — ${studio ? short(studio).split(',')[0] : 'studio'}${data.area ? ' · ' + data.area : ''}`;
+    const titleVal = data.title ?? auto;
+    const d2 = { ...data, title: data.title === undefined ? auto : data.title };
+    const raised = livePriority !== sub.priority;
+    return <div>
+      <div className="phead">
+        <div><div className="eyebrow">{sub.category}</div>
+          <button className="back" onClick={() => { setSub(null); setView('triage'); }}><I s={svg.back}/> change sub-category</button>
+          <h1 style={{ marginTop: 7 }}>{sub.name}</h1>
+          <p>{visible.filter(f => f.required).length} required of {visible.length} shown · {missing.length + gating.length} outstanding ·
+            clock starts the moment you send.</p></div>
+        <div className="right">
+          <label className="chip" style={{ cursor: 'pointer' }}>
+            <input type="checkbox" style={{ accentColor: 'var(--brand)' }} checked={requiredOnly}
+              onChange={e => setRequiredOnly(e.target.checked)} /> required only</label>
+          <span className={cx('chip mono', hasLookup(data.member_name) && 'ok')}><I s={svg.user}/> {hasLookup(data.member_name) ? decodeLookup(data.member_name).label : 'no member linked'}</span>
+          <span className="chip mono">{DATA.universal.length + (DATA.subFields[`${sub.category}|||${sub.name}`] || []).length} fields in this form</span>
+          <label className="chip deskid" data-tip="Who the reporter block is prefilled with. Everything it writes stays editable on the form."
+            title="The desk identity remembered on this device">
+            <I s={svg.user} />
+            <select value={DESK_PERSONAS.find(p => p.name === (desk?.name || data.reporter_name))?.id || ''}
+              onChange={e => {
+                const p = DESK_PERSONAS.find(x => x.id === e.target.value); if (!p) return;
+                setDesk({ persona: p.id, name: p.name, contact: deskEmail(p.name), channel: p.channel });
+              }}>
+              <option value="">{short(data.reporter_name || 'pick who is reporting')}</option>
+              {DESK_PERSONAS.map(p => <option key={p.id} value={p.id}>{p.name} · {p.type}</option>)}
+            </select></label>
+        </div>
+      </div>
+      <div className="intake">
+        <div className="formcard">
+          <FormEngine fields={fields.map(f => {
+              const g = f.id === 'title' ? { ...f, value: titleVal } : f;
+              return g.type === 'lookup' && g.module === 'ticket' ? { ...g, tickets: all } : g;
+            })}
+            data={d2} setData={setData} errors={errors} requiredOnly={requiredOnly}
+            autoFill={autoFill} studio={studio} tickets={all}
+            onOpenRecord={rec => setRecord(rec)}
+            onFindTicket={() => setPendingLink({ at: Date.now(), fromIntake: true })}
+            collapsed={collapsed} toggle={s => setCollapsed(c => { const n = new Set(c); n.has(s) ? n.delete(s) : n.add(s); return n; })} />
+          <div className="formfoot">
+            <div style={{ flex: 1 }}>
+              {missing.length
+                ? <span className="errcount"><I s={svg.warn}/> {missing.length} required field{missing.length > 1 ? 's' : ''}: {missing.map(m => m.label).slice(0, 3).join(', ')}{missing.length > 3 ? '…' : ''}</span>
+                : <span className="st resolved"><i /> Ready to route to {short(previewChain[0]?.who)}</span>}
+              {gating.length > 0 && <span className="errcount"><I s={svg.user}/> {gating.map(g => g.label).join(' + ')} must be linked from the directory</span>}
+            </div>
+            <button className="btn" onClick={() => { setSub(null); setView('triage'); }}>Cancel</button>
+            <button className="btn" onClick={() => setCycleModal(true)}><I s={svg.whistle}/> Guided cycle report</button>
+            <button className="btn pri" onClick={reviewThenFile}><I s={svg.bolt}/> Review &amp; create ticket</button>
+          </div>
+        </div>
       </div>
     </div>;
   };
@@ -1027,6 +1047,135 @@ function App() {
     </div>;
   };
 
+  /* ============================== the two rails ==============================
+     Left: who you are on this board and what that narrows the queue to. Right: the ticket’s
+     resolution record, or the intake’s routing preview while a report is still being written.
+     Both are chrome, not content — the page underneath never has to scroll sideways for them. */
+  const railWork = () => {
+    const live = tickets.filter(t => !['resolved', 'closed'].includes(t.status));
+    const held = viewer ? live.filter(t => short(t.assignee) === viewer.name) : [];
+    const breach = live.filter(t => t._breach || (t.frDueAt && t.frDueAt < now));
+    const myLine = viewer ? upline(org, viewer.name, 3) : [];
+    const reports = viewer ? directReports(org, viewer.name) : [];
+    const load = n => live.filter(t => short(t.assignee) === n && !['resolved', 'closed'].includes(t.status)).length;
+    return <div className="railstack">
+      <section className="rcard idcard">
+        <span className="eyebrow">At the desk as</span>
+        <div className="idrow">
+          <Avatar name={viewer?.name || 'guest'} size={40} />
+          <div className="idwho">
+            <b>{viewer?.name || 'Nobody yet'}</b>
+            <em className="xs mut">{viewer?.role || 'pick a name to sign in'}
+              {viewer ? ` · ${viewer.kind}` : ''}</em>
+          </div>
+        </div>
+        <label className="idswitch" title="Who the hub treats you as — it decides whether the resolution rail is a pen or a window.">
+          <span className="xxs mut">switch identity</span>
+          <select value={viewer?.name || ''} onChange={e => setViewerName(e.target.value)}>
+            <option value="">choose a name…</option>
+            {people.map(p => <option key={p.name} value={p.name}>{p.name} · {p.role || p.kind}</option>)}
+          </select>
+        </label>
+        {viewer && <p className="xs mut idnote">
+          {viewer.owns ? `${viewer.owns} desk${viewer.owns > 1 ? 's' : ''}` : 'no desk of their own'}
+          · {viewer.manages ? `manages ${viewer.manages}` : 'reports up'}
+          {viewer.reportsTo ? ` to ${viewer.reportsTo}` : ''}
+          {viewer.breach ? ` · ${viewer.breach} past clock` : ''}
+        </p>}
+      </section>
+
+      <section className="rcard counts">
+        {[[live.length, 'open on the board'], [breach.length, 'past first response'],
+          [held.length, 'on my board'], [archived.length, 'filed']].map(([n, l], i) =>
+          <button type="button" key={l} className={cx('rc', i === 1 && n > 0 && 'bad')} onClick={() => {
+            setView('queue');
+            if (i === 1) { setStatusFilter('live'); setPrioFilter(''); }
+            if (i === 2) { setMineOn(true); setStatusFilter('all'); }
+            if (i === 3) { setMineOn(false); setStatusFilter('resolved'); }
+          }}><b className="mono">{n}</b><span className="xxs">{l}</span></button>)}
+      </section>
+
+      <section className="rcard filters">
+        <div className="rcard-head"><span className="eyebrow">Narrow the board</span>
+          <button className="btn xs ghost" onClick={() => { setStatusFilter('live'); setPrioFilter(''); setDeptFilter(''); setOwnerFilter('');
+            setStudioFilter(''); setQ(''); setMineOn(false); setOnlyClass(false); }}>reset</button></div>
+        <Search value={q} onChange={setQ} placeholder="number, title, member, machine…" />
+        <div className="rf-row">{['', 'critical', 'high', 'medium', 'low'].map(p =>
+          <button key={p || 'any'} className={cx('opt xs', prioFilter === p && 'on')} onClick={() => setPrioFilter(p)}>{p || 'any priority'}</button>)}</div>
+        <div className="rf-row">{[['live', 'live'], ['all', 'everything'], ['resolved', 'filed']].map(([v, l]) =>
+          <button key={v} className={cx('opt xs', statusFilter === v && 'on')} onClick={() => setStatusFilter(v)}>{l}</button>)}</div>
+        <label className="rcheck"><input type="checkbox" checked={mineOn} onChange={e => { setMineOn(e.target.checked); if (e.target.checked) setStatusFilter('all'); }} />
+          only what I own</label>
+        <label className="rcheck"><input type="checkbox" checked={onlyClass} onChange={e => setOnlyClass(e.target.checked)} />
+          hosted-class impact only</label>
+        <div className="rf-row">{DATA.studios.map(st => { const nm = st.name || st; return <button key={nm}
+          className={cx('opt xs', studioFilter === nm && 'on')} onClick={() => setStudioFilter(x => x === nm ? '' : nm)}>{nm}</button>; })}</div>
+      </section>
+
+      {held.length > 0 && <section className="rcard mine">
+        <div className="rcard-head"><span className="eyebrow">Next off my queue</span><b className="mono xs">{held.length}</b></div>
+        <ul>{held.slice(0, 4).map(t => <li key={t.id}>
+          <button onClick={() => { setView('queue'); setSheet(t.id); }}>
+            <span className="mono xxs">{t.number}</span>
+            <span className="mtitle">{t.title || t.subCategory}</span>
+            <Pill p={t.priority} />
+          </button></li>)}</ul>
+      </section>}
+
+      <section className="rcard line">
+        <div className="rcard-head"><span className="eyebrow">Reporting line</span></div>
+        {myLine.length ? <div className="org-up">{myLine.map((p, i) => <span key={p.name} className="org-node"
+          title={p.role}>{p.name}<em>{i === 0 ? 'directly above' : 'further up'}</em></span>)}</div>
+          : <p className="xs mut">This name sits at the top of the escalation ladder — nothing above it.</p>}
+        {reports.length > 0 && <ul className="org-down">{reports.slice(0, 6).map(p =>
+          <li key={p.name}><Avatar name={p.name} size={20} /><span>{p.name}</span>
+            <em className="mono xxs">{load(p.name)} open</em></li>)}</ul>}
+      </section>
+    </div>;
+  };
+
+  const railFocus = () => {
+    if (view === 'intake' && sub) return intakeAside();
+    const t = focus;
+    /* one pen per record: while the wide close-out form is open the rail stands down rather
+       than holding a second, unsynchronised draft of the same eighteen fields */
+    if (t && resolving && resolving.id === t.id) return <div className="railstack">
+      <section className="rcard rail-empty">
+        <span className="eyebrow">Resolution rail</span>
+        <div className="re-mark"><I s={svg.clip} /></div>
+        <h5>Being written in the wide form</h5>
+        <p className="xs mut">The close-out for {t.number} is open on the modal, so this rail is waiting for it.
+          Finish it there — cause, action, what the member was told — and the record lands here as the filed trail.</p>
+      </section>
+    </div>;
+    if (!t) return <div className="railstack">
+      <section className="rcard rail-empty">
+        <span className="eyebrow">Resolution rail</span>
+        <div className="re-mark"><I s={svg.clip} /></div>
+        <h5>Nothing open on the rail</h5>
+        <p className="xs mut">Pick a card in the queue — or raise a report — and the close-out record for it
+          appears here: cause, action, what the member was told, evidence, and whether you are the person
+          allowed to write any of it.</p>
+        <button className="btn sm" onClick={() => { const x = tickets.find(y => !['resolved', 'closed'].includes(y.status)); if (x) { setView('queue'); setSheet(x.id); } }}>
+          <I s={svg.inbox} /> Open the oldest live ticket
+        </button>
+      </section>
+    </div>;
+    return <div className="railstack">
+      <ResolutionRail t={t} viewer={viewer} org={org} now={now}
+        onSubmit={f => {
+          if (!resolutionRights(t, viewer, org).ok) { toast('Read-only', ownershipLine(t, org), 'warn'); return; }
+          recordResolution(t.id, f); setSheet(null);
+        }}
+        onSaveDraft={f => { patch(t.id, x => ({ ...x, resolutionDraft: f }));
+          toast('Draft kept', 'Saved on the ticket — it is here when you come back to this rail.', 'ok'); }}
+        onOpenWide={() => (['resolved', 'closed'].includes(t.status) ? setSheet(t.id) : setResolving(t))}
+        onEscalate={id => { escalate(id); }}
+        onRespond={x => { markFR(x.id); toast('Nudge sent', `Marked first response for ${x.number} so ${short(x.assignee)} sees it at the top of their board.`, 'ok'); }}
+        onViewer={p => setViewerName(p.name)} />
+    </div>;
+  };
+
   /* ============================ chrome ============================ */
   return <div className="app">
     <div className="topbar">
@@ -1051,8 +1200,12 @@ function App() {
           <span dangerouslySetInnerHTML={{ __html: theme === 'dark' ? svg.sun : svg.moon }} /></IconBtn>
       </div>
     </div>
-    <main>{view === 'queue' ? queue() : view === 'insights' ? insights() : view === 'class' ? classDesk()
-      : view === 'trainers' ? trainers() : view === 'log' ? classLog() : (view === 'triage' && !sub) ? triage() : intake()}</main>
+    <div className="shell">
+      <aside className="rail rail-l" id="rail-work" aria-label="Desk, filters and reporting line">{railWork()}</aside>
+      <main>{view === 'queue' ? queue() : view === 'insights' ? insights() : view === 'class' ? classDesk()
+        : view === 'trainers' ? trainers() : view === 'log' ? classLog() : (view === 'triage' && !sub) ? triage() : intake()}</main>
+      <aside className="rail rail-r" id="rail-focus" aria-label="Resolution record for the ticket in focus">{railFocus()}</aside>
+    </div>
     <footer className="legal">
       <span><b>{DATA.counts.categories}</b> categories · <b>{DATA.counts.subcategories}</b> sub-categories · <b>{DATA.counts.fields.toLocaleString()}</b> intake field plans</span>
       <span>SLA model <b>P1 30m/4h · P2 2h/12h · P3 8h/48h · P4 24h/5d</b></span>
