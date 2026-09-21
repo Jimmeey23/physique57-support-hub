@@ -1936,3 +1936,40 @@ html[data-motion=calm] .rrail,html[data-motion=calm] .shell .side.in-rail .sidec
   .rrail-checks,.rrail-right{margin-left:10px;margin-right:10px}
   .rrail .res-two{grid-template-columns:minmax(0,1fr)}
 }
+
+/* ═══════════════════════ phase 8c · the write-up (OpenAI-assisted narrative) ═══════════════════════
+   A paragraph, not a fragment. It sits between the last field and the footer so the desk reads it
+   in the same pass as the form, and it is visually a *quotation* — serif, indented, on paper. */
+.writeup{margin:6px 20px 0;border:1px solid var(--line2);border-left:3px solid var(--brand);border-radius:0 14px 14px 0;
+  background:linear-gradient(178deg,color-mix(in oklab,var(--brand) 6%,var(--card2)),var(--card2) 62%);padding:12px 14px 11px;
+  animation:wpin .34s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wpin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.writeup.err{border-left-color:var(--breach);background:color-mix(in oklab,var(--breach) 6%,var(--card2))}
+.writeup.busy{border-left-color:var(--accent)}
+.writeup.busy .wu-body{cursor:progress;opacity:.72}
+.wu-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:9px}
+.wu-head .eyebrow{display:inline-flex;align-items:center;gap:6px;color:var(--brand);
+  font:600 9.8px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase}
+.wu-head > b{color:var(--mut);letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+.wu-head .spacer{flex:1}
+.wu-body{width:100%;resize:vertical;min-height:96px;font-family:var(--serif);font-size:14.6px;line-height:1.62;
+  color:var(--ink);background:var(--card);border:1px solid var(--line2);border-radius:11px;padding:11px 12px;
+  transition:border-color .16s,box-shadow .16s}
+.wu-body:focus{outline:none;border-color:color-mix(in oklab,var(--brand) 46%,var(--line2));
+  box-shadow:0 0 0 3px color-mix(in oklab,var(--brand) 16%,transparent)}
+.wu-empty{margin:2px 0 4px;font-size:12.6px;line-height:1.55;color:var(--mut);font-style:italic}
+.wu-advice{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line2);display:grid;gap:4px}
+.wu-advice .eyebrow{font:600 9.4px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.wa-line{margin:0;font-size:12.6px;line-height:1.5;color:var(--ink2)}
+.wa-line.p:first-of-type{font-weight:600;color:var(--ink)}
+.wu-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+.wu-acts .xs{flex:1;min-width:150px;text-align:right}
+.wu-err{display:block;font-style:normal;color:var(--breach);margin-top:3px}
+html[data-density=compact] .writeup{margin:4px 13px 0;padding:9px 11px}
+html[data-density=compact] .wu-body{min-height:74px;font-size:13.6px}
+html[data-motion=calm] .writeup{animation:none}
+@media (max-width:640px){
+  .writeup{margin:4px 12px 0;border-radius:12px;border-left-width:0;border-top:3px solid var(--brand)}
+  .wu-head .btn{flex:1;justify-content:center}
+  .wu-acts .xs{text-align:left}
+}

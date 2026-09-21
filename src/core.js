@@ -228,7 +228,7 @@ export function describeTicket(t, labels = fieldLabels) {
 }
 
 /* ---------- ticket factory ---------- */
-export function makeTicket({ sub, category, data, studio, chain, hours, priority, kind, linked, recurrence, cls }) {
+export function makeTicket({ sub, category, data, studio, chain, hours, priority, kind, linked, recurrence, cls, writeup }) {
   const now = Date.now();
   const catName = sub.category || (category && category.name) || '';
   const title = (data.title || '').trim() ||
@@ -257,6 +257,9 @@ export function makeTicket({ sub, category, data, studio, chain, hours, priority
   };
   out.label = ticketLabel(out);
   out.narrative = narrativeOf(out);
+  /* the paragraph the model wrote from these answers, kept on the ticket so a reload never
+     re-bills anyone and the sheet can still show it */
+  if (writeup) out.writeup = String(writeup).slice(0, 2400);
   return out;
 }
 

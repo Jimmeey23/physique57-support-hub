@@ -19,6 +19,7 @@ await import('./.tmp/bundle.mjs');
 const { App, CORE } = globalThis.__X;
 
 let pass = 0, fail = 0;
+let WU = { para: '', title: '' };
 const fileedGuard = n => !!n && n.props?.disabled !== true;
 const t = (n, c, x = '') => { c ? pass++ : fail++; console.log(`  ${c ? '\x1b[32mPASS\x1b[0m' : '\x1b[31mFAIL\x1b[0m'}  ${n}${x ? '  \x1b[2m' + x + '\x1b[0m' : ''}`); };
 const live = () => JSON.parse(store.get('p57.hub.v1.tickets') || '[]');
@@ -187,6 +188,74 @@ async function run({ catRx, subRx, studio, note, title, label, desk, esc, priori
   const gated = fields().filter(f => f.props?.['data-dep']);
   t('conditional fields appear once their parent is answered', gated.length === 0 || gated.every(f => true), `${gated.length} gated fields on screen`);
 
+  /* ── the write-up: the same answers, turned into prose by OpenAI ── */
+  {
+    const wu = byClass(json(), 'writeup')[0];
+    const para = 'The mezzanine air-handler at Kwality House gave up fifteen minutes before the 6:30 pm ride, and the floor reached 31 degrees by the time the room was called. Both classes were carried into the strength studio below, the coach shortened the ride by eight minutes, and nobody was charged for a class they could not take. The vendor has the part on order for Thursday morning; until then the upper floor stays out of the schedule and the front desk moves evening bookings downstairs. Any member who asks gets the same answer: the room is fixed, the credit is not needed, and Thursday’s classes are confirmed.';
+    const advice = '1. HIGH — the room is unusable for evening classes until a part arrives.\n2. Confirm the vendor slot for Thursday and hold the lower studio for both rides.\n3. Tell the member their class was carried, not cancelled, and nothing is owed.';
+    const sent = [];
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+      sent.push({ url, body: JSON.parse(init.body) });
+      const content = /duty operations manager/.test(init.body) ? advice : para;
+      return { ok: true, status: 200, async text() { return JSON.stringify({ choices: [{ message: { content } }],
+        usage: { prompt_tokens: 612, completion_tokens: 148 } }); } };
+    };
+    t('the intake carries a write-up block between the last field and the footer', !!wu
+      && /The write-up/.test(textsSpaced(wu)) && /no key on this device/.test(textsSpaced(wu)),
+      textsSpaced(wu).slice(0, 74) + '…');
+    const wuBtns = nodes(wu).filter(n => n.type === 'button');
+    await click(wuBtns.find(b => /Write it up/.test(textsSpaced(b))));
+    t('with no key the hub says so instead of inventing a paragraph',
+      /No OpenAI key on this device/.test(textsSpaced(byClass(json(), 'writeup')[0])) && sent.length === 0,
+      (textsSpaced(byClass(json(), 'wu-err')[0]) || 'no error shown').slice(0, 78));
+    const gear = nodes(json()).find(n => n.type === 'button' && /Integrations & settings/.test(String(n.props?.title || '')));
+    await click(gear);
+    await click(nodes(json()).find(n => n.type === 'button' && /^Integrations$/.test(textsSpaced(n))));
+    const keyIn = nodes(json()).find(n => n.type === 'input' && n.props?.type === 'password');
+    t('Settings holds the key as its own field, next to the model switch', !!keyIn
+      && nodes(json()).some(n => n.type === 'button' && /gpt-4o-mini/.test(textsSpaced(n))), keyIn ? 'password input found' : 'no key input');
+    await set(keyIn, 'sk-test-key-abcdefghijklmnop');
+    await click(nodes(json()).find(n => n.type === 'button' && /Save key/.test(textsSpaced(n))));
+    t('a pasted key is kept on this device only', store.get('p57.hub.v1.openai') === 'sk-test-key-abcdefghijklmnop'
+      && !/sk-test-key/.test(fs.readFileSync('src/core.js', 'utf8') + fs.readFileSync('src/main.jsx', 'utf8')), 'the key is nowhere in the source');
+    await click(nodes(json()).find(n => n.type === 'button' && /^Done$/.test(textsSpaced(n))));
+    t('the write-up block notices the key without a reload', /OpenAI · gpt-4o-mini/.test(textsSpaced(byClass(json(), 'writeup')[0])),
+      textsSpaced(byClass(json(), 'wu-head')[0]).slice(0, 72));
+    await click(nodes(byClass(json(), 'writeup')[0]).find(n => n.type === 'button' && /Write it up/.test(textsSpaced(n))));
+    const body0 = sent[0]?.body || {};
+    t('the request goes to the chat endpoint with the small model and a low temperature',
+      /api\.openai\.com\/v1\/chat\/completions/.test(sent[0]?.url || '') && body0.model === 'gpt-4o-mini'
+      && body0.temperature === 0.4 && body0.max_tokens === 430,
+      `${body0.model} · t=${body0.temperature} · ${body0.max_tokens} tok`);
+    const prompt = String(body0.messages?.[0]?.content || '');
+    t('the brief hands the model only what the desk already answered',
+      /Facts:/.test(prompt) && new RegExp(studio.split(',')[0]).test(prompt) && /sub_category/i.test(prompt)
+      && prompt.split('\n').filter(l => l.startsWith('- ')).length >= 8,
+      `${prompt.split('\n').filter(l => l.startsWith('- ')).length} fact lines`);
+    t('and it forbids the two things a generated record gets wrong',
+      /no invented names, numbers, times or causes/.test(prompt) && /150 to 220 words/.test(prompt), 'the rules are in the prompt');
+    const wuArea = byClass(json(), 'wu-body')[0];
+    t('the paragraph comes back and is editable before it is trusted',
+      String(wuArea?.props?.value || '').length > 380 && String(wuArea?.props?.value || '').startsWith('The mezzanine air-handler'),
+      `${String(wuArea?.props?.value || '').split(/\s+/).length} words in the box`);
+    t('the block says what it cost: model, length and tokens',
+      /words · gpt-4o-mini/.test(textsSpaced(byClass(json(), 'wu-acts')[0])) && /612\+148 tok/.test(textsSpaced(byClass(json(), 'wu-acts')[0])),
+      textsSpaced(byClass(json(), 'wu-acts')[0]).replace(/^(Use it on the form|Discard)/, '').trim().slice(0, 74));
+    await click(nodes(byClass(json(), 'writeup')[0]).find(n => n.type === 'button' && /Use it on the form/.test(textsSpaced(n))));
+    const sumField = fields().find(f => (f.props?.['data-fid'] || '') === 'summary');
+    const sumEl = sumField ? nodes(sumField).find(n => n.type === 'textarea') : null;
+    t('accepting it never overwrites what the desk typed, and rides with the ticket instead',
+      String(sumEl?.props?.value || '') === note && /rides with the ticket|Write-up put on the form/.test(textsSpaced(json())),
+      `${String(sumEl?.props?.value || '').length} chars of the desk’s own note kept`);
+    await click(nodes(byClass(json(), 'writeup')[0]).find(n => n.type === 'button' && /Second opinion/.test(textsSpaced(n))));
+    t('the second opinion comes back as three lines, priority first',
+      byClass(json(), 'wa-line').length === 3 && /HIGH/.test(textsSpaced(byClass(json(), 'wa-line')[0])),
+      byClass(json(), 'wa-line').map(l => textsSpaced(l).slice(0, 26)).join(' / '));
+    globalThis.fetch = realFetch;
+    WU = { para, title: String(byClass(json(), 'wu-body')[0]?.props?.value || '') };
+  }
+
   /* Review before filing: nothing is written until the desk has read the ticket back. */
   await click(button(/Review & create ticket/));
   const rvw = (texts(json()).match(/Read it back before it routes[\s\S]{0,260}/)?.[0] || '').replace(/\s+/g, ' ');
@@ -194,6 +263,7 @@ async function run({ catRx, subRx, studio, note, title, label, desk, esc, priori
   t('the review is reached without writing anything yet', live().length === N, `live=${live().length} (was ${N})`);
   if (process.env.FLOWDBG) console.log('    \x1b[2mdbg titles:', JSON.stringify(live().map(x => x.title)), '\x1b[0m');
   const filed = button(/File & start SLA/);
+
   t('the reviewer can file it from the modal', !!fileedGuard(filed), filed ? 'File & start SLA is enabled' : 'file button missing or disabled');
   await click(filed);
   const same = (texts(json()).match(/Is this the same fault\?[\s\S]{0,140}/)?.[0] || '').replace(/\s+/g, ' ');
@@ -206,6 +276,8 @@ async function run({ catRx, subRx, studio, note, title, label, desk, esc, priori
   if (!mine) return null;
   const refs = Object.values(mine.data).filter(v => typeof v === 'string' && /\[#\d+\]/.test(v));
   t('records chosen from a lookup are stored as references, not free text', refs.length >= 1, refs[0] || 'no [#id] reference on the ticket');
+  t('the paragraph came back with the ticket as its own field', !!mine.writeup && mine.writeup.startsWith('The mezzanine air-handler')
+    && mine.writeup.length > 380 && mine.summary === note, `${(mine.writeup || '').split(/\s+/).length} words on ${mine.number}`);
   t('it lands on the sub-category, studio and area chosen', mine.subCategory === subName && mine.studio === studio,
     `${mine.subCategory} · ${mine.studio} · ${mine.area || 'no area'}`);
   t('it is routed to the right desk with a real chain', new RegExp(desk).test(mine.chain[0].who), mine.chain.map(c => c.who.split(' (')[0]).join(' → '));

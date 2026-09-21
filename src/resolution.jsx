@@ -134,7 +134,7 @@ export function ResolutionBody({ t, f, set, readOnly = false, stack = false }) {
  * The rail. Owns its own draft state, seeded from anything already recorded on the ticket, so
  * closing and re-opening the rail does not lose the desk’s typing.
  */
-export function ResolutionRail({ t, viewer, org, onSubmit, onOpenWide, onEscalate, onRespond, onViewer, onSaveDraft, now }) {
+export function ResolutionRail({ t, viewer, org, onSubmit, onOpenWide, onEscalate, onRespond, onViewer, onSaveDraft, onCopyReply, now }) {
   const [draft, setDraft] = useState(() => ({ ...resolutionDraft(t), ...(t.resolution || {}), ...(t.resolutionDraft || {}) }));
   const [savedAt, setSavedAt] = useState(0);
   React.useEffect(() => { setDraft({ ...resolutionDraft(t), ...(t.resolution || {}), ...(t.resolutionDraft || {}) }); }, [t?.id]);
@@ -214,6 +214,8 @@ export function ResolutionRail({ t, viewer, org, onSubmit, onOpenWide, onEscalat
       <div className="kv"><span className="k">Outcome</span><span className="v mono">{t.resolution.outcome}</span></div>
       <div className="kv"><span className="k">Proof</span><span className="v mono">{t.resolution.proof}</span></div>
       <div className="kv"><span className="k">Verified by</span><span className="v mono">{t.resolution.verifiedBy || '—'}</span></div>
+      <button className="btn xs" onClick={() => onCopyReply && onCopyReply(t)} data-tip="Three sentences built only from this record — what it was, what was done, what happens next.">
+        <I s={svg.copy} /> Copy the reply to the member</button>
     </div>}
   </section>;
 }

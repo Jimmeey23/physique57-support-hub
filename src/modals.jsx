@@ -11,6 +11,7 @@ import { RecordModal, LookupControl, AttendeeRoster, decodeLookup } from './look
 import { studios, systems, memberships, trainers, equipmentTypes, equipmentCategories,
   prioritySlaHours, statusLabels, counts as ccounts } from './constants.json';
 import { TIERS, handover, fieldLabels, describeTicket, narrativeOf } from './core.js';
+import { AI_MODELS } from './ai.js';
 import { sessionStats, detailMomence, obj as objOf, populateSession } from './momence.js';
 import { RES_CAUSE, RES_OWNER, RES_OUTCOME, RES_FOLLOWUP, RES_GOODWILL, RES_PREVENTION, RES_PROOF,
   RES_REOPEN_RISK, RES_ASSET_CONDITION, RES_CLASS_FOLLOWUP, AUDIENCE, DISRUPTION, EXPERIENCE_EFFECT,
@@ -276,7 +277,11 @@ export function LinkTicketModal({ tickets, data, onCancel, onLink, onCreateSepar
 }
 
 /* ------------------------------------------------------------ settings / appearance */
-export function SettingsModal({ onClose, prefs, setPrefs, onTestMomence, momenceStatus }) {
+export function SettingsModal({ onClose, prefs, setPrefs, onTestMomence, momenceStatus, ai }) {
+  const [keyDraft, setKeyDraft] = useState('');
+  const [aiTest, setAiTest] = useState('');
+  const aiTestRun = async () => { if (!ai) return; setAiTest('asking the model one line…');
+    setAiTest(await ai.test()); };
   const TABS = [['appearance', 'Appearance'], ['sla', 'SLA model'], ['integrations', 'Integrations'], ['data', 'Data']];
   const [tab, setTab] = useState('appearance');
   const set = (k, v) => setPrefs(p => ({ ...p, [k]: v }));
@@ -335,6 +340,31 @@ export function SettingsModal({ onClose, prefs, setPrefs, onTestMomence, momence
               <div className="fg" key={k}><span className="fk">{k}</span><span className="fv mono">{v}</span></div>)}
           </div>
           <p className="hint">In production the hub would exchange credentials server-side for an OAuth token, cache the expiry and refresh it — the same flow the reference uses.</p></div>
+        <div className="set-block span2"><h5>OpenAI · the write-up</h5>
+          <div className={cx('intg', ai?.ready && 'on')}>
+            <span className="lk-mark lg"><I s={svg.wand} /></span>
+            <div className="intg-t"><b>{ai?.ready ? `Key held on this device · ${ai.mask}` : 'No key on this device'}</b>
+              <p>{ai?.ready
+                ? 'The intake form can turn its own answers into a paragraph. The prompt carries only what is filled in, so the model phrases the record — it never supplies facts.'
+                : 'Without a key the hub still writes a one-line summary of the answers locally, and nothing is sent anywhere. Paste a key to have the paragraph drafted instead.'}</p></div>
+            <div className="intg-a">
+              <button className="btn" onClick={aiTestRun} disabled={!ai?.ready}><I s={svg.bolt} /> Test it on the oldest ticket</button>
+              <button className="btn ghost" onClick={() => { ai?.setKey(''); setKeyDraft(''); setAiTest('key forgotten — the local line is used again'); }}><I s={svg.x} /> Forget the key</button></div>
+          </div>
+          <div className="fieldgrid sm">
+            <label className="fg"><span className="fk">API key</span>
+              <input type="password" autoComplete="off" spellCheck="false" value={keyDraft}
+                onChange={e => setKeyDraft(e.target.value)} placeholder="sk-… (kept in this browser only)" /></label>
+            <div className="fg"><span className="fk">&nbsp;</span>
+              <div className="row-gap"><button className="btn sm pri" onClick={() => { ai?.setKey(keyDraft); setAiTest(keyDraft.trim() ? 'key saved on this device' : 'key cleared'); }}><I s={svg.check} /> Save key</button>
+                <span className="xs mut">localStorage, never the repo.</span></div></div>
+          </div>
+          <div className="seg big" style={{ marginTop: 10 }}>
+            {AI_MODELS.map(m => <button key={m} className={cx('seg', ai?.model === m && 'on')} onClick={() => ai?.setModel(m)}>{m}</button>)}</div>
+          <label className="switchrow" style={{ marginTop: 10 }}><input type="checkbox" checked={!!ai?.auto}
+            onChange={e => ai?.setAuto(e.target.checked)} /><span>Offer the write-up on every intake form</span></label>
+          {aiTest && <p className="hint"><b>{aiTest}</b></p>}
+          <p className="hint">A static build cannot keep a secret, so this is a personal key for the desk that uses it. A hosted deployment would move the same call behind a server route, exactly as the reference app does with <span className="mono">credentials(’chatgpt’)</span>.</p></div>
         <div className="set-block"><h5>Also on the roadmap</h5>
           <div className="intg-list">{[['Mailtrap', 'assignment email to the owner the moment a ticket is created'],
           ['Google Sheets', 'every ticket and status change appended as a row'],

@@ -12,6 +12,7 @@ import {
 } from './ui.jsx';
 import { buildOrg, viewerOptions, upline, directReports, resolutionRights, ownershipLine, cleanName as orgClean } from './org.js';
 import { ResolutionRail } from './resolution.jsx';
+import { narrateTicket, triageAdvice, aiReady, readKey, writeKey, maskKey, memberReplyDraft, AI_MODELS } from './ai.js';
 import FormEngine, { buildFields, isVisible } from './forms.jsx';
 import { LookupControl, RecordModal, AttendeeRoster, decodeLookup, decodeLookups, encodeLookup, encodeLookups,
   MODULE_META, hasLookup } from './lookups.jsx';
@@ -99,6 +100,17 @@ function App() {
   const [q, setQ] = useState('');
   const [prefs, setPrefs] = usePersist('p57.hub.v1.prefs', {
     theme: 'light', density: 'cosy', appearance: 'editorial', animateCounters: true, skeletons: true, pulse: true });
+  /* The write-up: OpenAI turns the answers already on the form into prose. Nothing here runs
+     without a key on this device, and the local line from src/core.js is always the fallback. */
+  const [aiKey, setAiKeyRaw] = useState(() => readKey());
+  const [aiModel, setAiModel] = usePersist('p57.hub.v1.ai.model', AI_MODELS[0]);
+  const [aiAuto, setAiAuto] = usePersist('p57.hub.v1.ai.auto', true);
+  const [aiText, setAiText] = useState('');
+  const [aiBusy, setAiBusy] = useState('');
+  const [aiErr, setAiErr] = useState('');
+  const [aiMeta, setAiMeta] = useState(null);
+  const [aiAdvice, setAiAdvice] = useState(null);
+  const setAiKey = k => { writeKey(k); setAiKeyRaw(String(k || '').trim()); };
   const [review, setReview] = useState(null);
   const [pendingLink, setPendingLink] = useState(null);
   const [resolving, setResolving] = useState(null);
@@ -262,6 +274,43 @@ function App() {
       || tickets.some(t => t.subCategory === sub.name && t.studio === studio));
     setReview({ at: Date.now(), dupish });
   };
+  /* A ticket-shaped view of what is on the form right now. The model only ever sees these facts,
+     so a bad answer can produce a bad sentence but never an invented machine or member. */
+  const draftTicket = () => (sub ? ({
+    id: 'draft', number: 'draft', studio, category: sub.category, subCategory: sub.name, label: sub.name,
+    priority: livePriority, status: 'new', data: { ...data }, summary: data.summary || '',
+    chain: previewChain, recurrenceCount: 1, slaLabel: sub.slaLabel, hours: { first: sub.hours.first, res: sub.hours.res },
+  }) : null);
+  const runWriteup = async () => {
+    const t = draftTicket();
+    if (!t) return;
+    if (!aiReady(aiKey)) { setAiErr('No OpenAI key on this device. Add one in Settings → Integrations to write with the model.'); return; }
+    setAiBusy('write'); setAiErr('');
+    const r = await narrateTicket(t, { key: aiKey, model: aiModel });
+    setAiBusy('');
+    if (!r.ok) { setAiErr(r.error || 'the model did not answer'); return; }
+    setAiText(r.text); setAiMeta({ words: r.words, model: r.model, ms: r.ms, usage: r.usage });
+  };
+  /* A desk-typed description outranks a generated one: the write-up only fills the field when it is
+     empty, and otherwise rides with the ticket as `writeup` so nothing that was typed is replaced. */
+  const applyWriteup = () => {
+    const text = aiText.trim(); if (!text) return;
+    const typed = String(data.summary || '').trim();
+    if (!typed) setData(d => ({ ...d, summary: text }));
+    toast(typed ? 'The write-up rides with the ticket' : 'Write-up put on the form', typed
+      ? `${text.split(/\s+/).length} words kept beside your own description — it prints under the story and in the handover.`
+      : `${text.split(/\s+/).length} words now in the description — check them before you file.`, 'ok');
+  };
+  const runAdvice = async () => {
+    const t = draftTicket();
+    if (!t) return;
+    if (!aiReady(aiKey)) { setAiErr('No OpenAI key on this device — the priority the taxonomy inferred stays as it is.'); return; }
+    setAiBusy('advice'); setAiErr('');
+    const r = await triageAdvice(t, { key: aiKey, model: aiModel });
+    setAiBusy('');
+    if (!r.ok) { setAiErr(r.error || 'the model did not answer'); return; }
+    setAiAdvice(r);
+  };
   const buildTicket = (patchData = {}) => {
     if (!sub) return null;
     const hours = { first: sub.hours.first, res: sub.hours.res };
@@ -273,6 +322,7 @@ function App() {
     const cls = merged.kind === 'hosted-class' && classDeskId ? classSnapshot(classDeskId) : null;
     const t = makeTicket({ sub, category: DATA.categories.find(c => c.name === sub.category), data: merged, studio,
       chain: previewChain, hours, priority: livePriority, kind: merged.kind || 'issue',
+      writeup: aiText.trim() || undefined,
       linked: { member: decodeLookup(merged.member_name), session: decodeLookup(merged.class_date),
                 ticket: decodeLookup(merged.linked_ticket),
                 attendees: decodeLookups(merged.affected_members) }, cls });
@@ -697,6 +747,34 @@ function App() {
             onOpenRecord={rec => setRecord(rec)}
             onFindTicket={() => setPendingLink({ at: Date.now(), fromIntake: true })}
             collapsed={collapsed} toggle={s => setCollapsed(c => { const n = new Set(c); n.has(s) ? n.delete(s) : n.add(s); return n; })} />
+          <div className={cx('writeup', aiBusy && 'busy', aiErr && 'err')} data-tip="Everything the model writes comes from the answers already on this form — read it before you file it.">
+            <div className="wu-head">
+              <span className="eyebrow"><I s={svg.wand} /> The write-up</span>
+              <b className="xxs">{aiReady(aiKey) ? `OpenAI · ${aiModel}` : 'no key on this device'}</b>
+              <span className="spacer" />
+              <button className="btn xs" onClick={runWriteup} disabled={!!aiBusy}>
+                <I s={aiBusy === 'write' ? svg.clock : svg.wand} /> {aiBusy === 'write' ? 'writing…' : aiText ? 'Write it again' : 'Write it up'}</button>
+              <button className="btn xs ghost" onClick={runAdvice} disabled={!!aiBusy}>
+                <I s={svg.chart} /> Second opinion</button>
+            </div>
+            {aiText
+              ? <textarea className="wu-body" rows={5} value={aiText}
+                  onChange={e => setAiText(e.target.value)} placeholder="The paragraph will land here." />
+              : <p className="wu-empty">{aiBusy === 'write'
+                  ? 'Reading ' + (missing.length ? 'the answers so far' : 'every answer') + ' and writing the record…'
+                  : 'Nothing written yet. The hub will turn ' + (Object.keys(data).filter(k => String(data[k] || '').length > 1).length)
+                    + ' answered field(s) into a paragraph the next shift can read, and it only ever uses what is on this form.'}</p>}
+            {aiAdvice && <div className="wu-advice">
+              <span className="eyebrow">Second opinion</span>
+              {aiAdvice.lines.map((l, i) => <p key={i} className={cx('wa-line', i === 0 && 'p')}>{l}</p>)}
+            </div>}
+            <div className="wu-acts">
+              {!!aiText && <button className="btn sm pri" onClick={applyWriteup}><I s={svg.check} /> Use it on the form</button>}
+              {!!aiText && <button className="btn sm ghost" onClick={() => { setAiText(''); setAiMeta(null); }}>Discard</button>}
+              <span className="xs mut">{aiMeta ? `${aiMeta.words} words · ${aiMeta.model} · ${(aiMeta.ms / 1000).toFixed(1)}s${aiMeta.usage ? ' · ' + aiMeta.usage : ''}` : ''}
+                {aiErr ? <em className="wu-err"><I s={svg.warn} /> {aiErr}</em> : ''}</span>
+            </div>
+          </div>
           <div className="formfoot">
             <div style={{ flex: 1 }}>
               {missing.length
@@ -1172,7 +1250,9 @@ function App() {
         onOpenWide={() => (['resolved', 'closed'].includes(t.status) ? setSheet(t.id) : setResolving(t))}
         onEscalate={id => { escalate(id); }}
         onRespond={x => { markFR(x.id); toast('Nudge sent', `Marked first response for ${x.number} so ${short(x.assignee)} sees it at the top of their board.`, 'ok'); }}
-        onViewer={p => setViewerName(p.name)} />
+        onViewer={p => setViewerName(p.name)}
+        onCopyReply={x => { const txt = memberReplyDraft(x); copy(txt);
+          toast('Reply copied', `${txt.split(/\s+/).length} words built from the resolution record — paste it into WhatsApp or the reply email.`, 'ok'); }} />
     </div>;
   };
 
@@ -1255,7 +1335,7 @@ function App() {
         onCreateSeparate={() => { setPendingLink(null); fileTicket({}); }}
         onLink={t => setPendingLink({ at: Date.now(), ticket: t })} />)}
     {resolving && <ResolutionModal t={resolving} onCancel={() => setResolving(null)} onConfirm={f => recordResolution(resolving.id, f)} />}
-    {sheet && (() => { const t = all.find(x => x.id === sheet); return t && <TicketSheet t={t} story={stories[t.id] || t.narrative} now={now}
+    {sheet && (() => { const t = all.find(x => x.id === sheet); return t && <TicketSheet t={t} story={t.writeup || stories[t.id] || t.narrative} now={now}
       fields={buildFields(t.data, `${t.category}|||${t.subCategory}`, DATA, t.studio)}
       all={all} onClose={() => setSheet(null)}
       onRespond={() => markFR(t.id)} onEscalate={() => escalate(t.id)} onStatus={v => setStatus(t.id, v)}
@@ -1278,7 +1358,12 @@ function App() {
         }} />)}
     {record && <RecordModal module={record.module} id={record.id} record={record.raw} ticket={record.ticket} onClose={() => setRecord(null)} />}
     {settings && <SettingsModal onClose={() => setSettings(false)} prefs={prefs} setPrefs={setPrefs}
-      momenceStatus={momenceStatus} onTestMomence={testMomence} />}
+      momenceStatus={momenceStatus} onTestMomence={testMomence}
+      ai={{ key: aiKey, setKey: setAiKey, model: aiModel, setModel: setAiModel, auto: aiAuto, setAuto: setAiAuto,
+        mask: maskKey(aiKey), ready: aiReady(aiKey),
+        test: async () => { const t = all[0] || draftTicket(); if (!t) return 'nothing to test against';
+          const r = await narrateTicket(t, { key: aiKey, model: aiModel, maxTokens: 90 });
+          return r.ok ? `${r.model} answered ${r.words} words in ${(r.ms / 1000).toFixed(1)}s` : (r.error || 'no answer'); } }} />}
     {cycleModal && <CycleTemplateModal onClose={() => setCycleModal(false)} data={data}
       onApply={patch => {
         /* Guided answers land on whichever fields this sub-category actually shows. A field the

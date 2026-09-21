@@ -56,7 +56,10 @@ fs.writeFileSync(entry, [
   `import * as LK from '${SRC}/lookups.jsx';`,
   `import { RecordModal, LookupControl, LookupModal, AttendeeRoster } from '${SRC}/lookups.jsx';`,
   `import { ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing } from '${SRC}/modals.jsx';`,
-  `globalThis.__X = { App, CORE, FORMS, UI, COND, MOM, LK, MODALS: { RecordModal, LookupControl, LookupModal, ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing, AttendeeRoster } };`,
+  `import * as AI from '${SRC}/ai.js';`,
+  `import { buildOrg, viewerOptions, resolutionRights, managerOf, upline, directReports, personCard, ownershipLine, cleanName, roleOf } from '${SRC}/org.js';`,
+  `import { resolutionDraft, resolutionGaps, resolutionChecks, REQUIRED_RES } from '${SRC}/resolution.jsx';`,
+  `globalThis.__X = { App, CORE, FORMS, UI, COND, MOM, LK, AI, ORG: { buildOrg, viewerOptions, resolutionRights, managerOf, upline, directReports, personCard, ownershipLine, cleanName, roleOf }, RESF: { resolutionDraft, resolutionGaps, resolutionChecks, REQUIRED_RES }, MODALS: { RecordModal, LookupControl, LookupModal, ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing, AttendeeRoster } };`,
 ].join('\n'));
 await build({ entryPoints: [entry], bundle: true, format: 'esm', platform: 'node', outfile: path.join(TMP, 'bundle.mjs'),
   jsx: 'automatic', plugins: [nodeMap], external: ['react', 'react-dom', 'react/jsx-runtime'], logLevel: 'error',
@@ -79,7 +82,7 @@ document.execCommand = () => true;
 globalThis.URL.createObjectURL = () => 'blob:x'; globalThis.URL.revokeObjectURL = () => {};
 
 await import(path.join(TMP, 'bundle.mjs'));
-const { App, CORE: C, FORMS: F, UI, COND: K, MOM, LK, MODALS } = globalThis.__X;
+const { App, CORE: C, FORMS: F, UI, COND: K, MOM, LK, MODALS, AI, ORG, RESF } = globalThis.__X;
 const textsSpaced = () => '';
 C.hydrateData();
 const D = DATA;
@@ -590,6 +593,123 @@ t('buildFields carries the desk’s auto values into the rendered form',
     return fl.length > 8 && fl.every(f => f.id && f.label && F.sectionOf(f)) && fl.some(f => f.required)
       && fl.filter(f => f.type === 'lookup').length >= 1; })(),
   `${F.buildFields({}, 'Repair and Maintenance|||AC and HVAC Failure', D, 'Kwality House, Kemps Corner').length} fields, each labelled`);
+
+
+/* ───────────────── the write-up, the org and the resolution record ─────────────────
+   Three modules that are pure arithmetic over the same data: who owns a ticket, what the
+   close-out still needs, and what the model is allowed to be told. All of it is checkable
+   without a network, so it is checked here. */
+const aiT = C.seed(DATA, 3)[0];
+aiT.data = { ...aiT.data, member_name: 'Aditya Wable', summary: 'The mezzanine room was hot through the whole 6:30 pm ride.' };
+t('factsOf turns the ticket into one labelled line per answer, capped so nothing drowns the brief',
+  (() => { const f = AI.factsOf(aiT);
+    return f.length >= 8 && f.every(l => /^[^:]+: /.test(l) && l.length <= 130) && f.some(l => /^Studio: /.test(l))
+      && f.some(l => /^Sub category: /i.test(l) || /sub_category/i.test(l)) && !f.some(l => /undefined|\[object/.test(l)); })(),
+  `${AI.factsOf(aiT).length} fact lines`);
+t('the prompt is instructions plus facts, and never a blob of JSON',
+  (() => { const p = AI.promptFor(aiT);
+    return /150 to 220 words/.test(p) && /no invented names, numbers, times or causes/.test(p) && /^Facts:$/m.test(p)
+      && !/[{}]|</.test(p) && p.length > 500 && p.length < 6000; })(),
+  `${AI.promptFor(aiT).length} chars · ${AI.promptFor(aiT).split('\n').filter(l => l.startsWith('- ')).length} fact lines`);
+t('a key is only “usable” if it looks like one, and it is never echoed back whole',
+  AI.aiReady('') === false && AI.aiReady('sk-short') === false && AI.aiReady('sk-' + 'a'.repeat(24)) === true
+  && AI.maskKey('sk-' + 'a'.repeat(24)) === 'sk-aaa…aaaa' && AI.maskKey('') === '',
+  `mask ${AI.maskKey('sk-' + 'a'.repeat(24))}`);
+{
+  let hits = 0; const real = globalThis.fetch;
+  globalThis.fetch = async () => { hits++; throw new Error('should not have been called'); };
+  const off = await AI.narrateTicket(aiT, { key: '' });
+  t('with no key nothing is sent, and the caller is told the local line is used instead',
+    hits === 0 && off.ok === false && off.used === 'local' && /local write-up/.test(off.error), 'zero requests');
+  let seen = null;
+  globalThis.fetch = async (url, init) => { seen = { url, body: JSON.parse(init.body) };
+    return { ok: true, status: 200, async text() { return JSON.stringify({ choices: [{ message: { content: '  Padded  answer.  ' } }],
+      usage: { prompt_tokens: 40, completion_tokens: 5 } }); } }; };
+  const on = await AI.narrateTicket(aiT, { key: 'sk-' + 'b'.repeat(20), model: 'gpt-4o' });
+  t('with a key it posts to the chat endpoint, flattens the answer and reports what it cost',
+    /chat\/completions/.test(seen.url) && on.ok && on.text === 'Padded answer.' && on.words === 2
+    && on.model === 'gpt-4o' && /40\+5 tok/.test(on.usage), `${on.words} words · ${on.usage}`);
+  t('the request is deliberately small: one turn, low temperature, capped tokens',
+    seen.body.messages.length === 1 && seen.body.temperature === 0.4 && seen.body.max_tokens === 430
+    && !/system/.test(JSON.stringify(seen.body.messages.map(m => m.role))), 'user-only, t=0.4, 430 tok');
+  globalThis.fetch = async () => ({ ok: false, status: 429, async text() { return JSON.stringify({ error: { message: 'rate limit' } }); } });
+  const throttled = await AI.narrateTicket(aiT, { key: 'sk-' + 'c'.repeat(20) });
+  t('a rate limit is reported as the model’s own message', throttled.ok === false && /429.*rate limit/.test(throttled.error),
+    throttled.error.slice(0, 60));
+  globalThis.fetch = async () => ({ ok: true, status: 200, async text() { return '<html>proxy said no</html>'; } });
+  const junk = await AI.narrateTicket(aiT, { key: 'sk-' + 'd'.repeat(20) });
+  t('and an answer that is not JSON fails closed instead of filing a blank',
+    junk.ok === false && /no message|empty completion|Unexpected/.test(junk.error), junk.error.slice(0, 52));
+  globalThis.fetch = real;
+}
+t('the member reply is built from the record, and says nothing the record does not',
+  (() => { const r = AI.memberReplyDraft({ ...aiT, resolution: { cause: 'The coil ran dry.', action: 'Vendor called out at 9 pm.', goodwill: 'Class credit granted', amountINR: '900', closureNote: 'Room back on the schedule from Thursday.' } });
+    return r.includes('Aditya Wable') && r.includes('The coil ran dry.') && r.includes('₹900')
+      && r.includes('Thursday') && !/undefined|NaN/.test(r); })(),
+  AI.memberReplyDraft({ ...aiT, resolution: { cause: 'x', goodwill: 'Class credit granted', amountINR: '900' } }).slice(0, 48) + '…');
+t('a ticket with no resolution still gets a sentence a desk can send',
+  (() => { const r = AI.memberReplyDraft(aiT);
+    return r.length > 60 && !/undefined/.test(r) && /logged/.test(r); })(), 'no blanks, no placeholders');
+
+/* the org, and what it decides */
+const org2 = ORG.buildOrg(DATA.categories, C.seed(DATA, 40));
+t('the reporting lines come out of the taxonomy, not a hand-drawn chart',
+  org2.size >= 12 && [...org2.up.values()].filter(s => s.size).length >= org2.size - 4,
+  `${org2.size} people · ${[...org2.up.values()].filter(s => s.size).length} with someone above them`);
+t('every name is stripped of its role and its joint-holder tail',
+  ORG.cleanName('Zahur Shaikh (Studio Coordinator)') === 'Zahur Shaikh' && ORG.cleanName('A + B (Two)') === 'A'
+  && ORG.roleOf('Zahur Shaikh (Studio Coordinator)') === 'Studio Coordinator' && ORG.roleOf('Bare Name') === '',
+  `“${ORG.cleanName('Zahur Shaikh (Studio Coordinator) + another')}” / “${ORG.roleOf('Nobody')}”`);
+{
+  const busiest = ORG.viewerOptions(org2)[0];
+  t('the sign-in list is ordered by what each person is actually holding',
+    !!busiest && busiest.open >= 0 && typeof busiest.kind === 'string' && ['manager', 'owner', 'desk'].includes(busiest.kind),
+    `${busiest.name} · ${busiest.open} open · ${busiest.kind}`);
+  const top = ORG.upline(org2, busiest.name, 4);
+  t('any name can be walked up to the owner of the studio',
+    top.length >= 1 && top.every(p => p.name && p.name !== busiest.name) && new Set(top.map(p => p.name)).size === top.length,
+    top.map(p => p.name).join(' → ') || 'already at the top');
+}
+{
+  const t2 = C.seed(DATA, 1)[0];
+  const owner = ORG.cleanName(t2.assignee);
+  const mgr = ORG.managerOf(org2, owner);
+  const rOwn = ORG.resolutionRights(t2, { name: owner }, org2);
+  const rMgr = ORG.resolutionRights(t2, { name: mgr || 'Nobody' }, org2);
+  const rOut = ORG.resolutionRights(t2, { name: 'Somebody Else' }, org2);
+  const rNone = ORG.resolutionRights(t2, null, org2);
+  t('the owner and only the owner’s line may write a resolution',
+    rOwn.ok && rOwn.relation === 'owner' && (!mgr || (rMgr.ok && rMgr.relation === 'manager'))
+    && rOut.ok === false && rOut.relation === 'reader' && rNone.ok === false,
+    `${rOwn.relation} / ${rMgr.relation} / ${rOut.relation} / ${rNone.relation}`);
+  t('a reader is told who they are waiting for, in one line',
+    /Read-only/.test(rOut.why) && rOut.why.includes(owner) && ORG.ownershipLine(t2, org2).includes(owner),
+    ORG.ownershipLine(t2, org2).slice(0, 84));
+}
+/* the record itself */
+{
+  const t3 = { ...C.seed(DATA, 1)[0], class: { sessionId: 123, attendees: { 1: { name: 'A' } } }, asset_id: 'B-4', data: { member_email: 'x@y.z' } };
+  const d0 = RESF.resolutionDraft(t3);
+  const g0 = RESF.resolutionGaps(d0);
+  t('a blank record carries all eighteen fields and names the four it will not file without',
+    Object.keys(d0).length === 18 && g0.length === 4 && RESF.REQUIRED_RES.length === 4
+    && g0.map(x => x[1]).join(',') === 'cause category,root cause,what you did,a line the next shift can read',
+    `${Object.keys(d0).length} fields · needs ${g0.map(x => x[1]).join(', ')}`);
+  const c0 = RESF.resolutionChecks(d0, t3);
+  const filled = { ...d0, causeCategory: 'Wear and tear', cause: 'The pedal was never torqued after the last service.',
+    action: 'Bike out of rotation and the whole row checked on the same shift.', closureNote: 'Back in service after a full torque check of the row.',
+    prevention: 'Added to the weekly checklist', proof: 'Photo of the work order', verifiedBy: 'Saachi Shetty' };
+  const c1 = RESF.resolutionChecks(filled, t3);
+  t('the checklist starts partly lit and only the record can finish it',
+    c0.length === 8 && c1.every(x => x.ok) && RESF.resolutionGaps(filled).length === 0
+    && c0.filter(x => x.ok).length >= 1 && c0.filter(x => x.ok).length < 6,
+    `${c0.filter(x => x.ok).length}/8 at rest → ${c1.filter(x => x.ok).length}/8`);
+  t('goodwill only asks for a rupee figure when money is moving',
+    RESF.resolutionChecks({ ...filled, goodwill: 'None' }, t3).every(x => x.id !== 'money' || x.ok)
+    && RESF.resolutionChecks({ ...filled, goodwill: 'Class credit granted', amountINR: '' }, t3).some(x => x.id === 'money' && !x.ok)
+    && RESF.resolutionChecks({ ...filled, goodwill: 'Class credit granted', amountINR: '900' }, t3).some(x => x.id === 'money' && x.ok),
+    'None → ok · credit blank → blocked · credit 900 → ok');
+}
 
 const tot = `\x1b[1m${pass} passed, ${fail} failed\x1b[0m`;
 console.log(`\n${fail ? '\x1b[41m\x1b[37m FAIL \x1b[0m' : '\x1b[42m\x1b[30m OK \x1b[0m'}  ${tot}\n`);
