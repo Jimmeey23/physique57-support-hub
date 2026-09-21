@@ -14,7 +14,8 @@
     "test:flow": "node test/flow.mjs",
     "test:flow2": "node test/flow2.mjs",
     "test:browser": "node test/browser.mjs",
-    "enrich": "node scripts/enrich-repo.mjs"
+    "enrich": "node scripts/enrich-repo.mjs",
+    "start": "vite preview --host 0.0.0.0 --port 4173"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -26,5 +27,8 @@
     "postcss": "^8.5.28",
     "react-test-renderer": "18.3.1",
     "vite": "^5.4.11"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
