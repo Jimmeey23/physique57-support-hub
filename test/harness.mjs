@@ -1,11 +1,16 @@
 /* Loads the real app sources under Node: esbuild-bundles them with an import map
    (JSX → JS, data.json → a global, CSS stubbed), then installs a DOM thin enough for
    react-test-renderer. Used by every harness in this folder. */
-import { build } from '/home/user/app/node_modules/esbuild/lib/main.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
+/* Resolved from wherever the repo happens to be checked out — a test suite that hard-codes one
+   absolute path only passes on the machine that wrote it, and mixes two React copies anywhere else
+   (which is what "cannot read properties of null (reading 'useState')" was telling us). */
+const require = createRequire(import.meta.url);
+const { build } = require('esbuild');
 
-export const APP = '/home/user/app';
+export const APP = path.resolve(import.meta.dirname, '..');
 export const SRC = path.join(APP, 'src');
 export const TMP = path.join(APP, 'test', '.tmp');
 export const DATA = JSON.parse(fs.readFileSync(path.join(SRC, 'data.json'), 'utf8'));

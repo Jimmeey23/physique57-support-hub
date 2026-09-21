@@ -4,13 +4,14 @@
    insights board and reload recovery. */
 import fs from 'node:fs';
 import { docEl, loadApp, installDom, DATA, texts, textsSpaced, byClass, byType, nodes } from './harness.mjs';
-const React = (await import('/home/user/app/node_modules/react/index.js')).default;
-const { act, create } = await import('/home/user/app/node_modules/react-test-renderer/index.js');
+const React = (await import('react')).default;
+const _rt = await import('react-test-renderer');
+const { act, create } = _rt.act ? _rt : _rt.default;
 
 await loadApp();
 const store = installDom();
 store.set('p57.hub.v1.archived', '[]');
-await import('/home/user/app/test/.tmp/bundle.mjs');
+await import('./.tmp/bundle.mjs');
 const { App, CORE } = globalThis.__X;
 
 let pass = 0, fail = 0;

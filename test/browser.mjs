@@ -9,10 +9,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { build } from '/home/user/app/node_modules/esbuild/lib/main.js';
+import { createRequire as _cr } from 'node:module';
+const _req = _cr(import.meta.url);
+const { build } = _req('esbuild');
 const require = createRequire(import.meta.url);
-const APP = '/home/user/app';
-const TMP = '/home/user/app/test/.tmp';
+const APP = path.resolve(import.meta.dirname, '..');
+const TMP = path.join(APP, 'test', '.tmp');
 fs.mkdirSync(TMP, { recursive: true });
 
 let pass = 0, fail = 0;

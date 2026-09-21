@@ -6,8 +6,10 @@ import path from 'node:path';
 import { transform } from 'esbuild';
 import { VOCAB, GROUPS, GROUP_KEYS, UNIVERSAL } from '../src/vocab.js';
 
-const REPO = process.env.IRIS_REPO || '/home/user/build/artifacts/repo';
 const APP = path.resolve(import.meta.dirname, '..');
+/* The reference checkout, if there is one: IRIS_REPO wins, then the sibling path this grew beside.
+   Without it the committed src/constants.json is the source of record, so a clone still rebuilds. */
+const REPO = process.env.IRIS_REPO || path.resolve(APP, '..', 'build', 'artifacts', 'repo');
 const SRC = path.join(APP, 'src');
 const CONST_TS = path.join(REPO, 'src/lib/constants.ts');
 

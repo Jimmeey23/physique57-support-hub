@@ -2,14 +2,16 @@
 /* Real-execution harness. esbuild-bundles the actual app sources (with an import map so
    Node can resolve them), then (a) unit-tests routing/SLA/priority/form logic and
    (b) server-renders the real React components. Exits non-zero on any failure. */
-import { build } from '/home/user/app/node_modules/esbuild/lib/main.js';
+import { createRequire as _cr } from 'node:module';
+const _req = _cr(import.meta.url);
+const { build } = _req('esbuild');
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const APP = '/home/user/app';
+const APP = path.resolve(import.meta.dirname, '..');
 const SRC = path.join(APP, 'src');
-const TMP = '/home/user/app/test/.tmp';
+const TMP = path.join(APP, 'test', '.tmp');
 fs.rmSync(TMP, { recursive: true, force: true }); fs.mkdirSync(TMP, { recursive: true });
 const DATA = JSON.parse(fs.readFileSync(path.join(SRC, 'data.json'), 'utf8'));
 
@@ -216,8 +218,8 @@ t('report_channel sits next to the reporter block it belongs to',
   uni.slice(0, 4).map(f => f.id).join(' → '));
 
 console.log('\n\x1b[1m▸ REACT RENDER (real components, every surface)\x1b[0m');
-const RNS = require('/home/user/app/node_modules/react-dom/server');
-const React = require('/home/user/app/node_modules/react');
+const RNS = require('react-dom/server');
+const React = require('react');
 let html = '';
 try { html = RNS.renderToString(React.createElement(App)); }
 catch (e) { t('App renders', false, e.message); console.log(e.stack.split('\n').slice(0, 7).join('\n')); }
@@ -587,5 +589,5 @@ t('buildFields carries the desk’s auto values into the rendered form',
 const tot = `\x1b[1m${pass} passed, ${fail} failed\x1b[0m`;
 console.log(`\n${fail ? '\x1b[41m\x1b[37m FAIL \x1b[0m' : '\x1b[42m\x1b[30m OK \x1b[0m'}  ${tot}\n`);
 
-fs.writeFileSync('/tmp/last-render.html', html);
+fs.writeFileSync(path.join(TMP, 'last-render.html'), html);
 process.exit(fail ? 1 : 0);
