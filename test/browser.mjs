@@ -48,7 +48,10 @@ const NEED = ['fsec', 'fbody', 'fprogress', 'fp-txt', 'fp-bar', 'ring', 'fh-meta
   'idswitch', 'idnote', 'counts', 'rc', 'filters', 'rf-row', 'rcheck', 'mine', 'mtitle', 'line',
   'org-up', 'org-node', 'org-down', 'rail-empty', 're-mark', 'rrail', 'rrail-head', 'rrail-clock',
   'rrail-right', 'rrail-lock', 'rrail-as', 'rrail-checks', 'rrail-checks-head', 'rk', 'rk-mark',
-  'rrail-foot', 'rrail-audit', 'rrail-filed', 'res-ro', 'ra', 'in-rail'];
+  'rrail-foot', 'rrail-audit', 'rrail-filed', 'res-ro', 'ra', 'in-rail',
+  'ax-tools', 'ax-head', 'ax-toggle', 'ax-ic', 'ax-count', 'ax-chev', 'ax-quick', 'ax-panel', 'ax-grp', 'ax-row',
+  'ax-dates', 'ax-exports', 'ax-report', 'ax-tbl', 'ax-key', 'ax-meter', 'ax-list', 'ax-tag', 'ax-q', 'ax-foot',
+  'ax-money', 'ax-heat', 'ax-hrs', 'ax-spark', 'ax-sp', 'ax-own', 'hc', 'bars', 'rown', 'bd', 'inr', 'serif'];
 const missing = NEED.filter(c => !new RegExp('\\.' + c + '(?![\\w-])').test(cssText));
 t('every class the markup relies on has a rule', !missing.length, missing.length ? 'no CSS for: ' + missing.join(', ') : `${NEED.length} classes covered`);
 /* Selector hygiene, both directions. Quotes and url() payloads are stripped from the CSS first so a
@@ -178,6 +181,9 @@ const click = async sel => { const el = typeof sel === 'string' ? doc.querySelec
   el.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
   await new Promise(r => setTimeout(r, 90)); return true; };
 await click([...q('.tabs button')].find(b => /Class desk/.test(txt(b))));
+/* the desk shows a beat of skeleton while its session list settles — wait for the surface to exist,
+   with a ceiling, rather than guessing at a fixed delay (this suite shares a CPU with three others) */
+for (let i = 0; i < 30 && !q('.cd-pick input').length; i++) await new Promise(r => setTimeout(r, 100));
 t('the desk renders its picker surface', q('.cd-pick .lk-bar').length === 1 && !!q('.cd-pick input'),
   'search box present');
 const decls = sel => { const out = {}; parsed.walkRules(sel, r => { if (r.selector !== sel) return;
@@ -595,6 +601,56 @@ if ([...idSel.options].some(o => o.value === owner)) {
 await click('.ts-foot .btn');
 t('an action taken from the sheet lands on the ticket, not only on the screen',
   q('.tsheet').length === 0 || !!q('.ts-foot').length, 'sheet still coherent after acting');
+
+/* ─────────────────────── 5c. analytics: the collapsed filter, and the detail under it ─────────────────────── */
+await click([...q('.tabs button')].find(b => /Insights|Analytics/i.test(txt(b))));
+const tools = q.one('.ax-tools');
+const totalLive = JSON.parse(window.localStorage.getItem('p57.hub.v1.tickets') || '[]').length
+  + JSON.parse(window.localStorage.getItem('p57.hub.v1.archived') || '[]').length;
+t('the numbers open on the picture, with every knob behind one shut strip',
+  !!tools && !q.one('.ax-panel') && q.one('.ax-toggle')?.getAttribute('aria-expanded') === 'false'
+  && new RegExp('all ' + totalLive + ' tickets').test(txt(q.one('.ax-count'))),
+  txt(q.one('.ax-count')) || 'no count');
+await click('.ax-toggle');
+const panel = q.one('.ax-panel');
+t('and the strip opens onto five groups of controls', !!panel && q('.ax-grp').length === 5
+  && q('.ax-panel .pk').length === 4 && q('.ax-panel input[type=date]').length === 2
+  && q('.ax-panel .rcheck input').length === 4,
+  `${q('.ax-grp').length} groups · ${q('.ax-panel .pk').length} dropdowns · ${q('.ax-panel input[type=date]').length} dates`);
+t('the export group is in there too, with a plain-text note beside it',
+  q('.ax-exports .btn').length === 4 && /Physique 57 · support desk/.test(txt(q.one('.ax-report'))),
+  txt(q.one('.ax-report')).slice(0, 46) + '…');
+await click([...q('.ax-panel .opt')].find(el => /^still open$/.test(txt(el))));
+const axStored = JSON.parse(window.localStorage.getItem('p57.hub.v1.ax') || '{}');
+t('a filter on the page is remembered, and says how much it cut',
+  axStored.status === 'live' && q.one('.ax-count')?.classList.contains('on')
+  && /1 filter on · \d+ of \d+/.test(txt(q.one('.ax-count'))), txt(q.one('.ax-count')));
+const narrowed = Number((txt(q.one('.ax-count')).match(/· (\d+) of/) || [0, totalLive])[1]);
+t('and the tables underneath move with it, not with the queue',
+  narrowed <= totalLive && q('.ax-tbl tbody tr').length >= 1
+  && q('.ax-heat .hr').length === 7 && q('.ax-heat .hc').length === 168,
+  `${narrowed} of ${totalLive} in the slice · ${q('.ax-tbl tbody tr').length} category rows · ${q('.ax-sp').length} weekly bars`);
+t('owner load is drawn from the same reporting lines the rail enforces',
+  q('.ax-own li').length >= 1 && /reports to |top of this line/.test(txt(q('.ax-own li')[0])),
+  txt(q('.ax-own li')[0]).slice(0, 64));
+t('the heatmap cells carry their own reading, not a colour to guess at',
+  / — \d+ ticket/.test(q('.ax-heat .hc')[0]?.getAttribute('title') || '')
+  && q('.ax-heat .hc').every(el => / — \d+ ticket/.test(el.getAttribute('title') || ''))
+  && q('.ax-heat .hc.on').length >= 1,
+  q('.ax-heat .hc.on')[0]?.getAttribute('title') || 'no filled cell in this slice');
+window.URL.createObjectURL = window.URL.createObjectURL || (() => 'blob:p57');
+window.URL.revokeObjectURL = window.URL.revokeObjectURL || (() => {});
+await click([...q('.ax-quick .btn')].find(el => /Tickets CSV/.test(txt(el))));
+const wrote = q('.toast').map(el => txt(el)).join(' | ');
+t('the CSV the desk exports is the same slice the page counted',
+  new RegExp('\\d+ rows in p57-tickets-').test(wrote), wrote.slice(0, 72) || 'no toast');
+await click([...q('.ax-panel .opt')].find(el => /^everything$/.test(txt(el))));
+await click([...q('.ax-head .btn')].find(el => /clear/.test(txt(el))));
+t('clearing puts the whole board back, and the strip says so',
+  /all \d+ tickets/.test(txt(q.one('.ax-count')))
+  && JSON.parse(window.localStorage.getItem('p57.hub.v1.ax') || '{}').status === 'all', txt(q.one('.ax-count')));
+await click('.ax-toggle');
+t('and it shuts again without losing the tables', !q.one('.ax-panel') && q('.ax-tbl').length === 1, 'collapsed');
 
 /* ───────────────────────────── 6. a reload keeps it all ───────────────────────────── */
 window.eval('globalThis.__ROOT__.unmount()');

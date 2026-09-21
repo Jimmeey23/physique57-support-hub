@@ -23,6 +23,8 @@ import { ATT_ACTION, ATT_STATUS, ATT_TAGS, CLASS_ASPECT } from './vocab.js';
 import { trainerDirectory, populateSession, populateMember, sessionStats } from './momence.js';
 import CONSTANTS from './constants.json';
 import { cache as themeCache, themeVars, glyphSvg } from './themes.js';
+import Picker from './picker.jsx';
+import * as X from './export.js';
 import brandLight from './assets/brand-light-128.png';
 import brandDark from './assets/brand-dark-128.png';
 import './styles.css';
@@ -110,6 +112,13 @@ function App() {
   const [aiErr, setAiErr] = useState('');
   const [aiMeta, setAiMeta] = useState(null);
   const [aiAdvice, setAiAdvice] = useState(null);
+  /* Analytics keeps its own filters: narrowing the numbers must not silently narrow the queue.
+     The panel starts shut, because the desk wants the picture first and the knobs second. */
+  const [axF, setAxF] = usePersist('p57.hub.v1.ax', X.emptyFilter());
+  const [axOpen, setAxOpen] = usePersist('p57.hub.v1.ax.open', false);
+  const axSetF = (k, v) => setAxF(f => ({ ...f, [k]: f[k] === v && k !== 'status' && k !== 'q' ? '' : v }));
+  const axCsv = (name, rows, cols) => { download(name, X.toCsv(rows, cols), 'text/csv');
+    toast('Written out', `${rows.length} rows in ${name} — built from the same numbers on screen.`, 'ok'); };
   const setAiKey = k => { writeKey(k); setAiKeyRaw(String(k || '').trim()); };
   const [review, setReview] = useState(null);
   const [pendingLink, setPendingLink] = useState(null);
@@ -1038,43 +1047,115 @@ function App() {
     </div>);
 
   const insights = () => {
-    const counts = (key) => all.reduce((m, t) => (m[t[key]] = (m[t[key]] || 0) + 1, m), {});
+    const DEPTS = [...new Set(DATA.categories.flatMap(c => c.subs).map(x => x.department))].sort();
+    const STUDIOS = DATA.studios.map(x => x.name || x);
+    const axSet = X.applyFilter(all, axF);
+    const axOn = X.activeFilters(axF);
+    const cats = X.categoryStats(axSet);
+    const owners2 = X.ownerStats(axSet, org);
+    const chronic = X.chronicStats(axSet);
+    const quality = X.closureQuality(axSet);
+    const money = X.goodwillStats(axSet);
+    const trend = X.weekTrend(axSet);
+    const rhythm = X.clockGrid(axSet);
+    const report = X.weeklyReport({ list: axSet, cats, owners: owners2, quality, chronic, money, trend, grid: rhythm });
+
+    const counts = (key) => axSet.reduce((m, t) => (m[t[key]] = (m[t[key]] || 0) + 1, m), {});
     const bar = (obj, total, color) => Object.entries(obj).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
       <div className="bar" key={k}><span className="lbl" title={k}>{k}</span>
         <span className="bt"><i style={{ width: (100 * v / (total || 1)) + '%', background: color || undefined }} /></span>
         <span className="n">{v}</span></div>));
     const prio = counts('priority');
-    const closedAll = all.filter(t => t.resolvedAt);
+    const closedAll = axSet.filter(t => t.resolvedAt);
     const hit = closedAll.filter(t => (t.firstResponseAt || t.resolvedAt) <= t.frDueAt).length;
     const med = arr => { if (!arr.length) return '—'; const s = [...arr].sort((a, b) => a - b); return fmtDur(s[Math.floor(s.length / 2)]); };
     const res = closedAll.map(t => t.resolvedAt - t.createdAt);
     const fr = closedAll.map(t => (t.firstResponseAt || t.resolvedAt) - t.createdAt);
-    const owners = all.reduce((m, t) => { const k = short(t.assignee); m[k] = (m[k] || 0) + 1; return m; }, {});
+    const owners = axSet.reduce((m, t) => { const k = short(t.assignee); m[k] = (m[k] || 0) + 1; return m; }, {});
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const heat = DATA.studios.map(st => ({ st: st.name, n: days.map(d => all.filter(t => t.studio === st.name && dayKey(t.createdAt) === d).length) }));
+    const heat = DATA.studios.map(st => ({ st: st.name, n: days.map(d => axSet.filter(t => t.studio === st.name && dayKey(t.createdAt) === d).length) }));
     const hm = Math.max(1, ...heat.flatMap(h => h.n));
     /* ---- class + roster rollup, from the snapshots the class desk stored ---- */
-    const withClass = all.filter(t => t.class?.sessionId);
+    const withClass = axSet.filter(t => t.class?.sessionId);
     const sum = (list, k) => list.reduce((n, t) => n + (Number(t.class?.[k]) || 0), 0);
     const clsBooked = sum(withClass, 'booked'), clsAttended = sum(withClass, 'attended'),
       clsAbsent = sum(withClass, 'absent'), clsGuests = sum(withClass, 'guests'),
       clsOver = sum(withClass, 'overbook'), clsInc = sum(withClass, 'incompatible'), clsWl = sum(withClass, 'waitlist');
     const attNotes = withClass.reduce((n, t) => n + (t.class?.attendees?.length || 0), 0);
-    const hourHist = Array.from({ length: 24 }, (_, h) => all.filter(t => new Date(t.createdAt).getHours() === h).length);
+    const hourHist = Array.from({ length: 24 }, (_, h) => axSet.filter(t => new Date(t.createdAt).getHours() === h).length);
     const hourMax = Math.max(1, ...hourHist);
-    const causes = all.map(t => t.resolution?.causeCategory).filter(Boolean).reduce((m, k) => (m[k] = (m[k] || 0) + 1, m), {});
-    const outcomes = all.map(t => t.resolution?.outcome).filter(Boolean).reduce((m, k) => (m[k] = (m[k] || 1) + 1 || m[k], m), {});
-    const goodwill = all.filter(t => t.resolution?.goodwill && t.resolution.goodwill !== 'None');
-    const reopened = all.filter(t => (t.timeline || []).some(e => e.kind === 'reopen'));
-    const capturedPct = all.length ? Math.round(100 * all.filter(t => t.resolution?.closureNote).length / (closedAll.length || 1)) : 0;
+    const causes = axSet.map(t => t.resolution?.causeCategory).filter(Boolean).reduce((m, k) => (m[k] = (m[k] || 0) + 1, m), {});
+    const outcomes = axSet.map(t => t.resolution?.outcome).filter(Boolean).reduce((m, k) => (m[k] = (m[k] || 1) + 1 || m[k], m), {});
+    const goodwill = axSet.filter(t => t.resolution?.goodwill && t.resolution.goodwill !== 'None');
+    const reopened = axSet.filter(t => (t.timeline || []).some(e => e.kind === 'reopen'));
+    const capturedPct = axSet.length ? Math.round(100 * axSet.filter(t => t.resolution?.closureNote).length / (closedAll.length || 1)) : 0;
     return <div>
-      <div className="phead"><div><div className="eyebrow">Analytics · {all.length} tickets tracked · {withClass.length} with a class attached</div>
+      <div className="phead"><div><div className="eyebrow">Analytics · {axSet.length} tickets tracked · {withClass.length} with a class attached</div>
         <h1>Where the load sits</h1>
         <p>Counting the live board and the archive together, so a category that looks quiet may in fact be closing everything, and one that looks busy may never be getting a reply.</p></div>
         <div className="right"><span className="chip mono"><I s={svg.pin}/> {new Date(now).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false })} IST</span></div></div>
+      <section className={cx('ax-tools', axOpen && 'open')}>
+        <div className="ax-head">
+          <button type="button" className="ax-toggle" onClick={() => setAxOpen(o => !o)} aria-expanded={!!axOpen}
+            data-tip="Nothing here changes the queue — the numbers on this page narrow on their own.">
+            <span className="ax-ic"><I s={svg.filter} /></span><b>Filter &amp; export</b>
+            <span className={cx('ax-count', axOn.length && 'on')}>{axOn.length
+              ? `${axOn.length} filter${axOn.length === 1 ? '' : 's'} on · ${axSet.length} of ${all.length}`
+              : `all ${all.length} tickets`}</span>
+            <span className="ax-chev"><I s={svg.chev} /></span>
+          </button>
+          <div className="ax-quick">
+            {axOn.length > 0 && <button className="btn xs ghost" onClick={() => setAxF(X.emptyFilter())}><I s={svg.x} /> clear</button>}
+            <button className="btn xs" onClick={() => axCsv(`p57-tickets-${new Date().toISOString().slice(0, 10)}.csv`, X.ticketRows(axSet))}><I s={svg.down} /> Tickets CSV</button>
+            <button className="btn xs" onClick={() => { if (navigator.clipboard?.writeText) navigator.clipboard.writeText(report); setAxOpen(true);
+              toast('Weekly note ready', 'Eight lines of plain text, also printed at the bottom of the panel.', 'ok'); }}><I s={svg.copy} /> Copy the weekly note</button>
+          </div>
+        </div>
+        {axOpen && <div className="ax-panel">
+          <div className="ax-grp"><span className="eyebrow">Window</span>
+            <div className="ax-dates">
+              <label><span className="xxs mut">from</span><input type="date" value={axF.from} onChange={e => axSetF('from', e.target.value)} /></label>
+              <label><span className="xxs mut">to</span><input type="date" value={axF.to} onChange={e => axSetF('to', e.target.value)} /></label>
+            </div>
+            <div className="ax-row">{[['Last 7 days', 7], ['Last 30 days', 30], ['Last quarter', 90]].map(([lab, d]) => {
+              const from = new Date(Date.now() - d * 864e5).toISOString().slice(0, 10);
+              return <button key={lab} className={cx('opt xs', axF.from === from && 'on')} onClick={() => setAxF(f => ({ ...f, from, to: '' }))}>{lab}</button>; })}
+              <button className={cx('opt xs', !axF.from && !axF.to && 'on')} onClick={() => setAxF(f => ({ ...f, from: '', to: '' }))}>everything</button></div>
+          </div>
+          <div className="ax-grp"><span className="eyebrow">Taxonomy</span>
+            <Picker f={{ id: 'ax-cat', label: 'Category', options: DATA.categories.map(c => c.name) }} value={axF.cat} list={DATA.categories.map(c => c.name)}
+              onChange={v => axSetF('cat', v)} placeholder="Every category" />
+            <Picker f={{ id: 'ax-dept', label: 'Department', options: DEPTS }} value={axF.dept} list={DEPTS}
+              onChange={v => axSetF('dept', v)} placeholder="Every department" />
+            <Picker f={{ id: 'ax-studio', label: 'Studio', options: STUDIOS }} value={axF.studio} list={STUDIOS}
+              onChange={v => axSetF('studio', v)} placeholder="Every studio" />
+          </div>
+          <div className="ax-grp"><span className="eyebrow">Board state</span>
+            <Picker f={{ id: 'ax-prio', label: 'Priority', options: ['critical', 'high', 'medium', 'low'] }} value={axF.prio} list={['critical', 'high', 'medium', 'low']}
+              onChange={v => axSetF('prio', v)} placeholder="Any priority" />
+            <div className="ax-row">{[['all', 'everything'], ['live', 'still open'], ['closed', 'filed']].map(([v, l]) =>
+              <button key={v} className={cx('opt xs', axF.status === v && 'on')} onClick={() => setAxF(f => ({ ...f, status: v }))}>{l}</button>)}</div>
+            {[['onlyClass', 'attached to a class'], ['onlyBreach', 'past a clock'], ['onlyRepeat', 'reported more than once'], ['onlyClosure', 'with a closure note']].map(([k, lab]) =>
+              <label className="rcheck" key={k}><input type="checkbox" checked={!!axF[k]} onChange={e => setAxF(f => ({ ...f, [k]: e.target.checked }))} />{lab}</label>)}
+          </div>
+          <div className="ax-grp"><span className="eyebrow">Words</span>
+            <Search value={axF.q} onChange={v => setAxF(f => ({ ...f, q: v }))} placeholder="number, title, member, owner…" />
+            <p className="xs mut">Matches the ticket’s own text — including the write-up, so a paragraph the model wrote is searchable too.</p>
+          </div>
+          <div className="ax-grp"><span className="eyebrow">Export</span>
+            <div className="ax-exports">
+              <button className="btn sm" onClick={() => axCsv('p57-attainment-by-category.csv', cats)}><I s={svg.chart} /> Attainment by category</button>
+              <button className="btn sm" onClick={() => axCsv('p57-owner-load.csv', owners2.map(o => ({ owner: o.owner, manager: o.manager, open: o.open, filed: o.closed, breach: o.breach, median_first_response_min: Math.round(o.medFr / 60000), goodwill_inr: o.goodwill })))}><I s={svg.user} /> Owner load &amp; line</button>
+              <button className="btn sm" onClick={() => axCsv('p57-chronic-repeats.csv', chronic)}><I s={svg.flame} /> Chronic repeats</button>
+              <button className="btn sm" onClick={() => { download(`p57-slice-${axSet.length}.json`, JSON.stringify(axSet, null, 2)); toast('Written out', `${axSet.length} tickets, exactly as stored, in JSON.`, 'ok'); }}><I s={svg.card} /> The whole slice (JSON)</button>
+            </div>
+            <pre className="ax-report">{report}</pre>
+          </div>
+        </div>}
+      </section>
       <Stats items={[
-        { value: all.length, label: 'Raised since install', acc: 'var(--med)' },
-        { value: `${all.length ? Math.round(100 * hit / (closedAll.length || 1)) : 0}%`, label: 'First-response SLA hit', acc: 'var(--ok)', tag: `${hit}/${closedAll.length || 0}` },
+        { value: axSet.length, label: 'Raised since install', acc: 'var(--med)' },
+        { value: `${axSet.length ? Math.round(100 * hit / (closedAll.length || 1)) : 0}%`, label: 'First-response SLA hit', acc: 'var(--ok)', tag: `${hit}/${closedAll.length || 0}` },
         { value: med(fr), label: 'Median first response', acc: 'var(--brand2)' },
         { value: med(res), label: 'Median resolution', acc: 'var(--brand)' },
         { value: tickets.filter(t => !['resolved', 'closed'].includes(t.status) && t.frDueAt <= now).length, label: 'Breaches live now', acc: 'var(--crit)' },
@@ -1082,12 +1163,12 @@ function App() {
         { value: withClass.length, label: 'Hosted-class tickets', acc: 'var(--brand2)', tag: attNotes ? `${attNotes} attendee notes` : 'no roster notes' },
         { value: clsBooked ? `${Math.round(100 * clsAttended / clsBooked)}%` : '—', label: 'Class attendance on those sessions', acc: 'var(--ok)' }]} />
       <div className="panels">
-        <div className="panel"><h4>By category</h4><div className="p-sub">Where tickets are actually coming from</div>{bar(counts('category'), all.length)}</div>
+        <div className="panel"><h4>By category</h4><div className="p-sub">Where tickets are actually coming from</div>{bar(counts('category'), axSet.length)}</div>
         <div className="panel"><h4>By priority</h4><div className="p-sub">Inferred from the taxonomy plus what reporters told us</div>
-          {bar(prio, all.length)}
+          {bar(prio, axSet.length)}
           <div className="hr" style={{ margin: '13px 0' }} />
-          <h4 style={{ fontSize: 14 }}>By department</h4><div className="p-sub">Queue load per owning team</div>{bar(counts('department'), all.length, 'linear-gradient(90deg,var(--med),var(--brand2))')}</div>
-        <div className="panel"><h4>Owner workload</h4><div className="p-sub">Who the desk is routing to first</div>{bar(owners, all.length, 'linear-gradient(90deg,var(--brand),var(--brand2))')}</div>
+          <h4 style={{ fontSize: 14 }}>By department</h4><div className="p-sub">Queue load per owning team</div>{bar(counts('department'), axSet.length, 'linear-gradient(90deg,var(--med),var(--brand2))')}</div>
+        <div className="panel"><h4>Owner workload</h4><div className="p-sub">Who the desk is routing to first</div>{bar(owners, axSet.length, 'linear-gradient(90deg,var(--brand),var(--brand2))')}</div>
         <div className="panel"><h4>Studio × weekday</h4><div className="p-sub">Volume by site — the pattern that tells you which room needs an AMC</div>
           <div className="heat"><div /><div className="hh">Mon</div><div className="hh">Tue</div><div className="hh">Wed</div><div className="hh">Thu</div><div className="hh">Fri</div><div className="hh">Sat</div><div className="hh">Sun</div>
             {heat.map(h => <React.Fragment key={h.st}>
@@ -1121,6 +1202,77 @@ function App() {
           {bar(DATA.categories.flatMap(c => c.subs.map(s => ({ ...s, c: c.name }))).filter(s => s.hist > 3)
             .sort((a, b) => b.hist - a.hist).slice(0, 10).reduce((m, s) => (m[`${s.c} › ${s.name}`] = s.hist, m), {}),
             156)}</div>
+        <div className="panel wide"><h4>Attainment by category</h4>
+          <div className="p-sub">Raised, answered and closed inside the window above — a quiet category is only good news if it is also fast</div>
+          <table className="ax-tbl"><thead><tr><th>Category</th><th className="n">Raised</th><th className="n">Open</th>
+            <th className="n">Past clock</th><th className="n">Median FR</th><th className="n">Median close</th>
+            <th className="n">p90 close</th><th className="n">SLA hit</th><th className="n">Record quality</th></tr></thead>
+            <tbody>{cats.slice(0, 12).map((c, i) => { const cat = DATA.categories.find(x => x.name === c.category);
+              const th = cat ? themeCache(c.category, null, i) : null;
+              return <tr key={c.category}>
+                <td><span className="ax-key" style={th ? { background: `hsl(${th.h} ${th.s}% ${th.l}%)` } : undefined}>{c.category}</span>
+                  <em className="xxs mut">{c.depts} · {c.subs} sub-categories</em></td>
+                <td className="n mono">{c.raised}</td><td className="n mono">{c.open}</td>
+                <td className={cx('n mono', c.breach > 0 && 'bad')}>{c.breach}</td>
+                <td className="n mono">{c.frLabel}</td><td className="n mono">{c.resLabel}</td><td className="n mono">{c.p90Label}</td>
+                <td className="n"><span className="ax-meter"><i style={{ width: `${c.frHitPct}%` }} /><b className="mono">{c.frHitPct}%</b></span></td>
+                <td className="n"><span className="ax-meter q"><i style={{ width: `${c.closureQuality}%` }} /><b className="mono">{c.closureQuality ? c.closureQuality + '%' : '—'}</b></span></td>
+              </tr>; })}</tbody></table>
+          {cats.length === 0 && <p className="empty">Nothing in this window to measure.</p>}</div>
+        <div className="panel"><h4>Repeats that are really one fault</h4>
+          <div className="p-sub">Anything reported twice, and what it cost. The hub escalates at the third report — this is the list to act on before then</div>
+          {chronic.length ? <ul className="ax-list">{chronic.slice(0, 8).map(r => { const cat = DATA.categories.find(x => x.name === r.category);
+            const th = cat ? themeCache(r.category, r.sub, 0) : null;
+            return <li key={r.key}><span className="ax-key" style={th ? { background: `hsl(${th.h} ${th.s}% ${th.l}%)` } : undefined}>{r.sub}</span>
+              <em className="xxs mut">{r.studios.join(', ')}</em>
+              <span className="ax-n mono">×{r.reports}</span>
+              <span className="ax-tag">{r.escalations ? `${r.escalations} escalated` : 'not escalated'}</span>
+              {r.goodwill > 0 && <span className="ax-tag inr">₹{r.goodwill.toLocaleString('en-IN')}</span>}
+              <span className="ax-tag mut">{r.lastAgo}</span></li>; })}</ul>
+            : <p className="empty">No fault has been reported twice inside this window.</p>}</div>
+        <div className="panel"><h4>How complete a close-out is</h4>
+          <div className="p-sub">The same eight points the resolution rail asks for, counted over {quality.of} filed record{quality.of === 1 ? '' : 's'}</div>
+          {quality.of ? <ul className="ax-q">{quality.rows.map(r => <li key={r.id}>
+            <span>{r.label}</span><span className="ax-meter"><i style={{ width: `${r.pct}%` }} /></span>
+            <b className="mono">{r.pct}%</b></li>)}</ul>
+            : <p className="empty">Nothing has been filed with a resolution record yet.</p>}
+          {quality.of > 0 && <div className="ax-foot"><span className="chip mono">{quality.full} of {quality.of} pass all eight</span>
+            <span className="xs mut">A record that misses “prevention” is a fix that will come back.</span></div>}</div>
+        <div className="panel"><h4>What the goodwill actually cost</h4>
+          <div className="p-sub">Credits, refunds and passes, attributed to the cause that triggered them</div>
+          <div className="ax-money"><b className="serif">₹{money.total.toLocaleString('en-IN')}</b>
+            <span className="xs mut">across {money.count} ticket{money.count === 1 ? '' : 's'}
+              {money.count ? ` · average ₹${money.avg.toLocaleString('en-IN')}` : ''}</span></div>
+          {money.byCause.length ? bar(money.byCause.reduce((m, r) => (m[r.cause] = r.inr, m), {}), money.total || 1,
+            'linear-gradient(90deg,var(--high),color-mix(in oklab,var(--high) 40%,var(--brand)))')
+            : <p className="empty">No credit or refund was given in this window.</p>}</div>
+        <div className="panel wide"><h4>Filing rhythm</h4>
+          <div className="p-sub">Every ticket in the window, by hour and weekday — {rhythm.peakDay} at {String(rhythm.peakHour).padStart(2, '0')}:00 is the busiest corner of the week</div>
+          <div className="ax-heat">{rhythm.grid.map(row => <div key={row.day} className="hr">
+            <span className="hl" title={row.day}>{row.day}</span>
+            {row.hours.map((n, h) => <i key={h} className={cx('hc', n > 0 && 'on')} title={`${row.day} ${String(h).padStart(2, '0')}:00 — ${n} ticket${n === 1 ? '' : 's'} filed`}
+              style={{ opacity: n ? 0.28 + 0.72 * (n / rhythm.max) : undefined }} />)}
+            <b className="mono rown">{row.total}</b></div>)}</div>
+          <div className="ax-hrs">{rhythm.byHour.map((n, h) => <span key={h} className="xxs mono">{h % 3 === 0 ? String(h).padStart(2, '0') : '·'}</span>)}</div></div>
+        <div className="panel"><h4>Week by week</h4>
+          <div className="p-sub">Raised against closed, with the median first response under each bar</div>
+          {trend.length ? <div className="ax-spark">{trend.slice(-14).map(w => { const mx = Math.max(1, ...trend.map(x => Math.max(x.raised, x.closed)));
+            return <div key={w.week} className="ax-sp" title={`${w.label} · ${w.raised} raised · ${w.closed} closed · ${w.breach} past clock · FR ${w.medFrLabel}`}>
+              <span className="bars"><i style={{ height: `${8 + 88 * (w.raised / mx)}%` }} /><u style={{ height: `${8 + 88 * (w.closed / mx)}%` }} /></span>
+              {w.breach > 0 && <b className="bd mono">{w.breach}</b>}
+              <em className="xxs">{w.label}</em></div>; })}</div>
+            : <p className="empty">One ticket is not a trend. File a few more.</p>}</div>
+        <div className="panel"><h4>Who holds it, and who they answer to</h4>
+          <div className="p-sub">Straight off the escalation ladder in the taxonomy — the same lines the resolution rail enforces</div>
+          <ul className="ax-own">{owners2.slice(0, 10).map(o => <li key={o.owner}>
+            <Avatar name={o.owner} size={22} />
+            <span className="ow-n"><b>{o.owner}</b><em className="xxs mut">{o.manager ? `reports to ${o.manager}` : 'top of this line'} · {o.categories} categor{o.categories === 1 ? 'y' : 'ies'}</em></span>
+            <span className="ow-k mono">{o.open} open</span>
+            <span className="ow-k mono">{o.closed} filed</span>
+            <span className={cx('ow-k mono', o.breach > 0 && 'bad')}>{o.breach ? `${o.breach} late` : 'on time'}</span>
+            <span className="ow-k mono xs mut">FR {o.frLabel}</span>
+            {o.goodwill > 0 && <span className="ow-k mono xs">₹{o.goodwill.toLocaleString('en-IN')}</span>}</li>)}</ul>
+          {owners2.length === 0 && <p className="empty">Nobody holds anything in this window.</p>}</div>
       </div>
     </div>;
   };

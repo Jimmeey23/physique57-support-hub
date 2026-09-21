@@ -1973,3 +1973,122 @@ html[data-motion=calm] .writeup{animation:none}
   .wu-head .btn{flex:1;justify-content:center}
   .wu-acts .xs{text-align:left}
 }
+
+/* ═══════════════════════ phase 8d · analytics: the collapsed filter & export, and the detail ═══════════════════════
+   The desk opens Analytics for a picture, not a control panel — so every knob lives behind one
+   hairline strip that is shut by default, and the tables below it are dense but quiet. */
+.ax-tools{border:1px solid var(--line);border-radius:14px;background:var(--card);margin-bottom:16px;overflow:hidden;
+  box-shadow:0 1px 0 color-mix(in oklab,var(--ink) 4%,transparent)}
+.ax-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 10px 8px 8px}
+.ax-toggle{display:flex;align-items:center;gap:10px;flex:1;min-width:210px;border:0;background:transparent;cursor:pointer;
+  font:inherit;color:var(--ink);text-align:left;padding:6px 8px;border-radius:10px;transition:.16s}
+.ax-toggle:hover{background:var(--card2)}
+.ax-toggle b{font-size:13.4px;font-weight:600;letter-spacing:-.01em}
+.ax-ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:var(--brand);background:var(--brandsoft);
+  border:1px solid color-mix(in oklab,var(--brand) 24%,var(--line))}
+.ax-ic svg{width:13px;height:13px}
+.ax-count{font:500 11px/1 var(--mono);color:var(--mut);letter-spacing:.02em;padding:5px 8px;border-radius:999px;
+  border:1px solid var(--line);background:var(--card2)}
+.ax-count.on{color:var(--brand);border-color:color-mix(in oklab,var(--brand) 34%,var(--line));background:var(--brandsoft)}
+.ax-chev{margin-left:auto;color:var(--mut);display:grid;place-items:center;transition:transform .2s}
+.ax-chev svg{width:13px;height:13px}
+.ax-tools.open .ax-chev{transform:rotate(180deg)}
+.ax-quick{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ax-quick .btn{white-space:nowrap}
+.ax-panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(216px,1fr));gap:12px;padding:4px 10px 12px;
+  border-top:1px dashed var(--line2);animation:axin .26s cubic-bezier(.2,.8,.2,1) both}
+@keyframes axin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.ax-grp{display:flex;flex-direction:column;gap:8px;min-width:0;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.ax-grp > .eyebrow{font:600 9.6px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.ax-grp .opt.xs{padding:4px 9px;font-size:11.2px;border-radius:8px}
+.ax-grp .opt.xs.on{border-color:var(--brand);background:color-mix(in oklab,var(--brand) 14%,var(--card));color:var(--brand);font-weight:600}
+.ax-row{display:flex;flex-wrap:wrap;gap:6px}
+.ax-dates{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ax-dates label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ax-dates label > span{letter-spacing:.14em;text-transform:uppercase}
+.ax-dates input{font:inherit;font-size:12.2px;padding:7px 8px;border-radius:9px;background:var(--card);
+  border:1px solid var(--line2);color:var(--ink);min-width:0}
+.ax-dates input:focus{outline:none;border-color:color-mix(in oklab,var(--brand) 46%,var(--line2))}
+.ax-exports{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.ax-exports .btn{justify-content:center}
+.ax-report{margin:2px 0 0;padding:10px 11px;border-radius:10px;background:var(--card);border:1px solid var(--line);
+  font:400 11.4px/1.6 var(--mono);color:var(--ink2);white-space:pre-wrap;word-break:break-word;max-height:190px;overflow:auto}
+.ax-tbl{width:100%;border-collapse:collapse;font-size:12.4px}
+.ax-tbl th{text-align:left;font:600 9.6px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mut);
+  padding:0 8px 8px;border-bottom:1px solid var(--line2);white-space:nowrap}
+.ax-tbl th.n,.ax-tbl td.n{text-align:right}
+.ax-tbl td{padding:9px 8px;border-bottom:1px dashed var(--line);vertical-align:middle}
+.ax-tbl tbody tr{transition:background .14s}
+.ax-tbl tbody tr:hover{background:color-mix(in oklab,var(--brand) 6%,transparent)}
+.ax-tbl td.n.mono{font-family:var(--mono);font-size:11.8px;white-space:nowrap}
+.ax-tbl td.n .bad,.ax-tbl .bad{color:var(--crit);font-weight:600}
+.ax-key{display:inline-flex;align-items:center;gap:7px;font-weight:600}
+.ax-key::before{content:"";width:8px;height:8px;border-radius:3px;background:var(--brand);flex:0 0 auto;
+  box-shadow:0 0 0 3px color-mix(in oklab,var(--brand) 18%,transparent)}
+.ax-tbl em,.ax-list em{display:block;font-style:normal;margin-top:2px}
+.ax-meter{position:relative;display:inline-flex;align-items:center;gap:7px;justify-content:flex-end;width:100%;min-width:86px}
+.ax-meter i{position:absolute;right:0;bottom:-4px;height:3px;border-radius:2px;background:var(--brand);opacity:.9;
+  transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.ax-meter.q i{background:var(--ok)}
+.ax-meter b{font-size:11.4px}
+.panel.wide{grid-column:1/-1}
+.ax-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.ax-list li{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:7px;align-items:center;
+  padding:8px 9px;border:1px solid var(--line);border-radius:11px;background:var(--card2)}
+.ax-list .ax-n{font-family:var(--mono);font-size:12.4px;font-weight:600}
+.ax-tag{font:500 10.4px/1 var(--mono);letter-spacing:.04em;color:var(--mut);padding:4px 7px;border-radius:999px;border:1px solid var(--line)}
+.ax-tag.inr{color:var(--high);border-color:color-mix(in oklab,var(--high) 34%,var(--line));background:color-mix(in oklab,var(--high) 10%,transparent)}
+.ax-tag.mut{border-style:dashed}
+.ax-q{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ax-q li{display:grid;grid-template-columns:minmax(0,1fr) 76px 38px;gap:9px;align-items:center;font-size:12.2px}
+.ax-q .ax-meter i{position:static;bottom:auto;height:6px;border-radius:3px;width:0;background:color-mix(in oklab,var(--ink) 12%,transparent)}
+.ax-q li{padding:4px 0;border-bottom:1px dashed var(--line)}
+.ax-foot{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+.ax-money{display:flex;align-items:baseline;gap:10px;margin-bottom:9px}
+.ax-money .serif{font-family:var(--serif);font-size:26px;letter-spacing:-.02em;font-weight:600}
+.ax-heat{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.ax-heat .hr,.ax-heat > div{display:grid;grid-template-columns:40px repeat(24,minmax(0,1fr)) 34px;gap:3px;align-items:center}
+.ax-heat .hl{font:600 9.6px/1 var(--mono);color:var(--mut);letter-spacing:.06em}
+.ax-heat .hc{height:15px;border-radius:4px;background:color-mix(in oklab,var(--ink) 6%,transparent);transition:.16s}
+.ax-heat .hc.on{background:var(--brand)}
+.ax-heat .hc.on:hover{transform:scaleY(1.28)}
+.ax-heat .rown{font-size:11px;color:var(--mut);text-align:right}
+.ax-hrs{display:grid;grid-template-columns:40px repeat(24,minmax(0,1fr)) 34px;gap:3px;margin-top:4px}
+.ax-hrs span{text-align:center;color:var(--mut)}
+.ax-spark{display:flex;align-items:flex-end;gap:7px;height:120px;padding-top:6px}
+.ax-sp{flex:1;min-width:16px;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+.ax-sp .bars{flex:1;display:flex;align-items:flex-end;gap:2px;width:100%;justify-content:center}
+.ax-sp .bars i,.ax-sp .bars u{display:block;width:38%;border-radius:3px 3px 0 0;background:var(--brand);opacity:.85;
+  transition:height .5s cubic-bezier(.2,.8,.2,1)}
+.ax-sp .bars u{background:var(--ok);opacity:.75}
+.ax-sp .bd{position:absolute;font-size:9.4px;color:var(--crit)}
+.ax-sp{position:relative}
+.ax-sp em{font-style:normal;color:var(--mut);font-size:9.4px;font-family:var(--mono)}
+.ax-own{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ax-own li{display:grid;grid-template-columns:auto minmax(0,1fr) repeat(4,auto);gap:9px;align-items:center;
+  padding:7px 8px;border-radius:11px;border:1px solid var(--line);background:var(--card2);transition:.16s}
+.ax-own li:hover{border-color:color-mix(in oklab,var(--brand) 34%,var(--line));transform:translateX(2px)}
+.ax-own .ow-n{min-width:0}.ax-own .ow-n b{display:block;font-size:12.6px}
+.ax-own .ow-n em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ax-own .ow-k{font-family:var(--mono);font-size:11.4px;white-space:nowrap;color:var(--ink2)}
+.ax-own .ow-k.bad{color:var(--crit);font-weight:600}
+html[data-density=compact] .ax-panel{gap:9px;padding:4px 8px 9px}
+html[data-density=compact] .ax-tbl td{padding:6px 7px}
+html[data-density=compact] .ax-heat > div{grid-template-columns:34px repeat(24,minmax(0,1fr)) 28px}
+html[data-motion=calm] .ax-panel{animation:none}
+html[data-motion=calm] .ax-meter i,html[data-motion=calm] .ax-sp .bars i,html[data-motion=calm] .ax-sp .bars u{transition:none}
+@media (max-width:860px){
+  .ax-exports{grid-template-columns:1fr}
+  .ax-heat .hr,.ax-heat > div,.ax-hrs{grid-template-columns:32px repeat(24,minmax(0,1fr)) 26px;gap:2px}
+  .ax-heat .hc{height:12px;border-radius:3px}
+  .ax-own li{grid-template-columns:auto minmax(0,1fr) auto auto}
+  .ax-tbl{display:block;overflow-x:auto;white-space:nowrap}
+}
+@media (max-width:640px){
+  .ax-head{padding:7px}
+  .ax-quick{width:100%}
+  .ax-quick .btn{flex:1;justify-content:center}
+  .ax-panel{grid-template-columns:minmax(0,1fr)}
+  .ax-q li{grid-template-columns:minmax(0,1fr) 48px 36px}
+  .ax-heat .hl{font-size:8.4px}
+}

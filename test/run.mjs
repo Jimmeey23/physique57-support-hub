@@ -57,9 +57,10 @@ fs.writeFileSync(entry, [
   `import { RecordModal, LookupControl, LookupModal, AttendeeRoster } from '${SRC}/lookups.jsx';`,
   `import { ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing } from '${SRC}/modals.jsx';`,
   `import * as AI from '${SRC}/ai.js';`,
+  `import * as AX from '${SRC}/export.js';`,
   `import { buildOrg, viewerOptions, resolutionRights, managerOf, upline, directReports, personCard, ownershipLine, cleanName, roleOf } from '${SRC}/org.js';`,
   `import { resolutionDraft, resolutionGaps, resolutionChecks, REQUIRED_RES } from '${SRC}/resolution.jsx';`,
-  `globalThis.__X = { App, CORE, FORMS, UI, COND, MOM, LK, AI, ORG: { buildOrg, viewerOptions, resolutionRights, managerOf, upline, directReports, personCard, ownershipLine, cleanName, roleOf }, RESF: { resolutionDraft, resolutionGaps, resolutionChecks, REQUIRED_RES }, MODALS: { RecordModal, LookupControl, LookupModal, ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing, AttendeeRoster } };`,
+  `globalThis.__X = { App, CORE, FORMS, UI, COND, MOM, LK, AI, AX, ORG: { buildOrg, viewerOptions, resolutionRights, managerOf, upline, directReports, personCard, ownershipLine, cleanName, roleOf }, RESF: { resolutionDraft, resolutionGaps, resolutionChecks, REQUIRED_RES }, MODALS: { RecordModal, LookupControl, LookupModal, ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemplateModal, CommandPalette, ClassDesk, TrainerDesk, autofillMissing, AttendeeRoster } };`,
 ].join('\n'));
 await build({ entryPoints: [entry], bundle: true, format: 'esm', platform: 'node', outfile: path.join(TMP, 'bundle.mjs'),
   jsx: 'automatic', plugins: [nodeMap], external: ['react', 'react-dom', 'react/jsx-runtime'], logLevel: 'error',
@@ -82,7 +83,7 @@ document.execCommand = () => true;
 globalThis.URL.createObjectURL = () => 'blob:x'; globalThis.URL.revokeObjectURL = () => {};
 
 await import(path.join(TMP, 'bundle.mjs'));
-const { App, CORE: C, FORMS: F, UI, COND: K, MOM, LK, MODALS, AI, ORG, RESF } = globalThis.__X;
+const { App, CORE: C, FORMS: F, UI, COND: K, MOM, LK, MODALS, AI, AX, ORG, RESF } = globalThis.__X;
 const textsSpaced = () => '';
 C.hydrateData();
 const D = DATA;
@@ -711,6 +712,79 @@ t('every name is stripped of its role and its joint-holder tail',
     'None → ok · credit blank → blocked · credit 900 → ok');
 }
 
+
+/* ───────────────── the analytics maths, and the files it writes ───────────────── */
+{
+  const axList = C.seed(DATA, 26);
+  const X_rows = AX.ticketRows(axList);
+  const row0 = X_rows[0];
+  t('ticketRows flattens one ticket to one row of plain values',
+    X_rows.length === axList.length && Object.keys(row0).length >= 30
+    && typeof row0.fr_hit === 'boolean' && row0.owner === row0.owner.replace(/\(.*?\)/, '').trim()
+    && !Object.values(row0).some(v => /\[object|undefined/.test(String(v))), `${Object.keys(row0).length} columns · ${X_rows.length} rows`);
+  const want = ['a,b,c', '"' + 'x,y' + '"' + ',' + '"' + 'say ' + '"' + '"' + 'hi' + '"' + '"' + '"' + ',' + '"' + 'two\nlines' + '"'].join('\r\n');
+  t('toCsv quotes only what needs quoting and doubles the quotes it keeps',
+    AX.toCsv([{ a: 'x,y', b: 'say ' + '"' + 'hi' + '"', c: 'two\nlines' }]) === want, JSON.stringify(want).slice(0, 58) + '…');
+  t('toCsv takes an explicit column order and unwraps { value } cells',
+    AX.toCsv([{ b: { value: 2 }, a: 1, c: 'x' }], ['a', 'b']) === 'a,b' + '\r\n' + '1,2', AX.toCsv([{ b: { value: 2 }, a: 1 }], ['a', 'b']));
+  t('an empty slice still writes a header row, so a spreadsheet never chokes',
+    AX.toCsv([], ['number', 'studio']) === 'number,studio', JSON.stringify(AX.toCsv([], ['number', 'studio'])));
+  const cats = AX.categoryStats(axList);
+  t('category attainment counts every ticket exactly once, brightest row first',
+    cats.reduce((n, r) => n + r.raised, 0) === axList.length && cats.length >= 2
+    && cats.every((r, i) => !i || cats[i - 1].raised >= r.raised)
+    && cats.every(r => r.raised >= r.open && r.frHitPct >= 0 && r.frHitPct <= 100 && r.subs >= 1),
+    `${cats.length} categories · ${axList.length} counted · top ${cats[0].category} ${cats[0].raised}`);
+  const own = AX.ownerStats(axList, ORG.buildOrg(DATA.categories, axList));
+  t('owner load names the person and the person above them, not the raw chain string',
+    own.length >= 1 && own.every(o => o.owner && !/\(/.test(o.owner)) && own.some(o => o.manager)
+    && own.every(o => o.open + o.closed > 0), `${own.length} owners · ${own.filter(o => o.manager).length} with a manager above`);
+  const q = AX.closureQuality(axList.map(t2 => ({ ...t2, resolution: { cause: 'A reason long enough to count as a reason',
+    action: 'We did the thing, then checked the other nine as well', closureNote: 'Back in service from Thursday, whole row checked.',
+    goodwill: 'None', prevention: 'Nothing to change', proof: 'Nothing attached', verifiedBy: 'Saachi' } })));
+  t('close-out quality reports the same eight points the rail asks for',
+    q.rows.length === 8 && q.of === 26 && q.rows.every(r => r.label.length > 3 && r.pct >= 0 && r.pct <= 100)
+    && q.full <= q.of && q.rows.find(r => r.id === 'prevent').pct === 0,
+    `${q.full}/${q.of} pass all eight · prevention filled on ${q.rows.find(r => r.id === 'prevent').pct}%`);
+  t('the filter the panel writes is the filter the maths reads',
+    (() => { const cut = AX.applyFilter(axList, { ...AX.emptyFilter(), prio: 'high' });
+      return cut.length <= axList.length && cut.every(t2 => t2.priority === 'high')
+        && AX.applyFilter(axList, AX.emptyFilter()).length === axList.length; })(),
+    `${axList.length} → ${AX.applyFilter(axList, { ...AX.emptyFilter(), prio: 'high' }).length} at High`);
+  t('a window narrows by date and a word filter reaches the write-up too',
+    (() => { const d = new Date(axList[0].createdAt).toISOString().slice(0, 10);
+      const one = AX.applyFilter([{ ...axList[0], writeup: 'zebra-stripes only here' }], { q: 'zebra-stripes' });
+      return AX.applyFilter(axList, { ...AX.emptyFilter(), from: d, to: d }).length >= 1
+        && one.length === 1 && AX.applyFilter(axList, { ...AX.emptyFilter(), q: 'zebra-stripes' }).length === 0; })(),
+    'same-day window · a search that sees generated prose');
+  t('activeFilters counts only what the desk actually moved',
+    AX.activeFilters(AX.emptyFilter()).length === 0 && AX.activeFilters({ ...AX.emptyFilter(), prio: 'high', status: 'live' }).includes('prio')
+    && !AX.activeFilters({ ...AX.emptyFilter(), status: 'all' }).includes('status'),
+    JSON.stringify(AX.activeFilters({ ...AX.emptyFilter(), prio: 'high' })));
+  const chronic = AX.chronicStats(axList.map((t2, i) => ({ ...t2, recurrenceCount: i < 4 ? 2 + (i % 3) : 1 })));
+  const onceOnly = AX.chronicStats(axList.slice(0, 3).map(t2 => ({ ...t2, recurrenceCount: 1 })));
+  t('the chronic list ignores anything reported once and ranks what is left by repetition',
+    chronic.length >= 1 && chronic.every(r => r.reports >= 2 && Number.isFinite(r.studiosAt) && r.studiosAt >= 1)
+    && chronic.every((r, i) => !i || chronic[i - 1].reports >= r.reports) && chronic.every(r => /›/.test(r.key))
+    && onceOnly.length === 0, `${chronic.length} repeats · worst ×${chronic[0].reports} over ${chronic[0].studiosAt} studio(s) · all-singles → ${onceOnly.length}`);
+  const grid = AX.clockGrid(axList);
+  t('the filing grid is 7 × 24 and adds up to the slice',
+    grid.grid.length === 7 && grid.grid.every(r => r.hours.length === 24)
+    && grid.grid.reduce((n, r) => n + r.total, 0) === axList.length && grid.max >= 1
+    && grid.peakHour >= 0 && grid.peakHour <= 23, `peak ${grid.peakDay} ${String(grid.peakHour).padStart(2, '0')}:00 · max ${grid.max}`);
+  const wk = AX.weekTrend(axList);
+  t('the weekly trend is oldest first with a label a chart can print',
+    wk.length >= 1 && wk.every((r, i) => !i || wk[i - 1].week <= r.week) && wk.every(r => /^\d{2} \w{3,4}$/.test(r.label))
+    && wk.reduce((n, r) => n + r.raised, 0) === axList.length, `${wk.length} week(s) · ${wk[0].label}`);
+  const gw = AX.goodwillStats(axList.map(t2 => ({ ...t2, resolution: { goodwill: 'Class credit granted', amountINR: '900' } })));
+  t('goodwill totals, averages and splits by cause without losing a rupee',
+    gw.total === 900 * 26 && gw.count === 26 && gw.avg === 900 && gw.byCause.reduce((n, r) => n + r.inr, 0) === gw.total,
+    `₹${gw.total.toLocaleString('en-IN')} over ${gw.count} tickets`);
+  const rep = AX.weeklyReport({ list: axList, cats, owners: own, quality: q, chronic, money: gw, trend: wk, grid });
+  t('the weekly note never writes “undefined studios” or a placeholder it could not fill',
+    rep.split('\n').length >= 6 && /Physique 57/.test(rep) && /₹/.test(rep) && !/undefined|NaN|\[object/.test(rep) && /across \d+ studio/.test(rep)
+    && /\d/.test(rep) && !/<[a-z]/.test(rep), `${rep.split('\n').length} lines · ${rep.length} chars`);
+}
 const tot = `\x1b[1m${pass} passed, ${fail} failed\x1b[0m`;
 console.log(`\n${fail ? '\x1b[41m\x1b[37m FAIL \x1b[0m' : '\x1b[42m\x1b[30m OK \x1b[0m'}  ${tot}\n`);
 
