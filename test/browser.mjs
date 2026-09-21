@@ -123,7 +123,7 @@ fs.writeFileSync(entry, [
   `globalThis.__MOUNT__ = (el) => { const r = createRoot(el); r.render(React.createElement(App)); globalThis.__ROOT__ = r; return r; };`,
 ].join('\n'));
 await build({ entryPoints: [entry], bundle: true, format: 'iife', platform: 'browser', target: 'es2020',
-  outfile: path.join(TMP, 'browser-bundle.js'), jsx: 'automatic', loader: { '.js': 'jsx', '.jsx': 'jsx' },
+  outfile: path.join(TMP, 'browser-bundle.js'), jsx: 'automatic', loader: { '.js': 'jsx', '.jsx': 'jsx', '.png': 'dataurl' },
   define: { 'process.env.NODE_ENV': '"development"' }, logLevel: 'error',
   plugins: [{ name: 'stub', setup(b) {
     b.onResolve({ filter: /\.css$/ }, () => ({ path: 'css', namespace: 'stub' }));
@@ -292,7 +292,17 @@ const flatCss = cssText.replace(/\s+/g, ' ');
    printed raw SVG path text. Both are only provable in a real DOM with a real cascade. */
 await click([...q('.tabs button')].find(b => /Raise a ticket|New ticket/.test(txt(b))));
 t('the triage grid is on screen', q('.cat').length >= 10, q('.cat').length + ' category cards');
+const hueOk = els => els.every(el => /^-?[\d.]+$/.test(el.style.getPropertyValue('--h'))
+  && /^\d+(\.\d+)?%$/.test(el.style.getPropertyValue('--hs')) && /^\d+(\.\d+)?%$/.test(el.style.getPropertyValue('--hl')));
+t('every card hands its theme to the stylesheet as custom properties',
+  q('.cat').length >= 10 && hueOk(q('.cat')),
+  `${q('.cat').length} category cards · first one hsl(${q('.cat')[0]?.style.getPropertyValue('--h')} ${q('.cat')[0]?.style.getPropertyValue('--hs')} ${q('.cat')[0]?.style.getPropertyValue('--hl')})`);
 await click([...q('.cat')].find(c => /Pricing and Memberships/.test(txt(c))));
+const subHues = [...q('.subc')].map(el => el.style.getPropertyValue('--h'));
+t('the sub-category cards each carry their own hue, saturation and lightness',
+  q('.subc').length > 4 && new Set(subHues).size === q('.subc').length && hueOk(q('.subc'))
+  && q('.subc').every(el => !!el.querySelector('.subc-em svg path')),
+  `${q('.subc').length} siblings · ${new Set(subHues).size} distinct hues · ${q('.subc').filter(el => el.querySelector('.subc-em svg path')).length} emblem glyphs`);
 await click([...q('.subc')].find(c => /Class Pack Expiry/.test(txt(c))));
 t('the intake renders as grouped sections under one progress band',
   q('.fsec').length >= 4 && q('.fprogress').length === 1 && q('.fbody').length === q('.fsec').length,
@@ -337,6 +347,25 @@ t('the tooltip is CSS, so it costs no JS and no re-render',
   && /\[data-tip\]:hover::after/.test(cssText.replace(/\s+/g, '')), 'content:attr(data-tip) + :hover reveal');
 t('no tooltip node is left as text on the page', !/\{\{|\bdata-tip\b/.test(document.body.textContent || ''),
   'the attribute never leaks into the copy');
+
+/* the studio’s own mark: blue on light, gold on dark, swapped by the theme attribute */
+const markImg = q('.mark .glyph img')[0];
+t('the header wears the studio logo, not a letter placeholder',
+  !!markImg && /^data:image\/png;base64,/.test(markImg.getAttribute('src') || '')
+  && markImg.getAttribute('alt') === 'Physique 57' && !/P57/.test(txt(q('.mark .glyph')[0])),
+  markImg ? `“${markImg.getAttribute('alt')}” · ${(markImg.getAttribute('src') || '').length} bytes inlined` : 'no logo in the mark');
+const srcLight = markImg?.getAttribute('src') || '';
+const themeBtn = () => [...doc.querySelectorAll('.icobtn')].find(b => /(Dark|Light) theme/.test(b.getAttribute('title') || ''));
+await click(themeBtn()); await new Promise(r => setTimeout(r, 160));
+const srcDark = q('.mark .glyph img')[0]?.getAttribute('src') || '';
+t('and the mark follows the theme, because a blue logo on a black sheet is invisible',
+  doc.documentElement.getAttribute('data-theme') === 'dark' && srcDark !== srcLight && srcDark.length > 2000,
+  `data-theme=${doc.documentElement.getAttribute('data-theme')} · ${srcDark.length} bytes of gold on dark`);
+await click(themeBtn()); await new Promise(r => setTimeout(r, 160));
+t('back to the blue mark on the light sheet, the way the studio drew it',
+  (q('.mark .glyph img')[0]?.getAttribute('src') || '') === srcLight
+  && doc.documentElement.getAttribute('data-theme') === 'light',
+  `data-theme=${doc.documentElement.getAttribute('data-theme')}`);
 /* the one choice control — clicked and typed like a desk, walked like a keyboard user */
 const tick = async () => { await new Promise(r => setTimeout(r, 90)); };
 const pk0 = q('.pk')[0];
@@ -348,7 +377,7 @@ t('every choice opens one popover, announced as a listbox',
   && !!pk0.querySelector('.pk-pop') && !pk0.querySelector('.pk-pop').hidden
   && pk0opts().length >= 3 && pk0.querySelector('.pk-list').getAttribute('role') === 'listbox',
   pk0btn ? `${pk0opts().length} options · ${pk0.querySelector('.pk-list').getAttribute('aria-label')}` : 'no picker on this form');
-t('the answer is a real form value: a mirrored <select> keeps the field’s id',
+t('the answer is a real form value: a mirrored <select> keeps the field’s own id',
   !!pk0.querySelector('select.pk-mirror')
   && pk0.querySelector('select.pk-mirror').id === pk0btn.getAttribute('id').replace(/-pk$/, ''),
   pk0.querySelector('select.pk-mirror') ? `#${pk0.querySelector('select.pk-mirror').id} mirrors ${pk0.querySelector('select.pk-mirror').options.length - 1} options` : 'no mirror');

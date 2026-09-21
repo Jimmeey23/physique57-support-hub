@@ -131,6 +131,33 @@ async function run({ catRx, subRx, studio, note, title, label, desk, esc, priori
   t('a category click opens exactly its sub-categories', subCards.length === cat.subs.length, `${cardName(catCard)} → ${subCards.length}/${cat.subs.length}`);
   const card = subCards.find(n => subRx.test(cardName(n)));
   t('the sub-category card previews history and form size', !!card && /fields/.test(texts(card)), `${cardName(card || {})} — ${texts(card || {}).replace(/\s+/g, ' ').slice(0, 44)}`);
+  /* the grid paints each ticket type in its own colour family, with its own emblem */
+  {
+    const raw = n => (n && n.props?.style) || {};
+    const hues = subCards.map(c => +raw(c)['--h']);
+    const accents = subCards.map(c => +raw(c)['--h2']);
+    const glyphOf = c => { const t = byClass(c, 'subc-em')[0];
+      const html = nodes(t || {}).map(n => n.props?.dangerouslySetInnerHTML?.__html || '').filter(Boolean)[0] || '';
+      return /^<svg /.test(html) && /<path d="M/.test(html) ? html : ''; };
+    t('every sub-category card is themed with its own hue, accent hue and saturation',
+      subCards.length > 4 && hues.every(h => Number.isFinite(h)) && new Set(hues).size === subCards.length,
+      `${subCards.length} cards · ${new Set(hues).size} distinct hues`);
+    t('the theme arrives as the custom properties the stylesheet reads',
+      subCards.every(c => raw(c)['--h'] !== undefined && raw(c)['--h2'] !== undefined
+        && /%$/.test(String(raw(c)['--hs'])) && /%$/.test(String(raw(c)['--hl']))),
+      '--h · --h2 · --hs · --hl on every card');
+    t('each card carries an emblem drawn as an inline svg, plus the first responder it goes to',
+      subCards.every(c => byClass(c, 'subc-em').length === 1 && glyphOf(c) && byClass(c, 'subc-dept').length === 1),
+      `${subCards.filter(c => glyphOf(c)).length}/${subCards.length} cards show a glyph · ${new Set(subCards.map(c => glyphOf(c).length)).size} glyph shapes`);
+    const drift = hues.map((h, i) => Math.abs(accents[i] - h)).filter(d => d > 0);
+    t('a card’s accent hue drifts from its base hue, so the rail is not a flat bar',
+      drift.length === subCards.length && drift.every(d => d >= 14 && d <= 80),
+      `offsets ${drift.slice(0, 4).map(d => `${d.toFixed(0)}°`).join(' · ')}…`);
+    const combos = subCards.map(c => `${raw(c)['--h']}/${raw(c)['--hs']}/${raw(c)['--hl']}`);
+    t('hue, saturation and lightness together make every ticket type its own skin',
+      new Set(combos).size === subCards.length, `${new Set(combos).size} distinct skins across ${subCards.length} cards`);
+  }
+
   const subName = cardName(card) || cat.subs.find(s => subRx.test(s.name))?.name;
   const subKey = `${cat.name}|||${subName}`;
   await click(card);

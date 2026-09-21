@@ -60,6 +60,7 @@ export async function loadApp(extra = '') {
                   + 'export const hydrateRoot = () => ({ render() {}, unmount() {} });', loader: 'js' }));
         b.onLoad({ filter: /.*/, namespace: 'datajson' }, () => ({ contents: 'export default globalThis.__DATA__', loader: 'js' }));
         b.onLoad({ filter: /\.json$/ }, a => ({ contents: fs.readFileSync(a.path, 'utf8'), loader: 'json' }));
+      b.onLoad({ filter: /\.png$/ }, a => ({ contents: 'export default "data:image/png;base64,' + fs.readFileSync(a.path).toString('base64') + '"', loader: 'js' }));
         b.onLoad({ filter: /\.jsx?$/ }, a => ({ contents: fs.readFileSync(a.path, 'utf8'), loader: 'jsx', resolveDir: SRC }));
         b.onLoad({ filter: /\.json$/ }, a => ({ contents: fs.readFileSync(a.path, 'utf8'), loader: 'json' }));
       },

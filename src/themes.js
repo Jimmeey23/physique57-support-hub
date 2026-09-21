@@ -56,7 +56,6 @@ export const GLYPHS = {
   dumbbell: 'M4 9v6M7 7.4v9.2M17 7.4v9.2M20 9v6M7 12h10',
   bike: 'M6.2 17.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8ZM17.8 17.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8ZM9.6 10.8 12.6 5h3.4M12.6 5l5.2 5.8-8-.2',
   chain: 'M12 18.6a6.6 6.6 0 1 0 0-13.2 6.6 6.6 0 0 0 0 13.2ZM12 14.4a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8ZM12 5.4V2.4M12 21.6v-3M18.6 12h3M2.4 12h3',
-  wrench: 'M15.4 4.2a4.6 4.6 0 0 0-5.8 5.7L3.9 15.6 8.4 20.1l5.7-5.7a4.6 4.6 0 0 0 5.7-5.8l-2.9 2.9-2.7-.7-.7-2.7Z',
   locker: 'M5.4 3.6h13.2v16.8H5.4ZM12 3.6v16.8M9 11.4h1.4M14.4 11.4h1.4',
   shield: 'M12 3 5.4 5.4v5.4c0 4.4 2.8 7.6 6.6 9.6 3.8-2 6.6-5.2 6.6-9.6V5.4ZM9.2 12l2 2 3.6-3.8',
   alert: 'M12 4.2 2.6 20h18.8ZM12 9.6v4.6M12 16.8h.01',
@@ -130,23 +129,38 @@ const FALLBACK_GLYPH = {
 
 /** The whole theme for one ticket type: family hue, deterministic rotation inside the family,
     the emblem, and the colour triplets every surface then reads from. */
-export function themeFor(cat, sub) {
+export function themeFor(cat, sub, idx) {
   const fam = FAMILIES[cat] || FALLBACK_FAMILY;
   const k = hash(`${cat}|||${sub || ''}`);
-  const rot = ((k % 3) - 1) * 6;                       // ±6°: siblings differ, families stay put
+  /* Siblings inside one family are spread by their position, on a stride that never repeats twice
+     in a row, so twenty cards in a category read as twenty distinct tickets — while the family
+     itself stays recognisable, because the swing is capped at ±24°. With no index to go on the
+     name’s own hash supplies a small ±6° tilt instead. */
+  const rot = Number.isFinite(idx)
+    ? ((Math.round(idx) * 13) % 49) - 24
+    : ((k % 3) - 1) * 6;
   const h = wrap(fam.h + rot);
-  const h2 = wrap(h + 22 + (k % 5) * 7);                // partner hue for the gradient/emblem
-  const sat = Math.max(34, Math.min(80, fam.s + ((k >> 2) % 11) - 5));
+  const h2 = wrap(h + (Number.isFinite(idx) ? 18 + (Math.round(idx) % 6) * 9 : 22 + (k % 5) * 7));
+  const sat = Math.max(34, Math.min(82, fam.s + (Number.isFinite(idx) ? ((Math.round(idx) * 7) % 5) * 6 - 12 : ((k >> 2) % 11) - 5)));
+  /* Lightness steps by position too: two siblings a degree apart in hue still read apart. */
+  const light = 42 + (Number.isFinite(idx) ? (Math.round(idx) % 4) * 5 : (k % 3) * 5);
   const emblem = emblemFor(cat, sub);
-  return { cat, sub, h, h2, s: sat, emblem, family: cat in FAMILIES ? cat : 'Miscellaneous',
+  return { cat, sub, h, h2, s: sat, l: light, emblem, family: cat in FAMILIES ? cat : 'Miscellaneous',
     accent: `hsl(${h} ${sat}% 46%)`, on: '#fff',
     glow: `hsl(${h} ${sat}% 52% / .35)`, key: `${cat}|||${sub || ''}` };
 }
 
 /** Inline custom properties for a themed container; the stylesheet does the rest so light and
     dark skins stay in charge of lightness and surface mixing. */
-export const themeVars = t => ({ '--h': t.h, '--h2': t.h2, '--hs': t.s + '%', '--h-em': 1 });
+export const themeVars = t => ({ '--h': t.h, '--h2': t.h2, '--hs': t.s + '%', '--hl': (t.l ?? 46) + '%', '--h-em': 1 });
+
+/* A glyph is a 24×24 stroke path; the card draws it as an inline SVG so the emblem inherits
+   the card’s colour, needs no request, and never prints path data as copy. */
+export const glyphSvg = (name, size = 20, width = 1.8) =>
+  `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${width}"`
+  + ` stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${GLYPHS[name] || GLYPHS.spark}"/></svg>`;
 
 export const cache = (() => { const m = new Map();
-  return (cat, sub) => { const k = `${cat}|||${sub || ''}`; let v = m.get(k);
-    if (!v) { v = themeFor(cat, sub); m.set(k, v); } return v; }; })();
+  return (cat, sub, idx) => { const i = Number.isFinite(idx) ? Math.round(idx) : -1;
+    const k = `${cat}|||${sub || ''}|||${i}`; let v = m.get(k);
+    if (!v) { v = themeFor(cat, sub, i < 0 ? undefined : i); m.set(k, v); } return v; }; })();

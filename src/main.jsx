@@ -19,6 +19,9 @@ import { ReviewModal, ResolutionModal, LinkTicketModal, SettingsModal, CycleTemp
 import { ATT_ACTION, ATT_STATUS, ATT_TAGS, CLASS_ASPECT } from './vocab.js';
 import { trainerDirectory, populateSession, populateMember, sessionStats } from './momence.js';
 import CONSTANTS from './constants.json';
+import { cache as themeCache, themeVars, glyphSvg } from './themes.js';
+import brandLight from './assets/brand-light-128.png';
+import brandDark from './assets/brand-dark-128.png';
 import './styles.css';
 
 /* ------------------------------- utilities ------------------------------- */
@@ -512,15 +515,25 @@ function App() {
           <div className="right"><Search value={search} onChange={setSearch} placeholder={`Filter ${current.subs.length} sub-categories…`} /></div>
         </div>
         <div className="subs">
-          {subs.map((s, i) => <div className={cx('subc', searching && 'skel')} style={{ animationDelay: `${Math.min(i, 10) * 18}ms` }} key={s.name} onClick={() => openSub(current, s)}>
-            <b>{s.name}</b>
-            <div className="meta">
-              <Pill p={s.priority} />
-              <span className="chip mono">{s.slaLabel.split('·')[1]?.trim() || s.slaLabel}</span>
-              {s.hist > 0 && <span className="chip" title={`${s.hist} tickets like this in your historic log`}><I s={svg.flame}/> {s.hist}</span>}
-              <span className="chip"><I s={svg.wand}/> {(DATA.subFields[`${current.name}|||${s.name}`] || []).length + DATA.universal.length} fields</span>
-            </div>
-          </div>)}
+          {subs.map((s, i) => {
+            const th = themeCache(current.name, s.name, i);
+            const nf = (DATA.subFields[`${current.name}|||${s.name}`] || []).length + DATA.universal.length;
+            return <div className={cx('subc', searching && 'skel')} style={{ ...themeVars(th), animationDelay: `${Math.min(i, 10) * 18}ms` }} key={s.name} onClick={() => openSub(current, s)}>
+              <span className="subc-em" aria-hidden="true"><I s={glyphSvg(th.emblem, 20, 1.85)} /></span>
+              <div className="subc-body">
+                <b>{s.name}</b>
+                <span className="subc-dept">{s.department} · {short(s.ownerMumbai)} first, {short(s.l1)} if it waits</span>
+                <div className="meta">
+                  <Pill p={s.priority} />
+                  <span className="chip mono" title={`First response ${s.hours.first} h · resolution ${s.hours.res} h`}>
+                    <I s={svg.clock}/> {s.hours.first} h → {s.hours.res} h</span>
+                  {s.hist > 0 && <span className="chip" title={`${s.hist} tickets like this in your historic log`}><I s={svg.flame}/> {s.hist}</span>}
+                  <span className="chip"><I s={svg.wand}/> {nf} fields</span>
+                </div>
+              </div>
+              <span className="subc-go" aria-hidden="true"><I s={svg.chev} /></span>
+            </div>;
+          })}
           {!subs.length && <div className="empty"><h3>No sub-category matches</h3><p>Clear the filter to see all {current.subs.length}.</p></div>}
         </div>
       </div>;
@@ -538,10 +551,9 @@ function App() {
         {cats.map((c, i) => {
           const hist = c.subs.reduce((n, s) => n + s.hist, 0);
           const open = tickets.filter(t => t.category === c.name && !['resolved', 'closed'].includes(t.status)).length;
-          const acc = ({ 'Operations & Facilities': 'var(--med)', 'Training & Method': 'var(--brand)', 'IT & Systems': 'var(--accent)',
-            'Accounts & Finance': 'var(--ok)', 'Marketing & PR': 'var(--high)', 'Sales & Client Servicing': 'var(--brand2)',
-            'Safety, Security & Compliance': 'var(--crit)' })[c.department] || 'var(--brand)';
-          return <article className={cx('cat', searching && 'skel')} style={{ '--acc': acc, animationDelay: `${Math.min(i, 8) * 22}ms` }} key={c.name} onClick={() => setCat(c.name)}>
+          const th = themeCache(c.name, '');
+          return <article className={cx('cat', searching && 'skel')} style={{ ...themeVars(th), animationDelay: `${Math.min(i, 8) * 22}ms` }} key={c.name} onClick={() => setCat(c.name)}>
+            <span className="cat-em" aria-hidden="true"><I s={glyphSvg(th.emblem, 17, 1.8)} /></span>
             <div className="ctop">
               <span className="num">{String(i + 1).padStart(2, '0')}</span>
               <div style={{ flex: 1 }}><h3>{c.name}</h3><div className="sub">{c.department}</div></div>
@@ -822,10 +834,12 @@ function App() {
       <div className="tklist">
         {live.map(t => {
           const isOpen = openId === t.id;
-          return <article className={cx('tk', isOpen && 'open')} style={{ '--pc': PC[t.priority] }} key={t.id}>
+          const th = themeCache(t.category, t.subCategory);
+          return <article className={cx('tk', isOpen && 'open')} style={{ '--pc': PC[t.priority], ...themeVars(th) }} key={t.id}>
             <div className="tkrow" onClick={() => setOpenId(isOpen ? null : t.id)}>
               <div className="c-num">{t.number}<small>{fmtAt(t.createdAt)}</small></div>
               <div className="c-title">
+                <span className="tk-em" aria-hidden="true" data-tip={`${t.subCategory} files under its own colour, so the queue reads by kind`}><I s={glyphSvg(th.emblem, 15, 1.9)} /></span>
                 <b>{t.title}</b>
                 {(stories[t.id] || t.narrative || t.label) && (stories[t.id] || t.narrative || t.label) !== t.title
                   && <p className="tklabel" data-tip="Auto-labelled from the answers on this ticket — click to open the full record"
@@ -1017,7 +1031,8 @@ function App() {
   return <div className="app">
     <div className="topbar">
       <div className="mark">
-        <div className="glyph"><span>P57</span></div>
+        <div className="glyph"><img src={theme === 'dark' ? brandDark : brandLight}
+          alt="Physique 57" width="34" height="34" /></div>
         <div className="who"><b>Physique 57 India</b><em>Support &amp; Ticket Hub</em></div>
       </div>
       <nav className="tabs">{TABS.map(t => (

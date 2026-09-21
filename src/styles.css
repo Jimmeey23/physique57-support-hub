@@ -1684,3 +1684,87 @@ html[data-theme=dark] .pk-btn:hover:not(:disabled){background:var(--card)}
 html[data-density=compact] .pk-btn{min-height:33px;padding:6px 9px;font-size:12.8px}
 html[data-density=compact] .pk-opt{padding:5px 7px}
 html[data-density=compact] .pk-txt{font-size:12.2px}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PHASE 8 · the taxonomy wears its own colour
+   Each of the 296 sub-categories carries a hue family from src/themes.js as --h/--h2/--hs
+   on its card, so the grid, the queue and the ticket sheet all read the same kind of problem
+   the same way — and the brand mark is the studio’s own logo, blue on light, gold on dark.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.mark .glyph{background:none;border:1px solid var(--line2);box-shadow:none;padding:0;overflow:hidden;
+  border-radius:11px;width:38px;height:38px}
+.mark .glyph img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+  transition:transform .5s var(--spring)}
+.mark:hover .glyph img{transform:scale(1.06)}
+html[data-theme=dark] .mark .glyph{border-color:hsl(42 62% 62% / .34)}
+
+.cat{padding-top:18px}
+.cat h3{font-family:var(--serif);letter-spacing:-.018em;font-size:20px}
+.cat-em{position:absolute;top:13px;right:13px;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
+  color:hsl(var(--h,206) var(--hs,58%) 42%);border:1px solid hsl(var(--h,206) var(--hs,58%) 50% / .28);
+  background:radial-gradient(120% 120% at 20% 0%,hsl(var(--h,206) var(--hs,58%) 55% / .2),hsl(var(--h2,214) var(--hs,58%) 50% / .06));
+  transition:transform .3s var(--spring),border-color .2s,box-shadow .24s}
+.cat:hover .cat-em{transform:translateY(-2px) rotate(-4deg);border-color:hsl(var(--h,206) var(--hs,58%) 48% / .52);
+  box-shadow:0 12px 24px -16px hsl(var(--h,206) var(--hs,58%) 40% / .8)}
+.cat:before{height:3px;background:linear-gradient(90deg,hsl(var(--h,206) var(--hs,58%) 48%),hsl(var(--h2,214) var(--hs,58%) 52%) 46%,transparent 92%)}
+.cat:hover{border-color:hsl(var(--h,206) var(--hs,58%) 48% / .42);
+  box-shadow:0 22px 46px -28px hsl(var(--h,206) var(--hs,58%) 36% / .6)}
+.cat .chip{border-color:hsl(var(--h,206) var(--hs,58%) 50% / .22)}
+
+.subc{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:start;padding:14px 15px 13px;
+  border-radius:15px;overflow:hidden;position:relative;
+  background:linear-gradient(180deg,hsl(var(--h,206) var(--hs,58%) 50% / .05),transparent 54%),var(--card)}
+.subc:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,hsl(var(--h,206) var(--hs,58%) var(--hl,46%)),hsl(var(--h2,214) var(--hs,58%) calc(var(--hl,46%) - 8%)));
+  opacity:.85;transition:width .2s var(--spring)}
+.subc:hover:before{width:5px}
+.subc:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .26s;
+  background:radial-gradient(340px 130px at 6% -22%,hsl(var(--h,206) var(--hs,58%) 56% / .2),transparent 68%)}
+.subc:hover,.subc:focus-visible{border-color:hsl(var(--h,206) var(--hs,58%) 48% / .5);transform:translateY(-3px);
+  box-shadow:0 18px 38px -24px hsl(var(--h,206) var(--hs,58%) 32% / .62)}
+.subc:hover:after{opacity:1}
+.subc.on{border-color:hsl(var(--h,206) var(--hs,58%) 46% / .62);
+  background:linear-gradient(180deg,hsl(var(--h,206) var(--hs,58%) 50% / .11),transparent 70%),var(--card)}
+.subc-em,.subc-body,.subc-go{position:relative;z-index:1}
+.subc-em{width:35px;height:35px;border-radius:12px;display:grid;place-items:center;
+  color:hsl(var(--h,206) var(--hs,58%) calc(var(--hl,46%) - 6%));border:1px solid hsl(var(--h,206) var(--hs,58%) var(--hl,46%) / .34);
+  background:hsl(var(--h,206) var(--hs,58%) calc(var(--hl,46%) + 9%) / .14);
+  box-shadow:inset 0 1px 0 hsl(var(--h,206) var(--hs,58%) 92% / .5)}
+.subc:hover .subc-em{border-color:hsl(var(--h,206) var(--hs,58%) 48% / .55)}
+.subc-body b{font-size:15px;letter-spacing:-.016em}
+.subc-dept{display:block;font-size:11.5px;line-height:1.45;color:var(--mut);margin-top:4px}
+.subc .meta{margin-top:8px;gap:6px}
+.subc-go{align-self:center;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;color:var(--mut);
+  border:1px solid transparent;transition:.22s var(--spring)}
+.subc-go svg{transform:rotate(-90deg)}
+.subc:hover .subc-go{color:hsl(var(--h,206) var(--hs,58%) 42%);border-color:hsl(var(--h,206) var(--hs,58%) 50% / .34);
+  background:hsl(var(--h,206) var(--hs,58%) 55% / .1);transform:translateX(2px)}
+
+.tk:before{background:linear-gradient(180deg,var(--pc,var(--low)) 0 40%,hsl(var(--h,206) var(--hs,58%) 50%) 60% 100%)}
+.tk:hover{border-color:hsl(var(--h,206) var(--hs,58%) 46% / .4)}
+.tk.open{border-color:hsl(var(--h,206) var(--hs,58%) 44% / .52)}
+.tk-em{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:7px;margin-right:7px;vertical-align:-6px;
+  color:hsl(var(--h,206) var(--hs,58%) 42%);background:hsl(var(--h,206) var(--hs,58%) 55% / .14);
+  border:1px solid hsl(var(--h,206) var(--hs,58%) 50% / .24)}
+.c-title:hover .tk-em{border-color:hsl(var(--h,206) var(--hs,58%) 48% / .46)}
+
+html[data-theme=dark] .cat-em,html[data-theme=dark] .subc-em{color:hsl(var(--h,206) var(--hs,58%) calc(var(--hl,46%) + 24%))}
+html[data-theme=dark] .subc-em{background:hsl(var(--h,206) var(--hs,48%) 40% / .22);
+  box-shadow:inset 0 1px 0 hsl(var(--h,206) var(--hs,70%) 70% / .16)}
+html[data-theme=dark] .tk-em{color:hsl(var(--h,206) var(--hs,58%) 70%);background:hsl(var(--h,206) var(--hs,52%) 46% / .2)}
+html[data-theme=dark] .subc:after{background:radial-gradient(340px 130px at 6% -22%,hsl(var(--h,206) var(--hs,64%) 52% / .16),transparent 68%)}
+
+html[data-density=compact] .subc{padding:10px 11px;gap:9px;border-radius:12px}
+html[data-density=compact] .subc-em{width:29px;height:29px;border-radius:10px}
+html[data-density=compact] .subc-dept{margin-top:2px;font-size:11px}
+html[data-density=compact] .subc .meta{margin-top:6px}
+html[data-density=compact] .cat-em{width:29px;height:29px;top:11px;right:11px}
+
+@media (max-width:640px){
+  .subc{grid-template-columns:auto minmax(0,1fr);padding:13px}
+  .subc-go{display:none}
+  .cat-em{position:static;width:30px;height:30px;margin-bottom:2px}
+}
+html[data-motion=calm] .subc,html[data-motion=calm] .cat,html[data-motion=calm] .subc-em,html[data-motion=calm] .cat-em,
+html[data-motion=calm] .subc-go,html[data-motion=calm] .mark .glyph img{transition:none}
+html[data-motion=calm] .subc:hover,html[data-motion=calm] .cat:hover{transform:none}

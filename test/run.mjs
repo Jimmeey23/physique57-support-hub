@@ -41,6 +41,7 @@ const nodeMap = {
       'export const createRoot = () => ({ render() {}, unmount() {} });\nexport const hydrateRoot = () => ({ render() {}, unmount() {} });', loader: 'js' }));
     b.onLoad({ filter: /.*/, namespace: 'datajson' }, () => ({ contents: 'export default globalThis.__DATA__', loader: 'js' }));
     b.onLoad({ filter: /\.jsx?$/ }, a => ({ contents: fs.readFileSync(a.path, 'utf8'), loader: 'jsx', resolveDir: SRC }));
+    b.onLoad({ filter: /\.png$/ }, a => ({ contents: 'export default "data:image/png;base64,' + fs.readFileSync(a.path).toString('base64') + '"', loader: 'js' }));
     b.onLoad({ filter: /\.json$/ }, a => ({ contents: fs.readFileSync(a.path, 'utf8'), loader: 'json' }));
   },
 };
@@ -228,7 +229,11 @@ t('brand chrome renders', /Physique 57 India/.test(html) && /Support &amp; Ticke
 t('triage grid shows all 14 category cards', (html.match(/class="cat"/g) || []).length === 14, `${(html.match(/class="cat"/g) || []).length} cards`);
 t('owner avatars + SLA chips render per card', (html.match(/class="av g/g) || []).length >= 56, `${(html.match(/class="av g/g) || []).length} avatars`);
 const triagePrio = (html.match(/class="cat[^"]*"[^>]*>/g) || []).length;
-t('every category card carries its own priority signal', /class="cat/.test(html) && /\b(critical|high)\b/.test(html), `${triagePrio} card class hits`);
+const cardStyles = (html.match(/class="cat"[^>]*style="([^"]*)"/g) || []);
+const hues = cardStyles.map(x => +((x.match(/--h:(-?[\d.]+)/) || [0, -1])[1]));
+t('every category card carries its own priority signal', /class="cat-em"/.test(html)
+  && hues.length === 14 && new Set(hues).size === 14 && Math.max(...hues) - Math.min(...hues) > 200,
+  `${triagePrio} cards · ${new Set(hues).size} distinct hues spanning ${Math.min(...hues)}°–${Math.max(...hues)}°`);
 t('category cards render the owner strip + avatars', /class="owners"/.test(html) && /class="avatars"/.test(html) && /class="who"/.test(html));
 const subs = name => D.categories.find(c => c.name === name).subs.length;
 t('cards state their real sub-category counts', new RegExp(`>\s*${subs('Scheduling')}\s*<`).test(html)
