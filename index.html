@@ -6,18 +6,29 @@
   <meta name="color-scheme" content="light dark" />
   <title>Physique 57 India · Support &amp; Ticket Hub</title>
   <meta name="description" content="Internal support desk and ticket creation hub for Physique 57 India — category triage, tailored intake forms, live SLA clocks and a centralised resolution queue." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234b8bff'/%3E%3Cstop offset='1' stop-color='%230a3ed1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext x='32' y='42' font-family='-apple-system,Segoe UI,Inter,sans-serif' font-size='26' font-weight='700' fill='%23fff' text-anchor='middle'%3EP57%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234d7dff'/%3E%3Cstop offset='1' stop-color='%231a4fff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext x='32' y='42' font-family='Outfit,-apple-system,Segoe UI,sans-serif' font-size='24' font-weight='700' fill='%23fff' text-anchor='middle'%3EP57%3C/text%3E%3C/svg%3E" />
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#08090b" media="(prefers-color-scheme: dark)" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>html{background:#fff}html[data-theme=dark]{background:#08090b}
     body{margin:0}#root{min-height:100vh}
     /* first paint should already look like the app: the saved skin is put on <html> before React
        runs, so a dark-mode desk never flashes white, and a lit spinner covers the bundle. */
-    #boot{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none}
-    #boot i{width:34px;height:34px;border-radius:50%;border:2px solid #dfe6f3;border-top-color:#1f5bff;
-      animation:bootspin .8s linear infinite}
-    html[data-theme=dark] #boot i{border-color:#1e232d;border-top-color:#38d2ff}
-    @keyframes bootspin{to{transform:rotate(1turn)}}</style>
+    #boot{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;
+      background:radial-gradient(ellipse 70% 48% at 50% -8%,rgba(26,79,255,.14),transparent 62%)}
+    html[data-theme=dark] #boot{background:radial-gradient(ellipse 70% 48% at 50% -8%,rgba(58,212,255,.16),transparent 62%)}
+    #boot i{width:46px;height:46px;border-radius:16px;position:relative;
+      background:linear-gradient(145deg,#4d7dff,#1a4fff);
+      box-shadow:0 16px 40px -16px rgba(26,79,255,.7);
+      animation:bootpulse 1.5s ease-in-out infinite}
+    #boot i:after{content:'';position:absolute;inset:11px;border-radius:8px;border:2px solid #fff;border-top-color:transparent;
+      animation:bootspin .75s linear infinite}
+    html[data-theme=dark] #boot i{background:linear-gradient(145deg,#3ad4ff,#5b94ff);box-shadow:0 0 42px -10px rgba(58,212,255,.75)}
+    html[data-theme=dark] #boot i:after{border-color:#03141c;border-top-color:transparent}
+    @keyframes bootspin{to{transform:rotate(1turn)}}
+    @keyframes bootpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}</style>
   <script>try{const p=JSON.parse(localStorage.getItem('p57.hub.v1.prefs')||'null')||{};const d=document.documentElement;
     d.dataset.theme=p.theme==='auto'||!p.theme
       ?(matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):p.theme;
