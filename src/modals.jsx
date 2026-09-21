@@ -287,7 +287,7 @@ export function SettingsModal({ onClose, prefs, setPrefs, onTestMomence, momence
   const [tab, setTab] = useState('appearance');
   const set = (k, v) => setPrefs(p => ({ ...p, [k]: v }));
   return (
-    <Modal size="drawer" onClose={onClose} title="Workspace settings" icon={<span dangerouslySetInnerHTML={{ __html: svg.sliders }} />}
+    <Modal size="drawer" onClose={onClose} title="Workspace settings" icon={<I s={svg.sliders} />}
       description="How the hub looks, how it clocks, and what it is allowed to talk to."
       footer={<div className="modal-foot"><span className="mut xs">Saved in this browser only.</span>
         <button className="btn pri" onClick={onClose}>Done</button></div>}>

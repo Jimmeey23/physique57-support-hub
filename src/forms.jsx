@@ -233,7 +233,7 @@ export default function FormEngine({ fields, data, setData, errors, requiredOnly
           <Ring done={done} total={req.length} size={22} />
           <h4>{s}</h4>
           <span className="fh-meta mono">{done}/{req.length || fs.length} · {fs.length} field{fs.length > 1 ? 's' : ''}</span>
-          <span className="chev" dangerouslySetInnerHTML={{ __html: svg.chev }} />
+          <span className="chev"><I s={svg.chev} /></span>
         </div>
         {open && <div className="fbody">
           {fs.map(f => <Field key={f.id} f={f} value={data[f.id]} error={errors[f.id]} auto={autoFill[f.id]}

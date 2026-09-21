@@ -1501,7 +1501,7 @@ function App() {
       </div>
       <nav className="tabs">{TABS.map(t => (
         <button key={t.id} aria-current={view === t.id} onClick={() => setView(t.id)}>
-          <span dangerouslySetInnerHTML={{ __html: t.icon }} />{t.label}
+          <I s={t.icon} />{t.label}
           {t.badge != null && <span className={cx('dot', t.alert && 'alert')}>{t.badge}</span>}
         </button>))}</nav>
       <div className="spacer" />
@@ -1510,19 +1510,19 @@ function App() {
         <button className="cmdk" onClick={() => setPalette(true)} title="Jump to anything (⌘K)"><kbd>⌘K</kbd> search everything</button>
         <button className={cx('icobtn railbtn', shownL && 'on')} aria-pressed={shownL} onClick={() => railSet('left')}
           title="Workbench rail — dock the desk, the counters and the filters as a column ( [ )">
-          <span dangerouslySetInnerHTML={{ __html: svg.layers }} /></button>
+          <I s={svg.layers} /></button>
         <button className={cx('icobtn railbtn', shownR && 'on')} aria-pressed={shownR} onClick={() => railSet('right')}
           title="Resolution rail — dock the close-out record as a column instead of a drawer ( [ )">
-          <span dangerouslySetInnerHTML={{ __html: svg.clip }} /></button>
+          <I s={svg.clip} /></button>
         {!shownL && <button className="deskchip" onClick={() => setDeskOpen(true)}
           title="Who is at the desk, what is next off the queue, and who it escalates to">
           <Avatar name={viewer?.name || 'guest'} size={22} /><b>{cleanName(viewer?.name) || 'sign in'}</b>
           <em className="xxs">the desk</em></button>}
-        <IconBtn title="Guided powerCycle report" onClick={() => setCycleModal(true)}><span dangerouslySetInnerHTML={{ __html: svg.whistle }} /></IconBtn>
-        <IconBtn title="Integrations & settings" className={cx(settings && 'on')} onClick={() => setSettings(true)}><span dangerouslySetInnerHTML={{ __html: svg.sliders }} /></IconBtn>
+        <IconBtn title="Guided powerCycle report" onClick={() => setCycleModal(true)}><I s={svg.whistle} /></IconBtn>
+        <IconBtn title="Integrations & settings" className={cx(settings && 'on')} onClick={() => setSettings(true)}><I s={svg.sliders} /></IconBtn>
         <IconBtn title="Shortcuts (?)" onClick={() => setShowHelp(true)}>?</IconBtn>
         <IconBtn title={theme === 'dark' ? 'Light theme' : 'Dark theme'} onClick={() => setTheme(x => x === 'dark' ? 'light' : 'dark')}>
-          <span dangerouslySetInnerHTML={{ __html: theme === 'dark' ? svg.sun : svg.moon }} /></IconBtn>
+          <I s={theme === 'dark' ? svg.sun : svg.moon} /></IconBtn>
       </div>
     </div>
     <div className={cx('shell', (shownL || shownR) && 'docked')}>
@@ -1557,13 +1557,13 @@ function App() {
       </div>
     </Modal>}
     <Toasts items={toasts} kill={id => setToasts(t => t.filter(x => x.id !== id))} />
-    {done && <Modal title="Ticket routed" icon={<span dangerouslySetInnerHTML={{ __html: svg.check }} />}
+    {done && <Modal title="Ticket routed" icon={<I s={svg.check} />}
       onClose={() => setDone(null)} footer={<>
         <button className="btn" onClick={() => { copy(handover(done, LABELS)); toast('Copied', 'The full handover note is on your clipboard.', 'ok'); }}><I s={svg.copy}/> Copy handover</button>
         <button className="btn lg" onClick={() => { setDone(null); setView('triage'); setCat(null); }}>Raise another</button>
         <button className="btn pri" onClick={() => { setOpenId(done.id); setDone(null); setView('queue'); }}>Open in queue</button></>}>
       <div className="success">
-        <div className="seal"><span style={{ transform: 'scale(1.7)' }} dangerouslySetInnerHTML={{ __html: svg.check }} /></div>
+        <div className="seal"><span style={{ transform: 'scale(1.7)', display: 'inline-flex' }}><I s={svg.check} /></span></div>
         <h3>{short(done.assignee)} owns this</h3>
         <div className="tno">{done.number} · {done.category} › {done.subCategory}</div>
         <div className="nextdue">
@@ -1674,7 +1674,7 @@ function App() {
           + (sub ? ' — they are on your form now' : '. Pick a sub-category to file.'), 'ok');
       }} />}
     {palette && <CommandPalette items={paletteItems()} onClose={() => setPalette(false)} onRun={r => r.run && r.run()} />}
-    {showHelp && <Modal title="Keyboard" icon={<span dangerouslySetInnerHTML={{ __html: svg.wand }} />} onClose={() => setShowHelp(false)}>
+    {showHelp && <Modal title="Keyboard" icon={<I s={svg.wand} />} onClose={() => setShowHelp(false)}>
       <div className="kbdhelp">{[['Focus search', '/'], ['Raise a new ticket', 'n'], ['Live queue', 'q'], ['Insights', 'i'], ['Dock or clear the rails', '['], ['Toggle theme', 't'], ['Close / back', 'Esc'], ['This panel', '?']]
         .map(([a, b]) => <div key={a}><span className="mut">{a}</span><span><span className="kbd">{b}</span></span></div>)}</div>
     </Modal>}
