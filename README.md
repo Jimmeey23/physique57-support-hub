@@ -1,5 +1,9 @@
 # Physique 57 — Support & Ticket Hub
 
+[![Tests](https://github.com/Jimmeey23/physique57-support-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/Jimmeey23/physique57-support-hub/actions/workflows/ci.yml)
+[![Deploy site](https://github.com/Jimmeey23/physique57-support-hub/actions/workflows/deploy.yml/badge.svg)](https://github.com/Jimmeey23/physique57-support-hub/actions/workflows/deploy.yml)
+[![Live demo](https://img.shields.io/badge/live%20demo-physique57--support--hub-1f5bff?logo=githubpages)](https://jimmeey23.github.io/physique57-support-hub/)
+
 > **Independent demo, not affiliated with Physique 57 or Momence.** The brand names are used only to
 > describe what the product vocabulary was compiled against; they are their owners' trademarks. Every
 > person in this repo is synthetic — the members, coaches, studios, bookings and tickets are generated
@@ -34,9 +38,12 @@ git push -u origin main
 ```
 
 `.github/workflows/ci.yml` runs the full 486-assertion suite on every push and pull request;
-`.github/workflows/deploy.yml` runs it again, builds `dist/` and publishes it to GitHub Pages — enable
-it once under **Settings → Pages → Source: GitHub Actions**. `base: './'` in `vite.config.js` is what lets
-the same build sit under the `/physique57-support-hub/` subpath a project site is served from.
+`.github/workflows/deploy.yml` runs it again, builds `dist/` and publishes it to GitHub Pages, so a
+merge to `main` is the deploy — the site lives at
+<https://jimmeey23.github.io/physique57-support-hub/> and Pages is configured with
+**Source: GitHub Actions** (`build_type: workflow`), which is the only setting the workflow needs.
+`base: './'` in `vite.config.js` is what lets the same build sit under the `/physique57-support-hub/`
+subpath a project site is served from: the deployed shell asks for `./assets/index-*.js`, not `/assets/…`.
 
 `npm run data` rebuilds `src/data.json` from the two CSV deliverables, which are vendored in `data/`
 (1.1 MB of intake-field rows and the taxonomy) rather than left in a scratch folder; `docs/` keeps the
