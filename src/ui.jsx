@@ -77,15 +77,17 @@ export const IconBtn = ({ title, onClick, children, className }) => (
 );
 
 /* ------------------------------ modal ------------------------------ */
-export function Modal({ title, icon, onClose, children, footer, wide, size, description, tag }) {
+export function Modal({ title, icon, onClose, children, footer, wide, size, description, tag, tone }) {
   React.useEffect(() => {
     const h = e => { if (e.key === 'Escape') onClose?.(); };
     window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h);
   }, [onClose]);
   /* Esc must not reach the global handler behind us and bounce the desk out of intake. */
-  return <div className="scrim" onMouseDown={e => { if (e.target === e.currentTarget) { e.stopPropagation(); onClose?.(); } }}
+  /* Two shapes, honestly named: a panel that docks on the right for the things a desk configures, and
+     the centred sheet for everything it decides on. The scrim has to know which one it carries. */
+  return <div className={cx('scrim', size === 'drawer' && 'scrim-drawer')} onMouseDown={e => { if (e.target === e.currentTarget) { e.stopPropagation(); onClose?.(); } }}
     onKeyDown={e => e.key === 'Escape' && (e.stopPropagation(), onClose?.())}>
-    <div className={cx('modal', size || (wide ? 'wide' : ''), 'enter')} style={size === 'xl' ? { width: 'min(1120px,100%)' } : undefined}
+    <div className={cx('modal', size || (wide ? 'wide' : ''), 'enter', tone === 'danger' && 'tone-danger', tone === 'quiet' && 'tone-quiet')} style={size === 'xl' ? { width: 'min(1120px,100%)' } : undefined}
       role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined}>
       <header>{icon}<div className="mh"><h3>{title}</h3>{description && <p>{description}</p>}</div>
         {tag && <span className="chip">{tag}</span>}

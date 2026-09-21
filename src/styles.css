@@ -2285,3 +2285,70 @@ html[data-motion=calm] .ax-meter i,html[data-motion=calm] .ax-sp .bars i,html[da
   .fr-dot{justify-self:start}
 }
 html[data-motion=calm] .skeleton-line{animation:none}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   The last layer of polish, picked up from the reference app's design system: a
+   hairline canvas under the desk, metric figures on tabular numerals, two more
+   button types, a modal that arrives from the right instead of the middle, and a
+   ticket sheet that wears its own ticket type.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* 1 · the canvas. A grid, faded out from the top, that never takes part in layout or hit-testing. */
+.canvas-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55;
+  background-image:linear-gradient(var(--hair) 1px,transparent 1px),linear-gradient(90deg,var(--hair) 1px,transparent 1px);
+  background-size:58px 58px;background-position:center top;
+  -webkit-mask-image:radial-gradient(ellipse 78% 52% at 62% -4%,#000 0%,transparent 76%);
+  mask-image:radial-gradient(ellipse 78% 52% at 62% -4%,#000 0%,transparent 76%)}
+html[data-theme=dark] .canvas-grid{opacity:.42}
+html[data-appearance=plain] .canvas-grid{display:none}
+.app{position:relative;z-index:1}
+
+/* 2 · type. Headings break even, numbers stop shuffling, the display face carries the tracking. */
+h1,h2,h3,h4,h5{text-wrap:balance}
+.phead h1,.phead h2,.modal header h3{letter-spacing:-.032em}
+.stat b,.numgrid b,.ts-kpi b,.tr-score b,.ax-tbl td.n,.clockbox b,.mxr b{font-feature-settings:"tnum","cv01";letter-spacing:-.02em}
+.mono{font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums}
+
+/* 3 · two more button types, and a press that answers the finger. */
+.btn.soft{background:color-mix(in oklab,var(--brand) 9%,var(--card));border-color:color-mix(in oklab,var(--brand) 22%,var(--line));color:var(--brand)}
+.btn.soft:hover{background:color-mix(in oklab,var(--brand) 15%,var(--card));border-color:color-mix(in oklab,var(--brand) 40%,var(--line))}
+.btn.danger{border-color:color-mix(in oklab,var(--crit) 30%,var(--line));color:var(--crit);background:color-mix(in oklab,var(--crit) 7%,var(--card))}
+.btn.danger:hover{border-color:color-mix(in oklab,var(--crit) 55%,var(--line));background:color-mix(in oklab,var(--crit) 13%,var(--card))}
+.btn.text{border-color:transparent;background:transparent;color:var(--mut);padding-inline:8px}
+.btn.text:hover{background:transparent;border-color:transparent;color:var(--brand);gap:11px}
+.btn.lg{padding:12px 20px;font-size:14px;border-radius:12px;gap:9px}
+.btn.pri{box-shadow:inset 0 1px 0 color-mix(in oklab,#fff 26%,transparent),0 10px 26px -14px color-mix(in oklab,var(--brand) 85%,transparent)}
+.btn:active:not(:disabled){transform:translateY(1px) scale(.985)}
+
+/* 4 · modal types. The panel a desk configures belongs on the right, docked, full height. */
+.scrim.scrim-drawer{place-items:stretch end;padding:0}
+.modal.drawer{position:relative;margin:0 auto 0 0;height:100vh;max-height:100vh;width:min(580px,100vw);
+  border-radius:26px 0 0 26px;border-right:0;box-shadow:var(--shadow-lg);animation:drawerin .34s var(--spring)}
+.modal.drawer header{padding:20px 22px 14px;background:linear-gradient(180deg,color-mix(in oklab,var(--brand) 6%,transparent),transparent)}
+.modal.drawer .mbody{padding:18px 22px}
+.modal.tone-danger{border-color:color-mix(in oklab,var(--crit) 38%,var(--line))}
+.modal.tone-danger header{background:linear-gradient(180deg,color-mix(in oklab,var(--crit) 10%,transparent),transparent)}
+.modal.tone-quiet{box-shadow:var(--shadow)}
+.modal.tone-quiet header{border-bottom:0}
+@keyframes drawerin{from{transform:translateX(26px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes sheetin{from{transform:translateY(22px);opacity:.4}to{transform:none;opacity:1}}
+
+/* 5 · the ticket sheet wears its type: a watermark of the emblem the sub-category is known by,
+      and the family hue on the hero, so two tickets never look like the same kind of problem. */
+.tsheet{position:relative}
+.ts-wm{position:absolute;top:-38px;right:-26px;color:hsl(var(--h) var(--hs) var(--hl));opacity:.10;pointer-events:none;
+  transform:rotate(-8deg);filter:blur(.2px);display:inline-flex}
+.ts-hero{background:linear-gradient(140deg,hsl(var(--h) var(--hs) 46% / .11),transparent 58%)}
+.ts-cat{color:hsl(var(--h) var(--hs) var(--hl));font-weight:600}
+.ts-grp>h5 .ts-n{color:hsl(var(--h) var(--hs) var(--hl));border-color:currentColor}
+.subc{position:relative;isolation:isolate}
+.subc-wm{position:absolute;right:-14px;bottom:-20px;color:hsl(var(--h) var(--hs) var(--hl));opacity:.09;pointer-events:none;
+  transform:rotate(9deg);display:inline-flex;transition:opacity .3s var(--out),transform .5s var(--spring)}
+.subc:hover .subc-wm{opacity:.16;transform:rotate(4deg) scale(1.05)}
+@media (max-width:760px){
+  .scrim.scrim-drawer{place-items:end center;padding:0}
+  .modal.drawer{width:100vw;height:auto;max-height:88vh;border-radius:26px 26px 0 0;border:1px solid var(--line);border-bottom:0;
+    animation:sheetin .3s var(--spring)}
+  .ts-wm{top:auto;right:-8px;bottom:-30px}
+}
+html[data-motion=calm] .modal.drawer,html[data-motion=calm] .subc:hover .subc-wm{animation:none;transition:none}

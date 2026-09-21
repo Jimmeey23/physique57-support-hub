@@ -6,6 +6,7 @@ import React, { useMemo, useState } from 'react';
 import DATA from './data.json';
 import svg, { I } from './icons.jsx';
 import { cx, Modal, Pill, StatusPill, Avatar, Countdown, fmtAt, fmtDur, Search } from './ui.jsx';
+import { themeVars, glyphSvg } from './themes.js';
 import { sectionOf } from './forms.jsx';
 import { RecordModal, LookupControl, AttendeeRoster, decodeLookup } from './lookups.jsx';
 import { studios, systems, memberships, trainers, equipmentTypes, equipmentCategories,
@@ -286,7 +287,7 @@ export function SettingsModal({ onClose, prefs, setPrefs, onTestMomence, momence
   const [tab, setTab] = useState('appearance');
   const set = (k, v) => setPrefs(p => ({ ...p, [k]: v }));
   return (
-    <Modal size="wide" onClose={onClose} title="Workspace settings" icon={<span dangerouslySetInnerHTML={{ __html: svg.sliders }} />}
+    <Modal size="drawer" onClose={onClose} title="Workspace settings" icon={<span dangerouslySetInnerHTML={{ __html: svg.sliders }} />}
       description="How the hub looks, how it clocks, and what it is allowed to talk to."
       footer={<div className="modal-foot"><span className="mut xs">Saved in this browser only.</span>
         <button className="btn pri" onClick={onClose}>Done</button></div>}>
@@ -713,7 +714,7 @@ export function CommandPalette({ items, onClose, onRun }) {
     answer grouped the way the form asked it, the roll if a class was involved, and the actions —
     all on one sheet so nobody re-opens three tabs to answer a member on the phone. */
 export function TicketSheet({ t, story, now, fields = [], all = [], onClose, onRespond, onEscalate,
-  onStatus, onResolve, onOpenRecord, onHandover, onExport, extra }) {
+  onStatus, onResolve, onOpenRecord, onHandover, onExport, extra, theme }) {
   const data = t.data || {};
   const visibleIds = new Set(fields.map(f => f.id));
   const groups = new Map();
@@ -755,7 +756,9 @@ export function TicketSheet({ t, story, now, fields = [], all = [], onClose, onR
         <button className="btn sm ghost" onClick={onHandover}><I s={svg.copy} /> Handover note</button>
         <button className="btn sm ghost" onClick={onExport}><I s={svg.down} /> JSON</button>
       </div>}>
-      <div className="tsheet">
+      <div className="tsheet" style={theme ? themeVars(theme) : undefined}>
+        {/* the type’s own mark, big and behind everything, so the sheet reads as *that* kind of problem */}
+        {theme && <span className="ts-wm" aria-hidden="true"><I s={glyphSvg(theme.emblem, 158, 1.1)} /></span>}
         <div className="ts-hero">
           <div className="ts-chips">
             <StatusPill s={t.status} /><Pill p={t.priority} /><span className="chip mono">{t.slaLabel}</span>

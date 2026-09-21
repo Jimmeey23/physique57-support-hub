@@ -61,7 +61,9 @@ const NEED = ['fsec', 'fbody', 'fprogress', 'fp-txt', 'fp-bar', 'ring', 'fh-meta
   'mxa', 'mxa-h', 'mxa-ic', 'mxa-chev', 'mxa-b', 'mxa-f', 'mxf', 'mxr', 'mxs',
   'tr-report', 'tr-top', 'tr-id', 'tr-score', 'tr-digest', 'tr-sect', 'tr-head', 'tr-idx', 'tr-tt', 'tr-act',
   'tr-body', 'tr-bar', 'tr-needs', 'tr-traj', 'tr-rub', 'tr-two', 'tr-notes', 'tr-ans', 'tr-hist', 'tr-sent',
-  'tr-acts-row', 'tp', 'tn', 'nb', 'lb', 'bt', 'tband', 'forms-grid', 'form-row', 'fr-l', 'fr-dot'];
+  'tr-acts-row', 'tp', 'tn', 'nb', 'lb', 'bt', 'tband', 'forms-grid', 'form-row', 'fr-l', 'fr-dot',
+  /* the design-system layer: canvas, type, button types, modal types, the ticket type worn by the sheet */
+  'canvas-grid', 'ts-wm', 'subc-wm', 'scrim-drawer', 'drawer', 'tone-danger', 'tone-quiet', 'soft', 'danger', 'text', 'lg'];
 const missing = NEED.filter(c => !new RegExp('\\.' + c + '(?![\\w-])').test(cssText));
 t('every class the markup relies on has a rule', !missing.length, missing.length ? 'no CSS for: ' + missing.join(', ') : `${NEED.length} classes covered`);
 /* Selector hygiene, both directions. Quotes and url() payloads are stripped from the CSS first so a
@@ -799,6 +801,82 @@ if (subRow && !subRow.querySelector('.mxa-h').disabled) {
   t('the drafted-receipt path is exercised by the render of the same component', true, 'see run.mjs');
   t('and the copy contract with it', true, 'see run.mjs');
 }
+
+/* ───────────────────────────── 5d. the design layer: canvas, types, buttons, the sheet's own skin ── */
+const canvas = q.one('.canvas-grid');
+t('the desk sits on a hairline canvas that cannot be clicked through',
+  !!canvas && canvas.getAttribute('aria-hidden') === 'true'
+  && decls('.canvas-grid').position === 'fixed' && decls('.canvas-grid')['pointer-events'] === 'none'
+  && decls('.app').position === 'relative' && decls('.app')['z-index'] === '1',
+  'grid behind, app above');
+t('plain appearance switches the canvas off, and calm motion stops the drift',
+  /html\[data-appearance=plain\] \.canvas-grid\{display:none\}/.test(cssText.replace(/\s*\n\s*/g, '')), 'opt-out wired');
+
+await click([...q('.icobtn')].find(b => (b.getAttribute('title') || '').includes('Integrations')));
+for (let n = 0; n < 15 && !q.one('.modal'); n++) await new Promise(r => setTimeout(r, 100));
+/* declarations from the base rule only — a media block restates .modal.drawer for phones, and this
+   assertion is about what the drawer is on a desk-sized window */
+const rootDecls = sel => { const out = {}; parsed.walkRules(sel, r => { if (r.selector !== sel) return;
+  let p2 = r.parent; while (p2) { if (p2.type === 'atrule') return; p2 = p2.parent; }
+  r.walkDecls(d => { out[d.prop] = d.value; }); }); return out; };
+const drw = rootDecls('.modal.drawer');
+t('settings is the second modal type — docked on the right, full height, square on that edge',
+  !!q.one('.scrim.scrim-drawer') && !!q.one('.modal.drawer')
+  && rootDecls('.scrim.scrim-drawer')['place-items'] === 'stretch end'
+  && /^26px 0 0 26px$/.test(drw['border-radius']) && drw.height === '100vh' && drw['border-right'] === '0' && drw.width === 'min(580px,100vw)',
+  `radius ${drw['border-radius']} · ${drw.height} · ${drw.width}`);
+t('and the drawer keeps the sheet’s own entry language — a spring, from the side',
+  /drawerin/.test(drw.animation || '') && /spring/.test(drw.animation || ''),
+  drw.animation);
+await click([...q('.modal.drawer .mfoot .btn, .modal.drawer .modal-foot .btn')].find(b => /Done/.test(txt(b))) || q.one('.modal.drawer .icobtn'));
+
+/* the destructive door: the board can only be wiped through a modal that says what is lost */
+await click('.legal .btn.text');
+for (let n = 0; n < 12 && !q.one('.modal.tone-danger'); n++) await new Promise(r => setTimeout(r, 100));
+const wipe = q.one('.modal.tone-danger');
+t('“Reset demo” opens a danger-toned confirm instead of firing on one click',
+  !!wipe && /Reset the demo board\?/.test(txt(wipe)) && !!q.one('.modal.tone-danger .btn.danger')
+  && q.one('.modal.tone-danger .numgrid').children.length === 4,
+  q('.modal.tone-danger .numgrid .num span').map(txt).join(' · '));
+const beforeWipe = window.localStorage.getItem('p57.hub.v1.tickets');
+t('the cancel door is the obvious one, and it changes nothing',
+  /Keep the board/.test(txt(q.one('.modal.tone-danger .btn.ghost') || wipe)) === true, 'Keep the board');
+await click([...q('.modal.tone-danger .btn')].find(b => /Keep the board/.test(txt(b))));
+await new Promise(r => setTimeout(r, 160));
+t('and closing it leaves the board exactly as it was',
+  !q.one('.modal.tone-danger') && window.localStorage.getItem('p57.hub.v1.tickets') === beforeWipe, 'nothing wiped');
+t('a soft button is a tinted action and a text button is a whisper — declared, not guessed',
+  /color-mix\(in oklab,var\(--brand\) 9%/.test(decls('.btn.soft').background)
+  && decls('.btn.text')['border-color'] === 'transparent' && decls('.btn.text').color === 'var(--mut)'
+  && decls('.btn.text:hover').gap === '11px' && decls('.btn.text:hover').color === 'var(--brand)',
+  `soft ${decls('.btn.soft').background.slice(0, 40)}… · text ${decls('.btn.text').color}`);
+t('and the large size is what the “after you file” call to action wears',
+  /12px 20px/.test(decls('.btn.lg').padding), decls('.btn.lg').padding);
+
+/* the ticket sheet wears its ticket type */
+await click([...q('.tabs button')].find(b => /Live queue/.test(txt(b))));
+for (let n = 0; n < 20 && !q.one('.tk .tklabel'); n++) await new Promise(r => setTimeout(r, 100));
+await click('.tk .tklabel');
+for (let n = 0; n < 12 && !q.one('.tsheet'); n++) await new Promise(r => setTimeout(r, 100));
+const tsRoot = q.one('.tsheet');
+t('the sheet inherits the ticket type’s own hue, the same value the card in the grid got',
+  !!tsRoot && /--h:\s*\d/.test(tsRoot.getAttribute('style') || '') && /--hl/.test(tsRoot.getAttribute('style') || ''),
+  (tsRoot?.getAttribute('style') || 'no inline theme').slice(0, 60));
+t('and the type’s emblem is drawn behind it, as a mark, never as path text',
+  !!q.one('.ts-hero') && !!q.one('.ts-wm svg path[d]') && !/M\d|d="M/.test(txt(q.one('.ts-hero'))),
+  q.one('.ts-wm svg path') ? 'watermark svg ' + (q.one('.ts-wm svg').getAttribute('width') || '?') + 'px' : 'no watermark');
+await click(q.one('.modal .icobtn'));
+await toGrid();
+await click('.cat');
+for (let n = 0; n < 15 && !q('.subc').length; n++) await new Promise(r => setTimeout(r, 100));
+const hues = q('.subc').map(el => (el.getAttribute('style') || '').match(/--h:\s*([\d.]+)/)?.[1]).filter(Boolean);
+t('every sub-category card on the form picker carries its own hue inside the family',
+  hues.length >= 3 && new Set(hues).size === hues.length && hues.every(h => +h >= 0 && +h < 360),
+  `${new Set(hues).size} distinct hues across ${hues.length} cards`);
+t('and each of them is watermarked with the mark its name chose',
+  q('.subc-wm').length === q('.subc').length && q('.subc-wm svg path').length === q('.subc').length
+  && new Set(q('.subc-wm svg path').map(p => (p.getAttribute('d') || '').slice(0, 12))).size > 1,
+  `${new Set(q('.subc-wm svg path').map(p => (p.getAttribute('d') || '').slice(0, 12))).size} different emblems on one screen`);
 
 /* ───────────────────────────── 6. a reload keeps it all ───────────────────────────── */
 window.eval('globalThis.__ROOT__.unmount()');

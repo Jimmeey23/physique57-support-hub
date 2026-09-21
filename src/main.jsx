@@ -131,6 +131,8 @@ function App() {
   const [resolving, setResolving] = useState(null);
   const [linkFromQueue, setLinkFromQueue] = useState(null);
   const [settings, setSettings] = useState(false);
+  /* the board is the desk’s work — wiping it deserves a door with a handle on it */
+  const [wipe, setWipe] = useState(false);
   const [cycleModal, setCycleModal] = useState(false);
   const [record, setRecord] = useState(null);
   const [momenceStatus, setMomenceStatus] = useState('demo');
@@ -607,6 +609,7 @@ function App() {
             const nf = (DATA.subFields[`${current.name}|||${s.name}`] || []).length + DATA.universal.length;
             return <div className={cx('subc', searching && 'skel')} style={{ ...themeVars(th), animationDelay: `${Math.min(i, 10) * 18}ms` }} key={s.name} onClick={() => openSub(current, s)}>
               <span className="subc-em" aria-hidden="true"><I s={glyphSvg(th.emblem, 20, 1.85)} /></span>
+              <span className="subc-wm" aria-hidden="true"><I s={glyphSvg(th.emblem, 96, 1.1)} /></span>
               <div className="subc-body">
                 <b>{s.name}</b>
                 <span className="subc-dept">{s.department} · {short(s.ownerMumbai)} first, {short(s.l1)} if it waits</span>
@@ -824,7 +827,7 @@ function App() {
         <div className="right">
           <span className={cx('chip mono', classDeskId && 'ok')}><I s={svg.calendar}/> {classDeskId ? `session #${classDeskId}` : 'no class chosen'}</span>
           <span className={cx('chip mono', flaggedAttendees && 'warn')}>{flaggedAttendees} attendee note{flaggedAttendees === 1 ? '' : 's'}</span>
-          <button className="btn ghost" onClick={() => { setCaptured({}); setClassEntries({}); }}>Start over</button>
+          <button className="btn text" onClick={() => { setCaptured({}); setClassEntries({}); }}>Start over</button>
         </div>
       </div>
       <ClassDesk
@@ -1434,6 +1437,8 @@ function App() {
 
   /* ============================ chrome ============================ */
   return <div className="app">
+    {/* the desk sits on a hairline canvas, not on a flat fill */}
+    <div className="canvas-grid" aria-hidden="true" />
     <div className="topbar">
       <div className="mark">
         <div className="glyph"><img src={theme === 'dark' ? brandDark : brandLight}
@@ -1470,14 +1475,28 @@ function App() {
         <b> {listMomence('members', { pageSize: 1 }).total}</b> members · <b>{listMomence('sessions', { pageSize: 1 }).total}</b> classes ·
         <b>{CONSTANTS.counts.memberships}</b> packages</span>
       <span>Everything stays in this browser (localStorage) — nothing is posted anywhere.</span>
-      <button className="btn sm ghost" onClick={() => { localStorage.removeItem('p57.hub.v1.tickets'); localStorage.removeItem('p57.hub.v1.archived');
-        const t = seed(DATA, 16); setTickets(t); setArchived(t.filter(x => x.status === 'resolved')); toast('Demo data reloaded', 'Board reset to 16 seeded tickets.', 'ok'); }}><I s={svg.wand}/> Reset demo</button>
+      <button className="btn sm text" onClick={() => setWipe(true)}><I s={svg.wand}/> Reset demo</button>
     </footer>
+    {wipe && <Modal title="Reset the demo board?" tone="danger" onClose={() => setWipe(false)}
+      description="Everything on this device is demo data — but it is the data the board is currently counted on."
+      footer={<>
+        <button className="btn ghost" onClick={() => setWipe(false)}>Keep the board</button>
+        <button className="btn danger" onClick={() => { localStorage.removeItem('p57.hub.v1.tickets'); localStorage.removeItem('p57.hub.v1.archived');
+          const t = seed(DATA, 16); setTickets(t); setArchived(t.filter(x => x.status === 'resolved')); setWipe(false);
+          toast('Demo data reloaded', 'Board reset to 16 seeded tickets.', 'ok'); }}><I s={svg.wand} /> Reset to 16 demo tickets</button>
+      </>}>
+      <p className="hint">Tickets you filed, the resolution records written against them, saved views and the drafted Momence
+        actions all go. The taxonomy, the SLA model and the settings on this device stay as they are.</p>
+      <div className="numgrid" style={{ marginTop: 12 }}>
+        {[['on the board', tickets.length], ['in the archive', archived.length], ['after the reset', 16],
+          ['kept', 'settings + views']].map(([kk, v]) => <div className="num" key={kk}><b>{v}</b><span>{kk}</span></div>)}
+      </div>
+    </Modal>}
     <Toasts items={toasts} kill={id => setToasts(t => t.filter(x => x.id !== id))} />
     {done && <Modal title="Ticket routed" icon={<span dangerouslySetInnerHTML={{ __html: svg.check }} />}
       onClose={() => setDone(null)} footer={<>
         <button className="btn" onClick={() => { copy(handover(done, LABELS)); toast('Copied', 'The full handover note is on your clipboard.', 'ok'); }}><I s={svg.copy}/> Copy handover</button>
-        <button className="btn" onClick={() => { setDone(null); setView('triage'); setCat(null); }}>Raise another</button>
+        <button className="btn lg" onClick={() => { setDone(null); setView('triage'); setCat(null); }}>Raise another</button>
         <button className="btn pri" onClick={() => { setOpenId(done.id); setDone(null); setView('queue'); }}>Open in queue</button></>}>
       <div className="success">
         <div className="seal"><span style={{ transform: 'scale(1.7)' }} dangerouslySetInnerHTML={{ __html: svg.check }} /></div>
@@ -1519,6 +1538,7 @@ function App() {
       onHandover={async () => { await copy(handover(t, LABELS)); setSheet(null);
         toast('Copied', 'The handover summary for ' + t.number + ' is on your clipboard.', 'ok'); }}
       onExport={() => { download(`${t.number}.json`, JSON.stringify(t, null, 2)); setSheet(null); }}
+      theme={themeCache(t.category, t.subCategory)}
       extra={<MomenceActions t={t} now={now} onApply={r => applyAction(t.id, r)}
         onCopy={r => { copy(receiptText(r)); toast('Receipt copied', 'The payload, the endpoint and the reference — ready to paste into the ops thread.', 'ok'); }} />} />; })()}
     {linkFromQueue && (

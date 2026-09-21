@@ -49,7 +49,7 @@ export function TrainerReport({ rep, onOpen, onRaise, overrides, now }) {
         <span className="xxs" style={{ color: tone(rep.tone) }}>{rep.band}</span>
         <em className="xxs mut">{rep.scored.length} scored{rep.unscored ? ` · ${rep.unscored} without a score` : ''}</em>
       </div>
-      {onRaise && <button className="btn sm" onClick={() => onRaise(rep.trainer)}><I s={svg.plus} /> Log feedback about {rep.trainer.split(' ')[0]}</button>}
+      {onRaise && <button className="btn sm soft" onClick={() => onRaise(rep.trainer)}><I s={svg.plus} /> Log feedback about {rep.trainer.split(' ')[0]}</button>}
     </header>
 
     <pre className="tr-digest">{digest}</pre>
