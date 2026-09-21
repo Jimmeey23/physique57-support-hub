@@ -562,7 +562,7 @@ await click([...q('.filters .opt')].find(el => /critical/i.test(txt(el))));
 t('a priority chip on the rail drives the queue too',
   q('.filters .opt.on').length >= 1 && q('.tkrow').length <= beforeRows,
   `${q('.tkrow').length} rows left of ${beforeRows} at Critical · ${q('.filters .opt.on').map(txt).join(',')}`);
-await click([...q('.filters .opt')].find(el => /any priority/i.test(txt(el))));
+await click([...q('.filters .opt')].find(el => /^any\b/i.test(txt(el))));   /* the group label says PRIORITY; the chip only has to say "any" */
 
 const rail = q.one('.rrail');
 const railTag = txt(q.one('.rrail-head .mono'));
@@ -915,6 +915,24 @@ t('the ticket type’s hue runs the row: 4px of it on the edge, a wash behind th
   rootDecls('.tk:before').width === '4px' && /hsl\(var\(--h/.test(rootDecls('.tkrow').background || '')
   && /hsl\(var\(--h/.test(rootDecls('.tk-type').background || '') && /var\(--ink\)/.test(rootDecls('.tk-type').color || ''),
   `bar ${rootDecls('.tk:before').width} · chip colour keeps the ink mix for contrast`);
+t('the left rail is a stack of instruments: one joined priority control, scoped counts, no boxes in boxes',
+  /^1px solid var\(--line2\)$/.test(rootDecls('.prio-row').border || '')
+  && (rootDecls('.prio-row .opt').border || '') === '0' && /"border-top":"2px solid var\(--line\)"/.test(JSON.stringify(rootDecls('.counts .rc')))
+  && /24px/.test(rootDecls('.counts .rc b').font || ''),
+  `row border "${rootDecls('.prio-row').border}" · opt border "${rootDecls('.prio-row .opt').border}" · rc ${JSON.stringify(rootDecls('.counts .rc'))} · b ${rootDecls('.counts .rc b').font}`);
+const critChip = [...q('.filters .opt')].find(el => /^critical/i.test(txt(el)));
+const critN = Number((txt(critChip || '').match(/(\d+)\s*$/) || [0, -1])[1]);
+const liveBoard = JSON.parse(window.localStorage.getItem('p57.hub.v1.tickets') || '[]');
+t('and every lens on the rail counts what it would take in, from the same predicate the queue filters by',
+  !!critChip && critN >= 0 && (critN === 0 || liveBoard.filter(x => x.priority === 'critical').length >= critN)
+  && q('.filters .opt em').length >= 6 && q('.filters .studio-row .opt em').length === q('.filters .studio-row .opt').length,
+  critChip ? txt(critChip) + ' against ' + liveBoard.filter(x => x.priority === 'critical').length + ' critical on the board' : 'no chip'
+  + ` · ems ${q('.filters .opt em').length} · studio opts ${q('.filters .studio-row .opt').length} with ${q('.filters .studio-row .opt em').length} counts`);
+t('the micro-labels that grew kept their tracking under control, so a 300px rail still fits them on one line',
+  /\.sidecard h5,[^{]*\{[^}]*font-size:11px;letter-spacing:\.11em/.test(cssText.replace(/\n\s*/g, ''))
+  && !/h5\{[^}]*10\.5px/.test(cssText.replace(/\n\s*/g, '')) && /\.counts \.rc span\{font:600 10\.8px/.test(cssText),
+  'legends lifted to 11px, tracking cut to .11em, rail counters at 10.8px');
+
 const flags = q.one('.tk-flags');
 t('priority, escalation and the reply owed sit in the right gutter, out of the reading line',
   !!flags && /^(SEV|CRIT|HIGH|MED|LOW)$/.test(txt(flags.querySelector('.prio') || flags).trim().toUpperCase())

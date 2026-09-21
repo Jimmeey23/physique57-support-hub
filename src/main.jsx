@@ -184,23 +184,29 @@ function App() {
   const viewer = useMemo(() => people.find(p => p.name === viewerName) || people[0] || null, [people, viewerName]);
   const focus = useMemo(() => all.find(x => x.id === (sheet || openId)) || null, [all, sheet, openId]);
   const [mineOn, setMineOn] = usePersist('p57.hub.v1.mine', false);
+  /* One predicate for the whole board: the queue rows and the left rail's counters are the same
+     pass, so a number in the rail can never disagree with the rows it claims to be counting.
+     `skip` names a lens to ignore, which is how a chip shows how many it would take in. */
+  const matches = (t, skip = {}) => (
+    (skip.status || (statusFilter === 'live' ? !['resolved', 'closed'].includes(t.status)
+      : statusFilter === 'all' ? true : t.status === statusFilter))
+    && (skip.prio || !prioFilter || t.priority === prioFilter)
+    && (skip.dept || !deptFilter || t.department === deptFilter)
+    && (skip.owner || !ownerFilter || String(t.chain[Math.min(t.escalation, t.chain.length - 1)]?.who).includes(ownerFilter))
+    && (skip.studio || !studioFilter || t.studio === studioFilter)
+    && (skip.cls || !onlyClass || !!(t.class?.sessionId || t.kind === 'hosted-class'))
+    && (skip.mine || !mineOn || (short(t.assignee) === viewer?.name && !['resolved', 'closed'].includes(t.status)))
+    && (skip.q || !q || (t.title + ' ' + (t.label || '') + t.number + t.subCategory + t.category
+      + (t.data.member_name || '') + t.studio + t.summary + (t.class?.name || '')
+      + (t.class?.attendees || []).map(a => a.name + ' ' + (a.note || '')).join(' ')).toLowerCase().includes(q.toLowerCase())))
+;
   const live = useMemo(() => {
     const list = tickets.map(t => {
       const left = t.frDueAt - now, closed = false;
       const breach = !closed && left <= 0;
       return { ...t, _breach: breach, _left: left, _risk: !breach && left < Math.max(36e5, (t.frDueAt - t.createdAt) * .25) };
     });
-    const f = list.filter(t =>
-      (statusFilter === 'live' ? !['resolved', 'closed'].includes(t.status)
-        : statusFilter === 'all' ? true : t.status === statusFilter)
-      && (!prioFilter || t.priority === prioFilter)
-      && (!deptFilter || t.department === deptFilter)
-      && (!ownerFilter || String(t.chain[Math.min(t.escalation, t.chain.length - 1)]?.who).includes(ownerFilter))
-      && (!studioFilter || t.studio === studioFilter)
-      && (!onlyClass || !!(t.class?.sessionId || t.kind === 'hosted-class'))
-      && (!mineOn || (short(t.assignee) === viewer?.name && !['resolved', 'closed'].includes(t.status)))
-      && (!q || (t.title + ' ' + (t.label || '') + t.number + t.subCategory + t.category + (t.data.member_name || '') + t.studio + t.summary
-        + (t.class?.name || '') + (t.class?.attendees || []).map(a => a.name + ' ' + (a.note || '')).join(' ')).toLowerCase().includes(q.toLowerCase())));
+    const f = list.filter(t => matches(t));
     const bySla = (a, b) => a._left - b._left;
     const byPri = (a, b) => PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority] || a._left - b._left;
     const byNew = (a, b) => b.createdAt - a.createdAt;
@@ -1361,19 +1367,36 @@ function App() {
 
       <section className="rcard filters">
         <div className="rcard-head"><span className="eyebrow">Narrow the board</span>
-          <button className="btn xs ghost" onClick={() => { setStatusFilter('live'); setPrioFilter(''); setDeptFilter(''); setOwnerFilter('');
+          <button className="btn text sm" onClick={() => { setStatusFilter('live'); setPrioFilter(''); setDeptFilter(''); setOwnerFilter('');
             setStudioFilter(''); setQ(''); setMineOn(false); setOnlyClass(false); }}>reset</button></div>
         <Search value={q} onChange={setQ} placeholder="number, title, member, machine…" />
-        <div className="rf-row">{['', 'critical', 'high', 'medium', 'low'].map(p =>
-          <button key={p || 'any'} className={cx('opt xs', prioFilter === p && 'on')} onClick={() => setPrioFilter(p)}>{p || 'any priority'}</button>)}</div>
-        <div className="rf-row">{[['live', 'live'], ['all', 'everything'], ['resolved', 'filed']].map(([v, l]) =>
-          <button key={v} className={cx('opt xs', statusFilter === v && 'on')} onClick={() => setStatusFilter(v)}>{l}</button>)}</div>
-        <label className="rcheck"><input type="checkbox" checked={mineOn} onChange={e => { setMineOn(e.target.checked); if (e.target.checked) setStatusFilter('all'); }} />
-          only what I own</label>
-        <label className="rcheck"><input type="checkbox" checked={onlyClass} onChange={e => setOnlyClass(e.target.checked)} />
-          hosted-class impact only</label>
-        <div className="rf-row">{DATA.studios.map(st => { const nm = st.name || st; return <button key={nm}
-          className={cx('opt xs', studioFilter === nm && 'on')} onClick={() => setStudioFilter(x => x === nm ? '' : nm)}>{nm}</button>; })}</div>
+        {/* three lenses, in the order a person actually reaches for them: how bad, how wide, where */}
+        <div className="fgrp">
+          <span className="fk">Priority</span>
+          <div className="rf-row prio-row">{['', 'critical', 'high', 'medium', 'low'].map(p => {
+            const n = p ? tickets.filter(t => matches(t, { prio: true }) && t.priority === p).length : null;
+            return <button key={p || 'any'} className={cx('opt', prioFilter === p && 'on')} onClick={() => setPrioFilter(p)}
+              title={p ? `${n} of these on the board right now` : 'show every priority'}>
+              {p || 'any'}{n !== null && <em className="mono">{n}</em>}</button>; })}</div>
+        </div>
+        <div className="fgrp">
+          <span className="fk">Scope</span>
+          <div className="rf-row scope-row">{[['live', 'live'], ['all', 'everything'], ['resolved', 'filed']].map(([v, l]) =>
+            <button key={v} className={cx('opt', statusFilter === v && 'on')} onClick={() => setStatusFilter(v)}>{l}</button>)}</div>
+        </div>
+        <div className="fgrp toggles">
+          <label className="rcheck"><input type="checkbox" checked={mineOn} onChange={e => { setMineOn(e.target.checked); if (e.target.checked) setStatusFilter('all'); }} />
+            only what I own<em className="mono xxs">{tickets.filter(t => matches(t, { mine: true })).length}</em></label>
+          <label className="rcheck"><input type="checkbox" checked={onlyClass} onChange={e => setOnlyClass(e.target.checked)} />
+            hosted-class impact only<em className="mono xxs">{tickets.filter(t => matches(t, { cls: true })).length}</em></label>
+        </div>
+        <div className="fgrp">
+          <span className="fk">Studio</span>
+          <div className="rf-row studio-row">{DATA.studios.map(st => { const nm = st.name || st;
+            const n = tickets.filter(t => matches(t, { studio: true }) && t.studio === nm).length;
+            return <button key={nm} className={cx('opt', studioFilter === nm && 'on')} onClick={() => setStudioFilter(x => x === nm ? '' : nm)}
+              title={`${n} ticket${n === 1 ? '' : 's'} from this building`}>{nm}<em className="mono">{n}</em></button>; })}</div>
+        </div>
       </section>
 
       {held.length > 0 && <section className="rcard mine">
